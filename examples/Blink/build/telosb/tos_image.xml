@@ -1,13 +1,13 @@
 <tos_image>
   <ident>
-    <userhash>1366F0CAL</userhash>
-    <deluge_support>no</deluge_support>
-    <platform>telosb</platform>
-    <timestamp>5446F440L</timestamp>
-    <hostname>moritz-mbp</hostname>
-    <uidhash>33863EACL</uidhash>
-    <appname>BlinkAppC</appname>
     <username>moritz</username>
+    <userhash>1366F0CAL</userhash>
+    <timestamp>5447CF95L</timestamp>
+    <uidhash>283481C3L</uidhash>
+    <appname>BlinkAppC</appname>
+    <platform>telosb</platform>
+    <deluge_support>no</deluge_support>
+    <hostname>moritz-mbp</hostname>
   </ident>
   <image format="ihex">
 :104000005542200135D0085A8245381131400039D7
