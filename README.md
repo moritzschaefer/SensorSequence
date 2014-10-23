@@ -23,6 +23,6 @@ http://tinyos.stanford.edu/tinyos-wiki/index.php/Network_Protocols
 - Tinyos getting started: http://tinyos.stanford.edu/tinyos-wiki/index.php/TinyOS_Tutorials#Getting_Started_with_TinyOS
     - especially http://tinyos.stanford.edu/tinyos-wiki/index.php/Getting_Started_with_TinyOS
 
-- Maybe interesting: http://www.tinyos.net/dist-2.0.0/tinyos-2.x/doc/html/tutorial/lesson12.html
+- Maybe interesting: http://www.tinyos.net/dist-2.0.0/tinyos-2.x/doc/html/tutorial/lesson12.html. Not really important. is the same as http://tinyos.stanford.edu/tinyos-wiki/index.php/Network_Protocols
 - Maybe interesting: http://tinyos.stanford.edu/tinyos-wiki/index.php/TOSSIM
 - Tutorial from Onur: (important:)
