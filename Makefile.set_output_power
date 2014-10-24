@@ -1,0 +1,18 @@
+Makefile:
+COMPONENT=MeasureMultiChRSSIC
+CFLAGS += -DCC2420_NO_ACKNOWLEDGEMENTS
+CFLAGS += -DCC2420_NO_ADDRESS_RECOGNITION
+CFLAGS += -I$(TOSDIR)/lib/printf
+CFLAGS += -DCC2420_DEF_RFPOWER=3
+PFLAGS += -DCC2420_DEF_CHANNEL=11
+PFLAGS += -DSPRAY_CONSTANT=35
+
+
+include $(MAKERULES)
+
+# PA_LEVEL TXCTRL register Output Power [dBm] Current Consumption [mA]
+# 31	 	0xA0FF		 0 		17.4
+# 19 	 	0xA0F3		-5 		13.9
+# 11 	 	0xA0EB 		-10 		11.2
+#  7 	 	0xA0E7 		-15 		 9.9
+#  3	 	0xA0E3 		-25 		 8.5
