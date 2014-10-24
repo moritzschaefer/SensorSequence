@@ -11,30 +11,32 @@ from tinyos.message.SerialPacket import *
 from tinyos.packet.Serial import Serial
 
 class DataLogger:
+
     def __init__(self, motestring):
         self.mif = MoteIF.MoteIF()
         self.tos_source = self.mif.addSource(motestring)
-        self.mif.addListener(self, MyMsg.MyMsg)
+        self.mif.addListener(self, TestSerialMsg.TestSerialMsg)
+        self.i = 0
 
     def receive(self, src, msg):
-        if msg.get_amType() == MyMsg.AM_TYPE:
-            print msg
-            m = MyMsg.MyMsg(msg.dataGet())
-            print time.time(), m.get_rx_timestamp(), m.get_next_rx_timestamp(), m.get_misses()
+        if msg.get_amType() == TestSerialMsg.AM_TYPE:
+            m = TestSerialMsg.TestSerialMsg(msg.dataGet())
+            print time.time(), m.get_counter()
 
         sys.stdout.flush()
 
     def send(self):
-                smsg = MyMsg.MyMsg()
-                smsg.set_rx_timestamp(time.time())
+                smsg = TestSerialMsg.TestSerialMsg()
+                smsg.set_counter(self.i)
                 self.mif.sendMsg(self.tos_source, 0xFFFF,
                 smsg.get_amType(), 0, smsg)
+                self.i += 1
 
     def main_loop(self):
         while 1:
             time.sleep(1)
             # send a message 1's per second
-            self.send_msg()
+            self.send()
 
 def main():
 

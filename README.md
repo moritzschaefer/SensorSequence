@@ -1,13 +1,12 @@
 # Setup/Installation
 
-- Get TinyOS (i installed to /opt).
 - Uninstall kate-data (it conflicts with nescc due to a bug) and install nescc.
-- Go to /opt/tinyos/tools and run  (compare http://tinyos.stanford.edu/tinyos-wiki/index.php/Installing_From_Source):
-    cd tinyos-main/tools
-    ./Bootstrap
-    ./configure
-    make
-    make install
+- As the tarball version of tinyos is old and python is not full supported, clone tinyos-main and install with
+    - cd tinyos-main/tools
+    - ./Bootstrap
+    - ./configure
+    - make
+    - sudo make install
 - Install gcc-msp430
 - Now write your project and run "make tmote" to build and "make tmote install" for programming the device. You're done :)
 
@@ -16,6 +15,12 @@
 In the project we will be using Radio interface, Serial interface, ActiveMessage and Networking Protocols (Dissemination and CTP). These are some readings for you:
 http://tinyos.stanford.edu/tinyos-wiki/index.php/Mote-mote_radio_communication
 http://tinyos.stanford.edu/tinyos-wiki/index.php/Network_Protocols
+
+# Python access
+
+This tutorial describes everything to get you started. Call the datalogger.py with an argument like "serial@path/to/serialdev:baudrate" baudrate can be the name of the device (e.g. tmote) as well.
+http://wiesel.ece.utah.edu/redmine/projects/hacks/wiki/How_to_use_Python_and_MIG_to_interact_with_a_TinyOS_application
+The code doesn't work as is (you have to modify some things but you will notice that on your own).
 
 # Ressources
 
