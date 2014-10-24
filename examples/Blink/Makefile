@@ -1,3 +1,2 @@
 COMPONENT=BlinkAppC
-include $(MAKERULES)
-
+include $(TINYOS_ROOT_DIR)/Makefile.include

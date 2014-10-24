@@ -1,4 +1,5 @@
 COMPONENT=TestSerialAppC
+include $(TINYOS_ROOT_DIR)/Makefile.include
 BUILD_EXTRA_DEPS += TestSerialMsg.py
 CLEAN_EXTRA = TestSerial.py
 
@@ -9,7 +10,4 @@ CFLAGS += -I$(TOSDIR)/lib/T2Hack
 
 TestSerialMsg.py: TestSerial.h
 	mig python -target=$(PLATFORM) $(CFLAGS) -python-classname=TestSerialMsg TestSerial.h test_serial_msg -o# $@
-
-
-include $(MAKERULES)
 

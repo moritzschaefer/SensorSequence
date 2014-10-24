@@ -1,2 +1,2 @@
 COMPONENT=SimpleAppC
-include $(MAKERULES)
+include $(TINYOS_ROOT_DIR)/Makefile.include
