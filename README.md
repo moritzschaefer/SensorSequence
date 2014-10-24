@@ -8,6 +8,7 @@
     - make
     - sudo make install
 - Install gcc-msp430
+- You need TINYOS_ROOT_DIR to be set to the root of your TINYOS installation and you have to 'include $(TINYOS_ROOT_DIR)/Makefile.include' to your tinyos project
 - Now write your project and run "make tmote" to build and "make tmote install" for programming the device. You're done :)
 
 # Protocols to use
