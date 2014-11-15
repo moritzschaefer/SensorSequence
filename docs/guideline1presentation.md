@@ -11,16 +11,17 @@
   - Build measurements systems
     - First of all: what to measure?
       - For every node, every channel, n measurments/packets
-    - CTP and Dissemination
     - Structure
       - One sync node
         - connected to pc
         - starts measurments, collects data, organizes nodes/process
-      - Measurment process
+      - Design
         - Node detection/collects ids of nodes(dissemination & ctp)
         - Sender selection
         - Channel switching
         - Data collection
+      - Architecture
+        - CTP and Dissemination
   - Test the reliability (for many nodes, can we collect all measurments?)
 - What has been done
   - Show CTP and Dissemination code
