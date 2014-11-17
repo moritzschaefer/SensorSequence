@@ -2,6 +2,7 @@
 
 - Sensor networks
 - Importancy of sequence
+  - 1dimensional
 - Our working base
   - Onurs sheet
     - Frequency usage ( Grafik von Onur ). Onur fragen
@@ -14,7 +15,7 @@
     - Structure
       - One sync node
         - connected to pc
-        - starts measurments, collects data, organizes nodes/process
+        - starts measurments, collects data, organizes nodes/processi
       - Design
         - Node detection/collects ids of nodes(dissemination & ctp)
         - Sender selection
