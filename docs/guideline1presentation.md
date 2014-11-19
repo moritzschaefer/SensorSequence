@@ -44,3 +44,12 @@
   - granulate presentation
   - find points for timetable
   - write timetable
+# Additional hints from onur
+
+Quantify what to evaluate and measure
+Use variables i and j for specifying nodes.
+Time plan
+Testing if CTP and disseminate are reliable on larger distances
+Scenaeio
+Problem/goal
+Challenges
