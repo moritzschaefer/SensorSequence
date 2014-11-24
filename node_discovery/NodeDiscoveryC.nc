@@ -1,4 +1,6 @@
-
+#define NEW_PRINTF_SEMANTICS
+#include "printf.h"
+#include <Timer.h>
 module NodeDiscoveryC {
   uses interface Boot;
   uses interface SplitControl as RadioControl;
@@ -6,6 +8,7 @@ module NodeDiscoveryC {
   uses interface DisseminationValue<uint16_t> as Value;
   uses interface DisseminationUpdate<uint16_t> as Update;
   uses interface Leds;
+  uses interface Timer<TMilli>;
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send;
@@ -17,6 +20,7 @@ implementation {
   // Used for CTP
   message_t packet;
   bool sendBusy = FALSE;
+  uint16_t NODE_DISCOVERY=0;
 
   typedef nx_struct NodeIDMsg {
     nx_uint16_t data;
@@ -42,14 +46,19 @@ implementation {
       call RoutingControl.start();
 
       if ( TOS_NODE_ID  == 1 ) {
-        uint16_t tmpValue=0;
-        call Update.change(&tmpValue);
         call RootControl.setRoot();
         post ShowCounter();
+        call Timer.startPeriodic(2000);
 
       }
     }
   }
+
+  event void Timer.fired() {
+    printfflush();
+    call Update.change(&NODE_DISCOVERY);
+  }
+
 
   event void RadioControl.stopDone(error_t err) {}
 
@@ -59,7 +68,7 @@ implementation {
     msg->data = TOS_NODE_ID;
 
     if (call Send.send(&packet, sizeof(NodeIDMsg)) != SUCCESS) {
-      //printf this
+      printf("Error sending NodeID via CTP\n");
     } else {
       sendBusy = TRUE;
     }
@@ -69,22 +78,24 @@ implementation {
   event void Value.changed() {
     const uint16_t* newVal = call Value.get();
     if(*newVal == 0) {
-      // react with sending own ID here
+      sendMessage();
       post ShowCounter();
     }
   }
 
   event void Send.sendDone(message_t* m, error_t err) {
     if(err != SUCCESS) {
-      //printf
+      printf("Error sending NodeID via CTP\n");
     } else {
+      printf("Sent CTP value\n");
       sendBusy = FALSE;
     }
   }
 
   // CTP receive
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
-    // printf the received node id
+    //notice that byte order in payload is swapped
+    printf("Received node ID %u. len: %u\n", *((short int*)payload), len);
     return msg;
   }
 }

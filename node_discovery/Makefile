@@ -1,9 +1,12 @@
 COMPONENT=NodeDiscoveryAppC
 
-# for tcp:
+# for ctp:
 CFLAGS += -I$(TINYOS_OS_DIR)/lib/net \
           -I$(TINYOS_OS_DIR)/lib/net/le \
           -I$(TINYOS_OS_DIR)/lib/net/ctp
+
+CFLAGS += -DPRINTF_BUFFER_SIZE=250
+CFLAGS += -I$(TINYOS_OS_DIR)/lib/printf
 
 ### For Drip:
 CFLAGS += -I$(TINYOS_OS_DIR)/lib/net -I$(TINYOS_OS_DIR)/lib/net/drip
