@@ -1,4 +1,10 @@
 COMPONENT=NodeDiscoveryAppC
+
+# for tcp:
+CFLAGS += -I$(TINYOS_OS_DIR)/lib/net \
+          -I$(TINYOS_OS_DIR)/lib/net/le \
+          -I$(TINYOS_OS_DIR)/lib/net/ctp
+
 ### For Drip:
 CFLAGS += -I$(TINYOS_OS_DIR)/lib/net -I$(TINYOS_OS_DIR)/lib/net/drip
 ### For DIP:
