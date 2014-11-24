@@ -32,3 +32,8 @@ The code doesn't work as is (you have to modify some things but you will notice 
 - Maybe interesting: http://www.tinyos.net/dist-2.0.0/tinyos-2.x/doc/html/tutorial/lesson12.html. Not really important. is the same as http://tinyos.stanford.edu/tinyos-wiki/index.php/Network_Protocols
 - Maybe interesting: http://tinyos.stanford.edu/tinyos-wiki/index.php/TOSSIM
 - Tutorial from Onur: (important:)
+
+# Dissemination codes:
+
+- key: 0x0000: managment
+    - value: 0x0000: node discovery

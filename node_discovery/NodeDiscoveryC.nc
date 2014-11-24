@@ -1,4 +1,3 @@
-#include <Timer.h>
 
 module NodeDiscoveryC {
   uses interface Boot;
@@ -7,26 +6,13 @@ module NodeDiscoveryC {
   uses interface DisseminationValue<uint16_t> as Value;
   uses interface DisseminationUpdate<uint16_t> as Update;
   uses interface Leds;
-  uses interface Timer<TMilli>;
 }
 
 implementation {
-
-  uint16_t counter;
-
   task void ShowCounter() {
-    if (counter & 0x1)
-      call Leds.led0On();
-    else
-      call Leds.led0Off();
-    if (counter & 0x2)
-      call Leds.led1On();
-    else
-      call Leds.led1Off();
-    if (counter & 0x4)
-      call Leds.led2On();
-    else
-      call Leds.led2Off();
+    call Leds.led0On();
+    call Leds.led1On();
+    call Leds.led2On();
   }
 
   event void Boot.booted() {
@@ -37,31 +23,23 @@ implementation {
     if (err != SUCCESS)
       call RadioControl.start();
     else {
-      counter = 0;
-      if(!call DisseminationControl.start()) {
-        // TODO printf here
-      } else {
-        if ( TOS_NODE_ID  == 1 )
-          call Timer.startPeriodic(2000);
-          //call Update.change(&counter);
+      call DisseminationControl.start();
+      if ( TOS_NODE_ID  == 1 ) {
+        uint16_t tmpValue=0;
+        call Update.change(&tmpValue);
+        post ShowCounter();
+
       }
     }
   }
 
   event void RadioControl.stopDone(error_t err) {}
 
-  event void Timer.fired() {
-    counter = counter + 1;
-    // show counter in leds
-    post ShowCounter();
-    // disseminate counter value
-    call Update.change(&counter);
-  }
-
   event void Value.changed() {
     const uint16_t* newVal = call Value.get();
-    // show new counter in leds
-    counter = *newVal;
-    post ShowCounter();
+    if(*newVal == 0) {
+      // react with sending own ID here
+      post ShowCounter();
+    }
   }
 }
