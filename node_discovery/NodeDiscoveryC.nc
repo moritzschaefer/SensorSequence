@@ -96,7 +96,11 @@ implementation {
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
     NodeIDMsg* received =
       (NodeIDMsg*)payload;
-    printf("Received node ID %u", received->data);
+    if(len != sizeof(NodeIDMsg)) {
+      printf("Received CTP length doesn't match expected one.\n");
+    } else {
+      printf("Received node ID %u\n", received->data);
+    }
     return msg;
   }
 }
