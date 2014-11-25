@@ -17,6 +17,11 @@ module NodeDiscoveryC {
 }
 
 implementation {
+  // init Array
+  uint16_t array_id[5];
+  uint16_t array_test[5] = {0};
+  void setArray(uint16_t);
+
   // Used for CTP
   message_t packet;
   bool sendBusy = FALSE;
@@ -100,7 +105,30 @@ implementation {
       printf("Received CTP length doesn't match expected one.\n");
     } else {
       printf("Received node ID %u\n", received->data);
+      setArray(received->data);
     }
     return msg;
+  }
+
+  void setArray(uint16_t value) {
+    // Writing each incomming id into the Array
+    int i;
+    printf("Der neue Wert ist eine %u\n", value);
+    printf("FIELD----VALUE-----\n");
+    //for( i = 0; i<5; i++ ){
+    //  printf("array[%d] = %u\n", i, array_test[i]);}
+    for( i = 0; i<5; i++ )
+    {
+      if (array_id[i] == value) {
+      printf("array[%d] = %u\n", i, array_id[i]);
+      return;
+      }
+      if (array_id[i] == 0) {
+        array_id[i] = value;
+        return;
+      }
+      printf("array[%d] = %u\n", i, array_id[i]);
+    }
+    printf("-------------------\n");
   }
 }
