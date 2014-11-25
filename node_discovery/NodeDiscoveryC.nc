@@ -94,10 +94,9 @@ implementation {
 
   // CTP receive
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
-    //notice that byte order in payload is swapped
     NodeIDMsg* received =
       (NodeIDMsg*)payload;
-    printf("Received node ID %u. len: %u\n", received->data, len);
+    printf("Received node ID %u", received->data);
     return msg;
   }
 }
