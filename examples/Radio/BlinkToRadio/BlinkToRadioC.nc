@@ -1,6 +1,15 @@
 #include <Timer.h>
 #include "BlinkToRadio.h"
 
+#ifndef BLINKTORADIO_H
+#define BLINKTORADIO_H
+
+enum {
+  TIMER_PERIOD_MILLI = 250
+};
+
+#endif
+
 module BlinkToRadioC {
   uses interface Boot;
   uses interface Leds;
