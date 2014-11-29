@@ -35,10 +35,11 @@
 
 #include "RssiDemoMessages.h"
 #include "message.h"
+#include "printf.h"
 
 configuration RssiBaseAppC {
 } implementation {
-  components BaseStationC;
+  components BaseStationC, PrintfC;
   components RssiBaseC as App;
 
 #ifdef __CC2420_H__

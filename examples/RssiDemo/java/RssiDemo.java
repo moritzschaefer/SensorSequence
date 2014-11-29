@@ -62,8 +62,9 @@ public class RssiDemo implements MessageListener {
   public void messageReceived(int to, Message message) {
     RssiMsg msg = (RssiMsg) message;
     int source = message.getSerialPacket().get_header_src();
-    System.out.println("Rssi Message received from node " + source + 
-		       ": Rssi = " +  msg.get_rssi());
+    //We need Only the RSSI for our current project:
+    System.out.println(/*"Rssi Message received from node " + source + 
+		       ": Rssi = " + */msg.get_rssi());
   }
   
   private static void usage() {
