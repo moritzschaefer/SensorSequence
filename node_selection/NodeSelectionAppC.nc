@@ -5,7 +5,6 @@ implementation {
   // Main Component
   components NodeSelectionC;
 
-
   components PrintfC;
   components SerialStartC;
 
@@ -19,8 +18,11 @@ implementation {
   NodeSelectionC.DisseminationControl -> DisseminationC;
 
   components new DisseminatorC(uint16_t, 0x0000) as Diss16C;
-  NodeSelectionC.Value -> Diss16C;
-  NodeSelectionC.Update -> Diss16C;
+  NodeSelectionC.Value1 -> Diss16C;
+  NodeSelectionC.Update1 -> Diss16C;
+  components new DisseminatorC(uint16_t, 0x0001) as Diss16C2;
+  NodeSelectionC.Value2 -> Diss16C2;
+  NodeSelectionC.Update2 -> Diss16C2;
 
   components LedsC;
   NodeSelectionC.Leds -> LedsC;

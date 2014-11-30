@@ -5,10 +5,8 @@ module NodeSelectionC {
   uses interface Boot;
   uses interface SplitControl as RadioControl;
   uses interface StdControl as DisseminationControl;
-  uses interface DisseminationValue<uint16_t> as Value1;
-  uses interface DisseminationValue<uint16_t> as Value2;
-  uses interface DisseminationUpdate<uint16_t> as Update1;
-  uses interface DisseminationUpdate<uint16_t> as Update2;
+  uses interface DisseminationValue<uint16_t> as Value;
+  uses interface DisseminationUpdate<uint16_t> as Update;
   uses interface Leds;
   uses interface Timer<TMilli>;
   // CTP
@@ -20,14 +18,8 @@ module NodeSelectionC {
 
 implementation {
   // init Array
-  //const int ARRAYLENGTH = 5;
   uint16_t array_id[5];
   void setArray(uint16_t);
-  void printArray();
-  int numNodes=0;
-  int id=0;
-
-  //Statemaschine
   int state = 0;
 
   // Used for CTP
@@ -43,8 +35,9 @@ implementation {
 
   // debugging as long as there is no printf
   task void ShowCounter() {
-    printf("ShowCounter\n");
-    printfflush();
+    call Leds.led0On();
+    call Leds.led1On();
+    call Leds.led2On();
   }
 
   event void Boot.booted() {
@@ -71,25 +64,10 @@ implementation {
   event void Timer.fired() {
     printfflush();
     switch(state){
-    //Node detection State
       case(0):
-        printf("---State NR. %d---\n", state);
-        printf("Discovery to all nodes\n");
-        call Update1.change(&NODE_DISCOVERY);
-        state=1;
-        break;
-    //Node selection State
-        case 1:
-        printf("---State NR. %d---\n", state);
-        //SELECT_SENDER=array_id[i];
-        call Update2.change((uint16_t)array_id[id]); 
-        printf("Sende an Node %u\n", array_id[id]);
-        id++;
-        if (id >= numNodes) {
-          id = 0;
-        }
-        printArray();
-        printfflush();
+      call Update.change(&NODE_DISCOVERY);
+      break;
+    state++;
     }
   }
 
@@ -108,24 +86,12 @@ implementation {
     }
   }
 
-  // Dissemination receive I
-  event void Value1.changed() {
-    const uint16_t* newVal = call Value1.get();
+  // Dissemination receive
+  event void Value.changed() {
+    const uint16_t* newVal = call Value.get();
     if(*newVal == NODE_DISCOVERY) {
       sendMessage();
       post ShowCounter();
-    }
-    /*if(*newVal == SELECT_SENDER) {
-      printf("recived Dissemination");
-      printfflush();
-    }*/
-  }
-
-  // Dissemination receive II
-  event void Value2.changed() {
-    const uint16_t* newVal = call Value2.get();
-    if(*newVal == TOS_NODE_ID) {
-      //post ShowCounter();
     }
   }
 
@@ -147,34 +113,30 @@ implementation {
     } else {
       printf("Received node ID %u\n", received->data);
       setArray(received->data);
-      printf("added in array...\n");
     }
     return msg;
   }
 
-  // Saving NodeIDs in Array
-  void setArray(uint16_t value1) {
+  void setArray(uint16_t value) {
     // Writing each incomming id into the Array
     int i;
-    for( i = 0 ; i<numNodes ; i++ )
+    printf("Der neue Wert ist eine %u\n", value);
+    printf("FIELD----VALUE-----\n");
+    printfflush();
+    for( i = 0; i<20; i++ )
     {
-      if (array_id[i] == value1) {
-        //printf("array[%d] = %u\n", i, array_id[i]);
-        //printfflush();
+      if (array_id[i] == value) {
+      printf("array[%d] = %u\n", i, array_id[i]);
+      printfflush();
+      return;
+      }
+      if (array_id[i] == 0) {
+        array_id[i] = value;
         return;
       }
+      printf("array[%d] = %u\n", i, array_id[i]);
+      printfflush();
     }
-    array_id[numNodes] = value1;
-    printf("array[%d] = %u\n", i, array_id[numNodes]);
-    numNodes++;
-    return;
-  }
-
-  void printArray(){
-    int k;
-    for(k=0; k<numNodes; k++)
-    {
-      printf("array[%d] = %u\n", k, array_id[k]);
-    }
+    printf("-------------------\n");
   }
 }
