@@ -84,7 +84,6 @@ module RssiBaseC {
   }
 #elif defined(TDA5250_MESSAGE_H)
    uint16_t getRssi(message_t *msg){
-       printf("blablabla");
        return call Tda5250Packet.getSnr(msg);
    }
 #else
