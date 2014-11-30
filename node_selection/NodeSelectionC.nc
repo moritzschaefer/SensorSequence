@@ -43,6 +43,8 @@ implementation {
 
   // debugging as long as there is no printf
   task void ShowCounter() {
+    call Leds.led1On();
+
     printf("ShowCounter\n");
     printfflush();
   }
@@ -82,7 +84,7 @@ implementation {
         case 1:
         printf("---State NR. %d---\n", state);
         //SELECT_SENDER=array_id[i];
-        call Update2.change((uint16_t)array_id[id]); 
+        call Update2.change((uint16_t*)(array_id+id));
         printf("Sende an Node %u\n", array_id[id]);
         id++;
         if (id >= numNodes) {
@@ -113,7 +115,7 @@ implementation {
     const uint16_t* newVal = call Value1.get();
     if(*newVal == NODE_DISCOVERY) {
       sendMessage();
-      post ShowCounter();
+      //post ShowCounter();
     }
     /*if(*newVal == SELECT_SENDER) {
       printf("recived Dissemination");
@@ -125,7 +127,7 @@ implementation {
   event void Value2.changed() {
     const uint16_t* newVal = call Value2.get();
     if(*newVal == TOS_NODE_ID) {
-      //post ShowCounter();
+      post ShowCounter();
     }
   }
 
