@@ -37,5 +37,5 @@ implementation {
   NodeSelectionC.RoutingControl -> Collector;
   NodeSelectionC.Send -> CollectionSenderC;
   NodeSelectionC.RootControl -> Collector;
-  NodeSelectionC.Receive -> Collector.Receive[0x00];
+  NodeSelectionC.CTPReceive -> Collector.Receive[0x00];
 }

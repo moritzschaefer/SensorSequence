@@ -15,19 +15,27 @@ module NodeSelectionC {
   uses interface StdControl as RoutingControl;
   uses interface Send;
   uses interface RootControl;
-  uses interface Receive;
+  uses interface Receive as CTPReceive;
 }
+
+
+#define MAX_NODE_COUNT 10
+typedef struct {
+  uint16_t NodeId;
+  uint16_t measuredRss;
+} measurement;
 
 implementation {
   // init Array
-  //const int ARRAYLENGTH = 5;
-  uint16_t array_id[5];
-  void setArray(uint16_t);
+  //const int ARRAYLENGTH = MAX_NODE_COUNT;
+  uint16_t nodeIds[MAX_NODE_COUNT];
+  void addNodeIdToArray(uint16_t);
   void printArray();
-  int numNodes=0;
+  int nodeCount=0;
   int id=0;
+  int currentSender=-1;
 
-  //Statemaschine
+  //Statemachine
   int state = 0;
 
   // Used for CTP
@@ -35,7 +43,7 @@ implementation {
   bool sendBusy = FALSE;
 
   const uint16_t NODE_DISCOVERY=0;
-  const uint16_t SELECT_SENDER=1;
+  const uint16_t SELECT_SENDER=1; // TODO use this later
 
   typedef nx_struct NodeIDMsg {
     nx_uint16_t data;
@@ -83,11 +91,11 @@ implementation {
     //Node selection State
         case 1:
         printf("---State NR. %d---\n", state);
-        //SELECT_SENDER=array_id[i];
-        call Update2.change((uint16_t*)(array_id+id));
-        printf("Sende an Node %u\n", array_id[id]);
+        //SELECT_SENDER=nodeIds[i];
+        call Update2.change((uint16_t*)(nodeIds+id));
+        printf("Sende an Node %u\n", nodeIds[id]);
         id++;
-        if (id >= numNodes) {
+        if (id >= nodeCount) {
           id = 0;
         }
         printArray();
@@ -141,42 +149,41 @@ implementation {
   }
 
   // CTP receive
-  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
+  event message_t* CTPReceive.receive(message_t* msg, void* payload, uint8_t len) {
     NodeIDMsg* received =
       (NodeIDMsg*)payload;
     if(len != sizeof(NodeIDMsg)) {
       printf("Received CTP length doesn't match expected one.\n");
     } else {
       printf("Received node ID %u\n", received->data);
-      setArray(received->data);
+      addNodeIdToArray(received->data);
       printf("added in array...\n");
     }
     return msg;
   }
 
-  // Saving NodeIDs in Array
-  void setArray(uint16_t value1) {
-    // Writing each incomming id into the Array
+  // Writing each incomming id into the Array
+  void addNodeIdToArray(uint16_t nodeId) {
     int i;
-    for( i = 0 ; i<numNodes ; i++ )
+    for(i = 0; i<nodeCount; i++)
     {
-      if (array_id[i] == value1) {
-        //printf("array[%d] = %u\n", i, array_id[i]);
+      if(nodeIds[i] == nodeId) {
+        //printf("array[%d] = %u\n", i, nodeIds[i]);
         //printfflush();
         return;
       }
     }
-    array_id[numNodes] = value1;
-    printf("array[%d] = %u\n", i, array_id[numNodes]);
-    numNodes++;
+    nodeIds[nodeCount] = nodeId;
+    printf("array[%d] = %u\n", i, nodeIds[nodeCount]);
+    nodeCount++;
     return;
   }
 
   void printArray(){
     int k;
-    for(k=0; k<numNodes; k++)
+    for(k=0; k<nodeCount; k++)
     {
-      printf("array[%d] = %u\n", k, array_id[k]);
+      printf("array[%d] = %u\n", k, nodeIds[k]);
     }
   }
 }

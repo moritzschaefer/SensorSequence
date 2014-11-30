@@ -20,6 +20,19 @@ CTP example is tested and running
 
 Create presentation for project introduction
 
+## 12th november 2014
+
+Initial presentation. Result: We were not properly prepared for the presentation. A timeline was completly missing. Result: Work more.
+
+## 22th november 2014
+
+Implementing node detection.
 
 
+## 28th to 30th november 2014
 
+Implementing last milestone features: RSS measurement and Sender selection.
+
+## 1st december 2014
+
+First-milestone presentation. <fill in here>
