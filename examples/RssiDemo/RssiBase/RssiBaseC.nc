@@ -32,12 +32,10 @@
 /**
  * @author Dimas Abreu Dutra
  */
-
+#define NEW_PRINTF_SEMANTICS
 #include "ApplicationDefinitions.h"
 #include "RssiDemoMessages.h"
-//#include "Printf.h"
-  #define printf(...);
-  #printflush(...);
+#include "printf.h"
 
 module RssiBaseC {
   uses interface Intercept as RssiMsgIntercept;
@@ -58,6 +56,10 @@ module RssiBaseC {
 				      uint8_t len) {
     RssiMsg *rssiMsg = (RssiMsg*) payload;
     rssiMsg->rssi = getRssi(msg);
+
+    //paste my code here
+    printf("%d\n",(int)getRssi(msg));
+    printfflush();
 
     return TRUE;
   }
@@ -80,6 +82,7 @@ module RssiBaseC {
   }
 #elif defined(TDA5250_MESSAGE_H)
    uint16_t getRssi(message_t *msg){
+       printf("blablabla");
        return call Tda5250Packet.getSnr(msg);
    }
 #else
