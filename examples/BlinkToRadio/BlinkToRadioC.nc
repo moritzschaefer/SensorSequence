@@ -87,13 +87,13 @@ implementation {
   }
 
   event void Boot.booted() {
-//    if (TOS_NODE_ID >= 1){
+    if (TOS_NODE_ID == 0) {
       printf("booted\n");
       printfflush();
       call AMControl.start();
       printf("initialising AMControl\n");
       printfflush();
-//    }
+    }
   }
 
   event void AMControl.startDone(error_t err) {
@@ -113,6 +113,7 @@ implementation {
     if (!busy) {
       BlinkToRadioMsg* btrpkt =	(BlinkToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(BlinkToRadioMsg)));
       printf("message fired\n");
+      printfflush();
       if (btrpkt == NULL) {
 	return;
       }

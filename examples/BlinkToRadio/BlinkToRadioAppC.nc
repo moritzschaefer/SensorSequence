@@ -50,12 +50,13 @@
 #include <Timer.h>
 #include "BlinkToRadio.h"
 #include "message.h"
+#define NEW_PRINTF_SEMANTICS
 #include "printf.h"
 
 configuration BlinkToRadioAppC {
 }
 implementation {
-  components PrintfC;
+  components PrintfC, SerialStartC;
   components MainC;
   components LedsC;
   components BlinkToRadioC as App;
