@@ -1,7 +1,7 @@
 // $Id: BlinkToRadioC.nc,v 1.6 2010-06-29 22:07:40 scipio Exp $
 
 /*
- * Copyright (c) 2000-2006 The Regents of the University  of California.  
+ * Copyright (c) 2000-2006 The Regents of the University  of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,8 +125,7 @@ implementation {
       BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)payload;
       setLeds(btrpkt->counter);
 
-      RssiMsg *rssiMsg = (RssiMsg*) payload;
-      rssiMsg->rssi = getRssi(msg);
+      getRssi(msg);
 
       printf("%d\n",(int)getRssi(msg));
       printfflush();
