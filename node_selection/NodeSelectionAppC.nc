@@ -5,14 +5,15 @@ implementation {
   // Main Component
   components NodeSelectionC;
 
+  //Printf
   components PrintfC;
   components SerialStartC;
 
   components MainC;
   NodeSelectionC.Boot -> MainC;
-
   components ActiveMessageC;
   NodeSelectionC.RadioControl -> ActiveMessageC;
+
 
   components DisseminationC;
   NodeSelectionC.DisseminationControl -> DisseminationC;
@@ -41,5 +42,14 @@ implementation {
 
   // Radio Send/Receive
   components CC2420ActiveMessageC;
-  NodeSelectionC.RadioPacket -> CC2420ActiveMessageC.CC2420Packet;
+  NodeSelectionC.CC2420Packet -> CC2420ActiveMessageC.CC2420Packet;
+
+  NodeSelectionC.Packet -> AMSenderC;
+  NodeSelectionC.AMPacket -> AMSenderC;
+  //NodeSelectionC.AMControl -> ActiveMessageC; // already done
+  NodeSelectionC.AMSend -> AMSenderC;
+  NodeSelectionC.AMReceive -> AMReceiverC;
+
+  components new AMSenderC(6);
+  components new AMReceiverC(6);
 }
