@@ -13,7 +13,7 @@ module NodeSelectionC {
   uses interface Timer<TMilli>;
   // CTP
   uses interface StdControl as RoutingControl;
-  uses interface Send;
+  uses interface CTPSend;
   uses interface RootControl;
   uses interface Receive as CTPReceive;
 }
@@ -108,10 +108,10 @@ implementation {
 
   void sendMessage() {
     NodeIDMsg* msg =
-      (NodeIDMsg*)call Send.getPayload(&packet, sizeof(NodeIDMsg));
+      (NodeIDMsg*)call CTPSend.getPayload(&packet, sizeof(NodeIDMsg));
     msg->data = TOS_NODE_ID;
 
-    if (call Send.send(&packet, sizeof(NodeIDMsg)) != SUCCESS) {
+    if (call CTPSend.send(&packet, sizeof(NodeIDMsg)) != SUCCESS) {
       printf("Error sending NodeID via CTP\n");
     } else {
       sendBusy = TRUE;
@@ -133,13 +133,17 @@ implementation {
 
   // Dissemination receive II
   event void Value2.changed() {
-    const uint16_t* newVal = call Value2.get();
+    const uint16_t *newVal = call Value2.get();
+    currentSender = *newVal;
     if(*newVal == TOS_NODE_ID) {
       post ShowCounter();
+      // Wait 10ms and send radio
+			call Busy.wait(TOS_NODE_ID%PERIOD);
+      // TODO send RSS here
     }
   }
 
-  event void Send.sendDone(message_t* m, error_t err) {
+  event void CTPSend.sendDone(message_t* m, error_t err) {
     if(err != SUCCESS) {
       printf("Error sending NodeID via CTP\n");
     } else {

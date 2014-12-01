@@ -30,12 +30,16 @@ implementation {
   components new TimerMilliC();
   NodeSelectionC.Timer -> TimerMilliC;
 
-  // ctp part
+  // CTP Part
   components CollectionC as Collector;
   components new CollectionSenderC(0x00);
 
   NodeSelectionC.RoutingControl -> Collector;
-  NodeSelectionC.Send -> CollectionSenderC;
+  NodeSelectionC.CTPSend -> CollectionSenderC;
   NodeSelectionC.RootControl -> Collector;
   NodeSelectionC.CTPReceive -> Collector.Receive[0x00];
+
+  // Radio Send/Receive
+  components CC2420ActiveMessageC;
+  NodeSelectionC.RadioPacket -> CC2420ActiveMessageC.CC2420Packet;
 }
