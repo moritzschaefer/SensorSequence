@@ -1,7 +1,7 @@
 // $Id: BlinkToRadioC.nc,v 1.6 2010-06-29 22:07:40 scipio Exp $
 
 /*
- * Copyright (c) 2000-2006 The Regents of the University  of California.
+ * Copyright (c) 2000-2006 The Regents of the University  of California.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,6 @@
  */
 #include <Timer.h>
 #include "BlinkToRadio.h"
-#include "printf.h"
 
 module BlinkToRadioC {
   uses interface Boot;
@@ -60,16 +59,12 @@ module BlinkToRadioC {
   uses interface AMSend;
   uses interface Receive;
   uses interface SplitControl as AMControl;
-  uses interface CC2420Packet;
 }
 implementation {
 
   uint16_t counter;
   message_t pkt;
-  message_t msg;
   bool busy = FALSE;
-
-  uint16_t getRssi(message_t *msg);
 
   void setLeds(uint16_t val) {
     if (val & 0x01)
@@ -87,13 +82,7 @@ implementation {
   }
 
   event void Boot.booted() {
-//    if (TOS_NODE_ID >= 1){
-      printf("booted\n");
-      printfflush();
-      call AMControl.start();
-      printf("initialising AMControl\n");
-      printfflush();
-//    }
+    call AMControl.start();
   }
 
   event void AMControl.startDone(error_t err) {
@@ -111,14 +100,15 @@ implementation {
   event void Timer0.fired() {
     counter++;
     if (!busy) {
-      BlinkToRadioMsg* btrpkt =	(BlinkToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(BlinkToRadioMsg)));
-      printf("message fired\n");
+      BlinkToRadioMsg* btrpkt = 
+	(BlinkToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(BlinkToRadioMsg)));
       if (btrpkt == NULL) {
 	return;
       }
       btrpkt->nodeid = TOS_NODE_ID;
       btrpkt->counter = counter;
-      if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+      if (call AMSend.send(AM_BROADCAST_ADDR, 
+          &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
         busy = TRUE;
       }
     }
@@ -134,18 +124,7 @@ implementation {
     if (len == sizeof(BlinkToRadioMsg)) {
       BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)payload;
       setLeds(btrpkt->counter);
-      printf("message recived\n");
-
-      //getRssi(msg);
-
-      printf("%d\n",(int)getRssi(msg));
-      printfflush();
-
     }
     return msg;
-  }
-  uint16_t getRssi(message_t *msg){
-    printf("get RSSI\n");
-    return (uint16_t) call CC2420Packet.getRssi(msg);
   }
 }
