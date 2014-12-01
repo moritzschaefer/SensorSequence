@@ -49,10 +49,12 @@
  */
 #include <Timer.h>
 #include "BlinkToRadio.h"
+#include "printf.h"
 
 configuration BlinkToRadioAppC {
 }
 implementation {
+  components PrintfC;
   components MainC;
   components LedsC;
   components BlinkToRadioC as App;
@@ -69,4 +71,8 @@ implementation {
   App.AMControl -> ActiveMessageC;
   App.AMSend -> AMSenderC;
   App.Receive -> AMReceiverC;
+
+  components CC2420ActiveMessageC;
+  App -> CC2420ActiveMessageC.CC2420Packet;
+
 }

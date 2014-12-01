@@ -64,12 +64,14 @@ implementation {
 
   uint16_t counter;
   message_t pkt;
+  message_t msg;
   bool busy = FALSE;
+  uint16_t getRssi(message_t *msg);
 
   void setLeds(uint16_t val) {
     if (val & 0x01)
       call Leds.led0On();
-    else 
+    else
       call Leds.led0Off();
     if (val & 0x02)
       call Leds.led1On();
@@ -100,15 +102,13 @@ implementation {
   event void Timer0.fired() {
     counter++;
     if (!busy) {
-      BlinkToRadioMsg* btrpkt = 
-	(BlinkToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(BlinkToRadioMsg)));
+      BlinkToRadioMsg* btrpkt =	(BlinkToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(BlinkToRadioMsg)));
       if (btrpkt == NULL) {
 	return;
       }
       btrpkt->nodeid = TOS_NODE_ID;
       btrpkt->counter = counter;
-      if (call AMSend.send(AM_BROADCAST_ADDR, 
-          &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
+      if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BlinkToRadioMsg)) == SUCCESS) {
         busy = TRUE;
       }
     }
@@ -124,6 +124,13 @@ implementation {
     if (len == sizeof(BlinkToRadioMsg)) {
       BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)payload;
       setLeds(btrpkt->counter);
+
+      RssiMsg *rssiMsg = (RssiMsg*) payload;
+      rssiMsg->rssi = getRssi(msg);
+
+      printf("%d\n",(int)getRssi(msg));
+      printfflush();
+
     }
     return msg;
   }

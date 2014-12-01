@@ -32,59 +32,20 @@
 /**
  * @author Dimas Abreu Dutra
  */
-#define NEW_PRINTF_SEMANTICS
-#include "ApplicationDefinitions.h"
+
 #include "RssiDemoMessages.h"
-#include "printf.h"
 
-module RssiBaseC {
-  //Import from SendingMote
-  uses interface Boot;
-  uses interface Timer<TMilli> as SendTimer;
-  uses interface AMSend as RssiMsgSend;
-  uses interface SplitControl as RadioControl;
-  //Old code
-  uses interface Intercept as RssiMsgIntercept;
-  uses interface CC2420Packet;
+configuration SendingMoteAppC {
 } implementation {
-  //sending code---------------------------------------------------
-  message_t msg;
+  components ActiveMessageC, MainC;  
+  components new AMSenderC(AM_RSSIMSG) as RssiMsgSender;
+  components new TimerMilliC() as SendTimer;
 
-  event void Boot.booted(){
-    if(TOS_NODE_ID > 1) {
-      call RadioControl.start();
-    }
-  }
+  components SendingMoteC as App;
 
-  event void RadioControl.startDone(error_t result){
-    call SendTimer.startPeriodic(SEND_INTERVAL_MS);
-  }
-
-  event void RadioControl.stopDone(error_t result){}
-
-  event void SendTimer.fired(){
-    call RssiMsgSend.send(AM_BROADCAST_ADDR, &msg, sizeof(RssiMsg));
-  }
-
-  event void RssiMsgSend.sendDone(message_t *m, error_t error){}
-
-  //receiving code--------------------------------------------------
-  uint16_t getRssi(message_t *msg);
-
-  event bool RssiMsgIntercept.forward(message_t *msg,
-				      void *payload,
-				      uint8_t len) {
-    RssiMsg *rssiMsg = (RssiMsg*) payload;
-    rssiMsg->rssi = getRssi(msg);
-
-    //paste my code here
-    printf("%d\n",(int)getRssi(msg));
-    printfflush();
-
-    return TRUE;
-  }
-
-  uint16_t getRssi(message_t *msg){
-    return (uint16_t) call CC2420Packet.getRssi(msg);
-  }
+  App.Boot -> MainC;
+  App.SendTimer -> SendTimer;
+  
+  App.RssiMsgSend -> RssiMsgSender;
+  App.RadioControl -> ActiveMessageC;
 }
