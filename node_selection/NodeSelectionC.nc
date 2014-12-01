@@ -104,6 +104,7 @@ implementation {
       case(0):
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
+        printfflush();
         call Update1.change(&NODE_DISCOVERY);
         state=5;
         break;
@@ -118,6 +119,7 @@ implementation {
         // select sender
         call Update2.change((uint16_t*)(nodeIds+senderIterator));
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
+        printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = 2;
@@ -240,7 +242,7 @@ implementation {
       }
 
       measurements[measurementCount].nodeId = rss_msg->nodeId;
-      measurements[measurementCount].nodeId = (int)getRssi(msg);
+      measurements[measurementCount].measuredRss = (int)getRssi(msg);
       measurementCount++;
     }
     return msg;
@@ -259,7 +261,7 @@ implementation {
       }
     }
     nodeIds[nodeCount] = nodeId;
-    printf("array[%d] = %u\n", i, nodeIds[nodeCount]);
+    //printf("array[%d] = %u\n", i, nodeIds[nodeCount]);
     nodeCount++;
     return;
   }
