@@ -59,6 +59,7 @@ module BlinkToRadioC {
   uses interface AMSend;
   uses interface Receive;
   uses interface SplitControl as AMControl;
+  uses interface CC2420Packet;
 }
 implementation {
 
@@ -125,12 +126,15 @@ implementation {
       BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)payload;
       setLeds(btrpkt->counter);
 
-      getRssi(msg);
+      //getRssi(msg);
 
       printf("%d\n",(int)getRssi(msg));
       printfflush();
 
     }
     return msg;
+  }
+  uint16_t getRssi(message_t *msg){
+    return (uint16_t) call CC2420Packet.getRssi(msg);
   }
 }
