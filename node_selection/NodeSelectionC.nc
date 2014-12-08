@@ -34,8 +34,16 @@ module NodeSelectionC {
   uses interface CC2420Packet;
 }
 
+enum NodeState{
+  NODE_DISCOVERY,
+  NODE_SELECTION,
+  NODE_COLLECTION,
+  NODE_FINISH,
+  WAITING
+};
 
 implementation {
+
   // init Array
   //const int ARRAYLENGTH = MAX_NODE_COUNT;
   uint16_t nodeIds[MAX_NODE_COUNT];
@@ -47,7 +55,6 @@ implementation {
   void printMeasurementArray();
   bool sendAMMessage();
 
-
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
@@ -55,7 +62,7 @@ implementation {
   int currentSender=-1;
 
   //Statemachine
-  int state = 0;
+  int state = NODE_DISCOVERY;
 
   // Used for CTP
   message_t ctp_packet, am_packet;
@@ -101,20 +108,20 @@ implementation {
     printfflush();
     switch(state){
       //Node detection State
-      case(0):
+      case NODE_DISCOVERY:
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
         printfflush();
         call Update1.change(&NODE_DISCOVERY);
-        state=5;
+        state=FINISH;
         break;
         //Node selection State
-      case 5:  //TODO this is hacky. delete later!
+      case WAITING  //TODO this is hacky. delete later!
         printf("Found nodes:\n");
         printNodesArray();
-        state = 1;
+        state = NODE_SELECTION;
         break;
-      case 1:
+      case NODE_SELECTION:
         //printf("---State NR. %d---\n", state);
         // select sender
         call Update2.change((uint16_t*)(nodeIds+senderIterator));
@@ -122,13 +129,13 @@ implementation {
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = 2;
+          state = NODE_COLLECTION;
         }
         break;
-      case 2:
+      case NODE_COLLECTION:
         // measurements done. go on
         printMeasurementArray();
-        state = 3;
+        state = NODE_FINISH;
 
     }
   }
