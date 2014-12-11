@@ -1,6 +1,8 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
 #include <Timer.h>
+#include "dataTypes.h"
+
 typedef nx_struct RSSMeasurementMsg {
   nx_uint16_t nodeId;
 } RSSMeasurementMsg;
@@ -15,10 +17,9 @@ module NodeSelectionC {
   uses interface Boot;
   uses interface SplitControl as RadioControl;
   uses interface StdControl as DisseminationControl;
-  uses interface DisseminationValue<uint16_t> as Value1;
-  uses interface DisseminationValue<uint16_t> as Value2;
-  uses interface DisseminationUpdate<uint16_t> as Update1;
-  uses interface DisseminationUpdate<uint16_t> as Update2;
+  uses interface DisseminationValue<DisseminateControlData> as Value;
+  uses interface DisseminationUpdate<DisseminateControlData> as Update;
+
   uses interface Leds;
   uses interface Timer<TMilli>;
   // CTP
@@ -34,15 +35,13 @@ module NodeSelectionC {
   uses interface CC2420Packet;
 }
 
-enum NodeState{
-  NODE_DISCOVERY,
-  NODE_SELECTION,
-  NODE_COLLECTION,
-  NODE_FINISH,
-  WAITING
-};
-
 implementation {
+
+  //Statemachine
+  int state = NODE_DISCOVERY;
+  enum { STATE_DISCOVERY=0, STATE_SELECTION=1, STATE_COLLECTION=2, STATE_FINISH=3, STATE_WAITING=4 };
+  //Dissemintate commit
+  //enum { };
 
   // init Array
   //const int ARRAYLENGTH = MAX_NODE_COUNT;
@@ -60,9 +59,6 @@ implementation {
   int measurementCount=0;
   int senderIterator=0;
   int currentSender=-1;
-
-  //Statemachine
-  int state = NODE_DISCOVERY;
 
   // Used for CTP
   message_t ctp_packet, am_packet;
@@ -108,34 +104,34 @@ implementation {
     printfflush();
     switch(state){
       //Node detection State
-      case NODE_DISCOVERY:
+      case STATE_DISCOVERY:
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
         printfflush();
-        call Update1.change(&NODE_DISCOVERY);
+        call Update.change(&NODE_DISCOVERY);
         state=FINISH;
         break;
         //Node selection State
       case WAITING  //TODO this is hacky. delete later!
         printf("Found nodes:\n");
         printNodesArray();
-        state = NODE_SELECTION;
+        state = STATE_SELECTION;
         break;
-      case NODE_SELECTION:
+      case STATE_SELECTION:
         //printf("---State NR. %d---\n", state);
         // select sender
-        call Update2.change((uint16_t*)(nodeIds+senderIterator));
+        call Update.change((uint16_t*)(nodeIds+senderIterator)); //Achtung Datentyp muss noch angepasst werden
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = NODE_COLLECTION;
+          state = STATE_COLLECTION;
         }
         break;
-      case NODE_COLLECTION:
+      case STATE_COLLECTION:
         // measurements done. go on
         printMeasurementArray();
-        state = NODE_FINISH;
+        state = STATE_FINISH;
 
     }
   }
@@ -156,18 +152,19 @@ implementation {
   }
 
   // Dissemination receive I
-  event void Value1.changed() {
-    const uint16_t* newVal = call Value1.get();
+  event void Value.changed() {
+    const DisseminateControlData *newVal = call Value.get();
     if(*newVal == NODE_DISCOVERY) {
       sendCTPMessage();
-      //post ShowCounter();
     }
-    /*if(*newVal == SELECT_SENDER) {
-      printf("recived Dissemination");
-      printfflush();
-      }*/
+    if(*newVal == 2){
+    const DisseminateControlData *newVal = call Value.get();
+      currentSender = *newVal;
+      while(!sendAMMessage());
+    }
   }
 
+  /*To remove
   // Dissemination receive II
   event void Value2.changed() {
     const uint16_t *newVal = call Value2.get();
@@ -180,7 +177,7 @@ implementation {
       while(!sendAMMessage());
 
     }
-  }
+  }*/
 
   event void CTPSend.sendDone(message_t* m, error_t err) {
     if(err != SUCCESS) {
