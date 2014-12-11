@@ -4,6 +4,6 @@
 typedef struct {
   uint16_t dissCommand;
   uint16_t dissValue;
-} ControlData; 
+} DisseminateControlData; 
 
 #endif /* S_H */

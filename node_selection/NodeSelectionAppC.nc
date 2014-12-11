@@ -1,6 +1,6 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
-#include "dataTypes.h" //own implemented header
+#include "dataTypes.h"
 
 configuration NodeSelectionAppC {}
 implementation {
@@ -20,15 +20,13 @@ implementation {
   components DisseminationC;
   NodeSelectionC.DisseminationControl -> DisseminationC;
 
-  components new DisseminatorC(DisseminateControlData, 0x0000) as Diss16C;
+  components new DisseminatorC(ControlData, 0x0000) as Diss16C;
   NodeSelectionC.Value -> Diss16C;
   NodeSelectionC.Update -> Diss16C;
-
-  /*To remove
+  /*---The old disseminate Interface---
   components new DisseminatorC(uint16_t, 0x0001) as Diss16C2;
   NodeSelectionC.Value2 -> Diss16C2;
-  NodeSelectionC.Update2 -> Diss16C2;
-  */
+  NodeSelectionC.Update2 -> Diss16C2;*/
 
   components LedsC;
   NodeSelectionC.Leds -> LedsC;

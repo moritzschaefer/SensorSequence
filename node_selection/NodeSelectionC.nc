@@ -17,9 +17,8 @@ module NodeSelectionC {
   uses interface Boot;
   uses interface SplitControl as RadioControl;
   uses interface StdControl as DisseminationControl;
-  uses interface DisseminationValue<DisseminateControlData> as Value;
-  uses interface DisseminationUpdate<DisseminateControlData> as Update;
-
+  uses interface DisseminationValue<ControlData> as Value;
+  uses interface DisseminationUpdate<ControlData> as Update;
   uses interface Leds;
   uses interface Timer<TMilli>;
   // CTP
@@ -35,13 +34,20 @@ module NodeSelectionC {
   uses interface CC2420Packet;
 }
 
-implementation {
 
-  //Statemachine
-  int state = NODE_DISCOVERY;
-  enum { STATE_DISCOVERY=0, STATE_SELECTION=1, STATE_COLLECTION=2, STATE_FINISH=3, STATE_WAITING=4 };
-  //Dissemintate commit
-  //enum { };
+implementation {
+  enum {
+    NODE_DETECTION_STATE = 0,
+    SENDER_SELECTION_STATE = 1,
+    PRINTING_STATE = 2,
+    BUSY_STATE = 3,
+    WAITING_STATE = 5
+  };
+
+  enum {
+    ID_REQUEST = 0,
+    MEASUREMENT_REQUEST = 1
+  };
 
   // init Array
   //const int ARRAYLENGTH = MAX_NODE_COUNT;
@@ -54,11 +60,15 @@ implementation {
   void printMeasurementArray();
   bool sendAMMessage();
 
+
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
   int senderIterator=0;
   int currentSender=-1;
+
+  //Statemachine
+  int state = NODE_DETECTION_STATE;
 
   // Used for CTP
   message_t ctp_packet, am_packet;
@@ -101,37 +111,43 @@ implementation {
   }
 
   event void Timer.fired() {
+    //testing struct
+    ControlData c;
+    c.dissCommand = 0;
+    c.dissValue = 0;
     printfflush();
     switch(state){
       //Node detection State
-      case STATE_DISCOVERY:
+      case(NODE_DETECTION_STATE):
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
         printfflush();
-        call Update.change(&NODE_DISCOVERY);
-        state=FINISH;
+        call Update.change(&NODE_DISCOVERY); // hier fehlt mir information, wie mache ich klar, dass ich ein ControlData übergeben will, casten?
+	printf("diss Command = %d\ndissValue = %d\n", c.dissCommand, c.dissValue);
+	printfflush();
+        state = WAITING_STATE;
         break;
         //Node selection State
-      case WAITING  //TODO this is hacky. delete later!
+      case WAITING_STATE:  //TODO this is hacky. delete later!
         printf("Found nodes:\n");
         printNodesArray();
-        state = STATE_SELECTION;
+        state = SENDER_SELECTION_STATE;
         break;
-      case STATE_SELECTION:
+      case SENDER_SELECTION_STATE:
         //printf("---State NR. %d---\n", state);
         // select sender
-        call Update.change((uint16_t*)(nodeIds+senderIterator)); //Achtung Datentyp muss noch angepasst werden
+        call Update.change((ControlData*)(nodeIds+senderIterator)); // wie übergebe ich die Information des DissCommand?
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = STATE_COLLECTION;
+          state = PRINTING_STATE;
         }
         break;
-      case STATE_COLLECTION:
+      case PRINTING_STATE:
         // measurements done. go on
         printMeasurementArray();
-        state = STATE_FINISH;
+        state = BUSY_STATE;
 
     }
   }
@@ -151,21 +167,32 @@ implementation {
     }
   }
 
-  // Dissemination receive I
-  event void Value.changed() {
-    const DisseminateControlData *newVal = call Value.get();
-    if(*newVal == NODE_DISCOVERY) {
-      sendCTPMessage();
+  // Disseminations
+  event void Value.changed() {			 
+    if(Value.DissKey == ID_REQUEST){		 //switch-case more pretty than if-if?
+      const uint16_t* newVal = call Data.DissValue.get();
+      if(*newVal == NODE_DISCOVERY) { 	         //is this after struct using essential? && *newVal is a Pointer to our data struct. 
+      	sendCTPMessage();
+      	//post ShowCounter();
+      }
+      /*if(*newVal == SELECT_SENDER) {
+      rintf("recived Dissemination");
+      printfflush();
+      }*/
     }
-    if(*newVal == 2){
-    const DisseminateControlData *newVal = call Value.get();
+    if(Value.DissKey == MEASUREMENT_REQUEST){
       currentSender = *newVal;
+      if(*newVal == TOS_NODE_ID) {
+        post ShowCounter();
+        // Wait 10ms and send radio
+        //call Busy.wait(10);
+        // TODO send am here
       while(!sendAMMessage());
+      }
     }
   }
 
-  /*To remove
-  // Dissemination receive II
+  /*// Dissemination receive II
   event void Value2.changed() {
     const uint16_t *newVal = call Value2.get();
     currentSender = *newVal;
