@@ -36,7 +36,7 @@ module NodeSelectionC {
 
 
 implementation {
-  enum {
+  enum { // TODO use a named enum
     NODE_DETECTION_STATE = 0,
     SENDER_SELECTION_STATE = 1,
     PRINTING_STATE = 2,
@@ -44,13 +44,13 @@ implementation {
     WAITING_STATE = 5
   };
 
-  enum {
+  enum { // TODO here as well a named enum
     ID_REQUEST = 0,
     MEASUREMENT_REQUEST = 1
   };
 
   // init Array
-  //const int ARRAYLENGTH = MAX_NODE_COUNT;
+  // TODO: later we have to make this flexible!
   uint16_t nodeIds[MAX_NODE_COUNT];
   measurement measurements[MAX_NODE_COUNT];
 
@@ -74,7 +74,7 @@ implementation {
   message_t ctp_packet, am_packet;
   bool sendBusy = FALSE;
 
-  const uint16_t NODE_DISCOVERY=0;
+  const uint16_t NODE_DISCOVERY=0; // TODO use an enum instead
   const uint16_t SELECT_SENDER=1; // TODO use this later
 
   typedef nx_struct NodeIDMsg {
@@ -118,10 +118,12 @@ implementation {
     printfflush();
     switch(state){
       //Node detection State
+      // TODO move state machine to an own function
       case(NODE_DETECTION_STATE):
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
         printfflush();
+        // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
         call Update.change(&NODE_DISCOVERY); // hier fehlt mir information, wie mache ich klar, dass ich ein ControlData übergeben will, casten?
 	printf("diss Command = %d\ndissValue = %d\n", c.dissCommand, c.dissValue);
 	printfflush();
@@ -136,6 +138,7 @@ implementation {
       case SENDER_SELECTION_STATE:
         //printf("---State NR. %d---\n", state);
         // select sender
+        // TODO: this is better but still wrong. you can't create a Struct like this. Hint: it won't be possible in just one line...
         call Update.change((ControlData*)(nodeIds+senderIterator)); // wie übergebe ich die Information des DissCommand?
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
         printfflush();
@@ -168,10 +171,11 @@ implementation {
   }
 
   // Disseminations
-  event void Value.changed() {			 
+  event void Value.changed() {
+    // TODO: you won't get the value like this! We changed the way we use the Dissemination. Think about this again (what values do we pass with disseminate)
     if(Value.DissKey == ID_REQUEST){		 //switch-case more pretty than if-if?
       const uint16_t* newVal = call Data.DissValue.get();
-      if(*newVal == NODE_DISCOVERY) { 	         //is this after struct using essential? && *newVal is a Pointer to our data struct. 
+      if(*newVal == NODE_DISCOVERY) { 	         //is this after struct using essential? && *newVal is a Pointer to our data struct.
       	sendCTPMessage();
       	//post ShowCounter();
       }
