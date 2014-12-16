@@ -36,7 +36,7 @@ module NodeSelectionC {
 
 
 implementation {
-  enum { // TODO use a named enum
+  enum states{
     NODE_DETECTION_STATE = 0,
     SENDER_SELECTION_STATE = 1,
     PRINTING_STATE = 2,
@@ -44,7 +44,7 @@ implementation {
     WAITING_STATE = 5
   };
 
-  enum { // TODO here as well a named enum
+  enum dissCommand{
     ID_REQUEST = 0,
     MEASUREMENT_REQUEST = 1
   };
@@ -58,7 +58,8 @@ implementation {
   void addNodeIdToArray(uint16_t);
   void printNodesArray();
   void printMeasurementArray();
-  bool sendAMMessage();
+  bool sendMeasurementPacket();
+  void statemachine();
 
 
   // counter/array counter
@@ -116,9 +117,12 @@ implementation {
     c.dissCommand = 0;
     c.dissValue = 0;
     printfflush();
+    statemachine();
+  }
+
+  void statemachine(){
     switch(state){
       //Node detection State
-      // TODO move state machine to an own function
       case(NODE_DETECTION_STATE):
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
@@ -151,10 +155,8 @@ implementation {
         // measurements done. go on
         printMeasurementArray();
         state = BUSY_STATE;
-
     }
   }
-
 
   event void RadioControl.stopDone(error_t err) {}
 
@@ -191,7 +193,7 @@ implementation {
         // Wait 10ms and send radio
         //call Busy.wait(10);
         // TODO send am here
-      while(!sendAMMessage());
+      while(!sendMeasurementPacket());
       }
     }
   }
@@ -205,7 +207,7 @@ implementation {
       // Wait 10ms and send radio
       //call Busy.wait(10);
       // TODO send am here
-      while(!sendAMMessage());
+      while(!sendMeasurementPacket());
 
     }
   }*/
@@ -234,7 +236,7 @@ implementation {
   }
 
   // AM send
-  bool sendAMMessage() { // TODO rename this function to something like sendMeasurementPacket
+  bool sendMeasurementPacket() {
     if (!sendBusy) {
       RSSMeasurementMsg* rss_msg =	(RSSMeasurementMsg*)(call Packet.getPayload(&am_packet, sizeof(RSSMeasurementMsg)));
       if (rss_msg == NULL) {
@@ -309,6 +311,7 @@ implementation {
     }
     printfflush();
   }
+
   void printNodesArray(){
     int k;
     for(k=0; k<nodeCount; k++)
