@@ -112,11 +112,6 @@ implementation {
   }
 
   event void Timer.fired() {
-    //testing struct
-    ControlData c;
-    c.dissCommand = 0;
-    c.dissValue = 0;
-    printfflush();
     statemachine();
   }
 
@@ -127,9 +122,12 @@ implementation {
         //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
         printfflush();
+	typedef ControlData disseminateOne;
+	disseminateOne.dissCommand = NODE_DISCOVERY;
+	disseminateOne.dissValue = 0;
         // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
         call Update.change(&NODE_DISCOVERY); // hier fehlt mir information, wie mache ich klar, dass ich ein ControlData übergeben will, casten?
-	printf("diss Command = %d\ndissValue = %d\n", c.dissCommand, c.dissValue);
+	printf("diss Command = %d\ndissValue = %d\n", disseminateOne.dissCommand, disseminateOne.dissValue);
 	printfflush();
         state = WAITING_STATE;
         break;
@@ -142,8 +140,12 @@ implementation {
       case SENDER_SELECTION_STATE:
         //printf("---State NR. %d---\n", state);
         // select sender
-        // TODO: this is better but still wrong. you can't create a Struct like this. Hint: it won't be possible in just one line...
-        call Update.change((ControlData*)(nodeIds+senderIterator)); // wie übergebe ich die Information des DissCommand?
+	struct dissControl disseminateTwo;
+	//TODO its now more than one line...
+	disseminateTwo.DissCommand = SELECT_SENDER;
+	disseminateTwo.DissValue = nodeIds+senderIterator;        
+	call Update.change((uint16_t*)(nodeIds+senderIterator));
+	
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
@@ -156,7 +158,7 @@ implementation {
         printMeasurementArray();
         state = BUSY_STATE;
     }
-  }
+  }	
 
   event void RadioControl.stopDone(error_t err) {}
 
