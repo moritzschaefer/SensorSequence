@@ -44,7 +44,7 @@ implementation {
     WAITING_STATE = 5
   };
 
-  enum dissCommand{
+  enum commands{
     ID_REQUEST = 0,
     MEASUREMENT_REQUEST = 1
   };
@@ -61,14 +61,13 @@ implementation {
   bool sendMeasurementPacket();
   void statemachine();
 
-
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
   int senderIterator=0;
   int currentSender=-1;
 
-  //Statemachine
+  // Statemachine
   int state = NODE_DETECTION_STATE;
 
   // Used for CTP
@@ -78,14 +77,15 @@ implementation {
   const uint16_t NODE_DISCOVERY=0; // TODO use an enum instead
   const uint16_t SELECT_SENDER=1; // TODO use this later
 
+  // Dissemination ControlMsg instantiation
+  struct ControlData controlMsg;
+
   typedef nx_struct NodeIDMsg {
     nx_uint16_t data;
   } NodeIDMsg;
 
-  // debugging as long as there is no printf
   task void ShowCounter() {
     call Leds.led1On();
-
     //printf("ShowCounter\n");
     printfflush();
   }
@@ -106,7 +106,6 @@ implementation {
         call RootControl.setRoot();
         post ShowCounter();
         call Timer.startPeriodic(2000);
-
       }
     }
   }
@@ -119,15 +118,13 @@ implementation {
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
-        //printf("---State NR. %d---\n", state);
         printf("Send DISCOVER to all nodes\n");
-        printfflush();
-	typedef ControlData disseminateOne;
-	disseminateOne.dissCommand = NODE_DISCOVERY;
-	disseminateOne.dissValue = 0;
+	printfflush();
+	controlMsg.dissCommand = NODE_DISCOVERY;
+	controlMsg.dissValue = 0;
         // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
-        call Update.change(&NODE_DISCOVERY); // hier fehlt mir information, wie mache ich klar, dass ich ein ControlData übergeben will, casten?
-	printf("diss Command = %d\ndissValue = %d\n", disseminateOne.dissCommand, disseminateOne.dissValue);
+        call Update.change((ControlData*)(&controlMsg));
+	printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
 	printfflush();
         state = WAITING_STATE;
         break;
@@ -138,14 +135,10 @@ implementation {
         state = SENDER_SELECTION_STATE;
         break;
       case SENDER_SELECTION_STATE:
-        //printf("---State NR. %d---\n", state);
-        // select sender
-	struct dissControl disseminateTwo;
-	//TODO its now more than one line...
-	disseminateTwo.DissCommand = SELECT_SENDER;
-	disseminateTwo.DissValue = nodeIds+senderIterator;        
-	call Update.change((uint16_t*)(nodeIds+senderIterator));
-	
+	// change controlMsg 	
+	controlMsg.dissCommand = SELECT_SENDER;
+	controlMsg.dissValue = nodeIds[senderIterator];
+	call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
@@ -174,12 +167,32 @@ implementation {
     }
   }
 
+  event void Value.changed() {
+    const ControlData* newVal = call Value.get();
+    switch(newVal->dissComand) {
+      case NODE_DISCOVERY:
+        sendCTPMessage();
+	break;
+      case SELECT_SENDER:
+        currentSender = *newVal; // wrong!
+        if(newVal->dissValue == TOS_NODE_ID) {
+        post ShowCounter();
+        // Wait 10ms and send radio
+        //call Busy.wait(10);
+        // TODO send am here
+        while(!sendAMMessage());
+	break;
+    }
+  }
+
+
+
   // Disseminations
   event void Value.changed() {
     // TODO: you won't get the value like this! We changed the way we use the Dissemination. Think about this again (what values do we pass with disseminate)
-    if(Value.DissKey == ID_REQUEST){		 //switch-case more pretty than if-if?
-      const uint16_t* newVal = call Data.DissValue.get();
-      if(*newVal == NODE_DISCOVERY) { 	         //is this after struct using essential? && *newVal is a Pointer to our data struct.
+    const ControlData* newVal = call Value.get();
+      if(Value.dissCommand == ID_REQUEST){
+        if(*newVal == NODE_DISCOVERY) {			//is this after struct using essential? && *newVal is a Pointer to our data struct.
       	sendCTPMessage();
       	//post ShowCounter();
       }
@@ -188,7 +201,7 @@ implementation {
       printfflush();
       }*/
     }
-    if(Value.DissKey == MEASUREMENT_REQUEST){
+    if(Value.dissCommand == MEASUREMENT_REQUEST){
       currentSender = *newVal;
       if(*newVal == TOS_NODE_ID) {
         post ShowCounter();
@@ -240,7 +253,7 @@ implementation {
   // AM send
   bool sendMeasurementPacket() {
     if (!sendBusy) {
-      RSSMeasurementMsg* rss_msg =	(RSSMeasurementMsg*)(call Packet.getPayload(&am_packet, sizeof(RSSMeasurementMsg)));
+      RSSMeasurementMsg* rss_msg = (RSSMeasurementMsg*)(call Packet.getPayload(&am_packet, sizeof(RSSMeasurementMsg)));
       if (rss_msg == NULL) {
         return FALSE;
       }
