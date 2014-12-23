@@ -10,6 +10,7 @@ module EasyDisseminationC {
   uses interface DisseminationUpdate<uint16_t> as Update;
   uses interface Leds;
   uses interface Timer<TMilli>;
+  uses interface Timer<TMilli> as ChannelSwitchTimer;
 
   // channel switching stuff
   uses interface GeneralIO as CSN;
@@ -77,27 +78,35 @@ implementation {
     else {
       call DisseminationControl.start();
       counter = 0;
-      if ( TOS_NODE_ID  == 1 )
-        call Timer.startPeriodic(2000);
+      if ( TOS_NODE_ID  == 0 )
+        call Timer.startPeriodic(1000);
     }
   }
 
   event void RadioControl.stopDone(error_t err) {}
 
+  event void ChannelSwitchTimer.fired() {
+    printf("Now changing channel");
+    printfflush();
+    changeChannel = TRUE;
+    acquireSpiResource();
+  }
   event void Timer.fired() {
     counter = counter + 1;
     // show counter in leds
     post ShowCounter();
     // disseminate counter value
     call Update.change(&counter);
+
   }
 
   event void Value.changed() {
     const uint16_t* newVal = call Value.get();
     // show new counter in leds
     counter = *newVal;
-    changeChannel = TRUE;
-    acquireSpiResource();
+    printf("Received counter: %d, next channel in 300ms", counter);
+    printfflush();
+		call ChannelSwitchTimer.startOneShot(300);
     post ShowCounter();
 
   }

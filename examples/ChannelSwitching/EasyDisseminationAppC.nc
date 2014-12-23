@@ -18,7 +18,6 @@ implementation {
   components new DisseminatorC(uint16_t, 0x1234) as Diss16C;
   EasyDisseminationC.Value -> Diss16C;
   EasyDisseminationC.Update -> Diss16C;
-
 /*components new DisseminatorC(uint32_t, 0x1234) as Object32C;
   TestDisseminationC.Value32 -> Object32C;
   TestDisseminationC.Update32 -> Object32C;*/
@@ -29,10 +28,13 @@ implementation {
   components new TimerMilliC();
   EasyDisseminationC.Timer -> TimerMilliC;
 
+  components new TimerMilliC() as ChannelSwitchTimer;
+  EasyDisseminationC.ChannelSwitchTimer -> ChannelSwitchTimer;
+
 
   // debug
 
-  components PrintfC;
+  components PrintfC, SerialStartC;
 
 // channel switching stuff
 
