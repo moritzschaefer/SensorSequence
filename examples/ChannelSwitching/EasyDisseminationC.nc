@@ -104,11 +104,9 @@ implementation {
     const uint16_t* newVal = call Value.get();
     // show new counter in leds
     counter = *newVal;
-    printf("Received counter: %d, next channel in 300ms", counter);
+    printf("Received counter: %d, next channel in 30ms", counter);
     printfflush();
-		call ChannelSwitchTimer.startOneShot(300);
-    post ShowCounter();
-
+		call ChannelSwitchTimer.startOneShot(30);
   }
 
 
