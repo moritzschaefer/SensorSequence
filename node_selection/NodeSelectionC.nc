@@ -180,52 +180,11 @@ implementation {
         // Wait 10ms and send radio
         //call Busy.wait(10);
         // TODO send am here
-        while(!sendAMMessage());
+        while(!sendMeasurementPacket());
 	break;
+	}
     }
   }
-
-
-
-  // Disseminations
-  event void Value.changed() {
-    // TODO: you won't get the value like this! We changed the way we use the Dissemination. Think about this again (what values do we pass with disseminate)
-    const ControlData* newVal = call Value.get();
-      if(Value.dissCommand == ID_REQUEST){
-        if(*newVal == ID_REQUEST) {			//is this after struct using essential? && *newVal is a Pointer to our data struct.
-      	sendCTPMessage();
-      	//post ShowCounter();
-      }
-      /*if(*newVal == MEASUREMENT_REQUEST) {
-      rintf("recived Dissemination");
-      printfflush();
-      }*/
-    }
-    if(Value.dissCommand == MEASUREMENT_REQUEST){
-      currentSender = *newVal;
-      if(*newVal == TOS_NODE_ID) {
-        post ShowCounter();
-        // Wait 10ms and send radio
-        //call Busy.wait(10);
-        // TODO send am here
-      while(!sendMeasurementPacket());
-      }
-    }
-  }
-
-  /*// Dissemination receive II
-  event void Value2.changed() {
-    const uint16_t *newVal = call Value2.get();
-    currentSender = *newVal;
-    if(*newVal == TOS_NODE_ID) {
-      post ShowCounter();
-      // Wait 10ms and send radio
-      //call Busy.wait(10);
-      // TODO send am here
-      while(!sendMeasurementPacket());
-
-    }
-  }*/
 
   event void CTPSend.sendDone(message_t* m, error_t err) {
     if(err != SUCCESS) {
