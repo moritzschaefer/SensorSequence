@@ -35,4 +35,12 @@ Implementing last milestone features: RSS measurement and Sender selection.
 
 ## 1st december 2014
 
-First-milestone presentation. <fill in here>
+First-milestone presentation. Way better than the first one. Explained progress, design and architecture.
+
+## 7th december 2014
+
+Mainly refactoring for new steps
+
+## 15th december 2014
+
+Max. was hast du gemacht in der woche in der ich in stockholm war?
