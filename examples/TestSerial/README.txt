@@ -20,7 +20,8 @@ Java Application Usage:
   to your MOTECOM environment variable (if defined).
 
 Python Usage:
-  tos-dump /dev/ttyUSB0 57600
+  #tos-dump /dev/ttyUSB0 57600
+  python data_logger.py serial@/dev/ttyUSB0:115200
 
 Tools:
 
