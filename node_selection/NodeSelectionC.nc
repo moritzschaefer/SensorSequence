@@ -1,5 +1,6 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
+#include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
 
@@ -119,13 +120,13 @@ implementation {
       //Node detection State
       case(NODE_DETECTION_STATE):
         printf("Send DISCOVER to all nodes\n");
-	printfflush();
-	controlMsg.dissCommand = ID_REQUEST;
-	controlMsg.dissValue = 0;
+        printfflush();
+        controlMsg.dissCommand = ID_REQUEST;
+        controlMsg.dissValue = 0;
         // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
         call Update.change((ControlData*)(&controlMsg));
-	printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
-	printfflush();
+        printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
+        printfflush();
         state = WAITING_STATE;
         break;
         //Node selection State
@@ -135,10 +136,10 @@ implementation {
         state = SENDER_SELECTION_STATE;
         break;
       case SENDER_SELECTION_STATE:
-	// change controlMsg 	
-	controlMsg.dissCommand = MEASUREMENT_REQUEST;
-	controlMsg.dissValue = nodeIds[senderIterator];
-	call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
+        // change controlMsg
+        controlMsg.dissCommand = MEASUREMENT_REQUEST;
+        controlMsg.dissValue = nodeIds[senderIterator];
+        call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
@@ -151,7 +152,7 @@ implementation {
         printMeasurementArray();
         state = BUSY_STATE;
     }
-  }	
+  }
 
   event void RadioControl.stopDone(error_t err) {}
 
@@ -172,17 +173,17 @@ implementation {
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         sendCTPMessage();
-	break;
+        break;
       case MEASUREMENT_REQUEST:
         currentSender = newVal->dissCommand; // wrong?
         if(newVal->dissValue == TOS_NODE_ID) {
-        post ShowCounter();
-        // Wait 10ms and send radio
-        //call Busy.wait(10);
-        // TODO send am here
-        while(!sendMeasurementPacket());
-	break;
-	}
+          post ShowCounter();
+          // Wait 10ms and send radio
+          //call Busy.wait(10);
+          // TODO send am here
+          while(!sendMeasurementPacket());
+          break;
+        }
     }
   }
 
