@@ -1,6 +1,7 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
 #include "dataTypes.h"
+#include "MeasurementData.h"
 
 configuration NodeSelectionAppC {}
 implementation {
@@ -55,4 +56,11 @@ implementation {
 
   components new AMSenderC(6);
   components new AMReceiverC(6);
+
+  // Serial Data Transfer
+  components SerialActiveMessageC as SerialAM;
+  NodeSelectionC.SerialAMControl -> SerialAM;
+  NodeSelectionC.SerialAMReceive -> SerialAM.Receive[AM_MEASUREMENT_DATA];
+  NodeSelectionC.SerialAMSend -> SerialAM.AMSend[AM_MEASUREMENT_DATA];
+  NodeSelectionC.SerialAMPacket -> SerialAM;
 }

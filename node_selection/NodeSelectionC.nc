@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
+#include "MeasurementData.h"
 
 typedef nx_struct RSSMeasurementMsg {
   nx_uint16_t nodeId;
@@ -27,12 +28,17 @@ module NodeSelectionC {
   uses interface Send as CTPSend;
   uses interface RootControl;
   uses interface Receive as CTPReceive;
-  //Radio
+  // Radio
   uses interface Packet;
   uses interface AMPacket;
   uses interface AMSend;
   uses interface Receive as AMReceive;
   uses interface CC2420Packet;
+  // Serial Transmission
+  uses interface Receive as SerialAMReceive;
+  uses interface Packet as SerialAMPacket;
+  uses interface AMSend as SerialAMSend;
+  uses interface SplitControl as SerialAMControl;
 }
 
 
@@ -78,7 +84,14 @@ implementation {
   message_t ctp_packet, am_packet;
   bool sendBusy = FALSE;
 
-  // Dissemination ControlMsg instantiation
+  // Serial Transmission
+  bool serialSend(uint16_t nodeId, uint16_t rssValue);
+  bool serialSendBusy = FALSE;
+  message_t serial_packet;
+
+
+
+  // Dissemination ControlMsg instantiation # TODO: man spricht in C nicht wirklich von instanzen AFAIK. Es ist eher eine Deklaration
   struct ControlData controlMsg;
 
   typedef nx_struct NodeIDMsg {
@@ -93,6 +106,7 @@ implementation {
 
   event void Boot.booted() {
     call RadioControl.start();
+    call SerialAMControl.start();
   }
 
   event void RadioControl.startDone(error_t err) {
@@ -104,6 +118,7 @@ implementation {
       call RoutingControl.start();
 
       if ( TOS_NODE_ID  == 0 ) {
+
         call RootControl.setRoot();
         post ShowCounter();
         call Timer.startPeriodic(2000);
@@ -123,7 +138,6 @@ implementation {
         printfflush();
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = 0;
-        // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
         call Update.change((ControlData*)(&controlMsg));
         printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
         printfflush();
@@ -149,6 +163,7 @@ implementation {
         break;
       case PRINTING_STATE:
         // measurements done. go on
+
         printMeasurementArray();
         state = BUSY_STATE;
     }
@@ -282,9 +297,10 @@ implementation {
     int k;
     for(k=0; k<measurementCount; k++)
     {
-      printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].nodeId, measurements[k].measuredRss);
+      //printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].nodeId, measurements[k].measuredRss);
+      serialSend(measurements[k].nodeId, measurements[k].measuredRss);
     }
-    printfflush();
+    //printfflush();
   }
 
   void printNodesArray(){
@@ -295,4 +311,51 @@ implementation {
     }
     printfflush();
   }
+  // Serial data transfer
+  bool serialSend(uint16_t nodeId, uint16_t rssValue) {
+    printf("send now serial am data\n"); printfflush();
+    if (serialSendBusy) {
+      printf("failed1\n"); printfflush();
+      return FALSE;
+    }
+    else {
+      measurement_data_t *rcm = (measurement_data_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(measurement_data_t));
+      if (rcm == NULL) {printf("failed2\n"); printfflush();return FALSE;}
+
+      rcm->nodeId = nodeId;
+      rcm->rss = rssValue;
+
+      if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
+        printf("failed3\n"); printfflush();
+	return FALSE;
+      }
+        printf("about to send\n"); printfflush();
+
+      if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
+	serialSendBusy = TRUE;
+      }
+    }
+    return TRUE;
+
+  }
+  event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
+      printf("received send done\n"); printfflush();
+    if (&serial_packet == bufPtr) {
+      printf("successfully sent\n"); printfflush();
+      serialSendBusy = FALSE;
+    }
+  }
+
+  event void SerialAMControl.startDone(error_t err) {
+    // do nothing
+    printf("successfully started serial control\n"); printfflush();
+  }
+  event void SerialAMControl.stopDone(error_t err) {
+    // do nothing
+  }
+  event message_t* SerialAMReceive.receive(message_t* bufPtr,
+				   void* payload, uint8_t len) {
+    printf("received serial data. why..? should not happen."); printfflush();
+  }
+
 }
