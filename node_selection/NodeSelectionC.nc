@@ -45,9 +45,12 @@ implementation {
   };
 
   enum commands{
-    ID_REQUEST = 0,
+    ID_REQUEST = 0, //no uint16_t anymore, it's a problem?
     MEASUREMENT_REQUEST = 1
   };
+
+  //const uint16_t ID_REQUEST=0;
+  //const uint16_t MEASUREMENT_REQUEST=1;
 
   // init Array
   // TODO: later we have to make this flexible!
@@ -73,9 +76,6 @@ implementation {
   // Used for CTP
   message_t ctp_packet, am_packet;
   bool sendBusy = FALSE;
-
-  const uint16_t NODE_DISCOVERY=0; // TODO use an enum instead
-  const uint16_t SELECT_SENDER=1; // TODO use this later
 
   // Dissemination ControlMsg instantiation
   struct ControlData controlMsg;
@@ -120,7 +120,7 @@ implementation {
       case(NODE_DETECTION_STATE):
         printf("Send DISCOVER to all nodes\n");
 	printfflush();
-	controlMsg.dissCommand = NODE_DISCOVERY;
+	controlMsg.dissCommand = ID_REQUEST;
 	controlMsg.dissValue = 0;
         // TODO: this is wrong (as you mentioned in the comment as well). create a ControlData, set the value, pass it as pointer (with &)
         call Update.change((ControlData*)(&controlMsg));
@@ -136,10 +136,10 @@ implementation {
         break;
       case SENDER_SELECTION_STATE:
 	// change controlMsg 	
-	controlMsg.dissCommand = SELECT_SENDER;
+	controlMsg.dissCommand = MEASUREMENT_REQUEST;
 	controlMsg.dissValue = nodeIds[senderIterator];
 	call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
-        printf("Send SELECT_SENDER to %u\n", nodeIds[senderIterator]);
+        printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
@@ -169,12 +169,12 @@ implementation {
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
-    switch(newVal->dissComand) {
-      case NODE_DISCOVERY:
+    switch(newVal->dissCommand) {
+      case ID_REQUEST:
         sendCTPMessage();
 	break;
-      case SELECT_SENDER:
-        currentSender = *newVal; // wrong!
+      case MEASUREMENT_REQUEST:
+        currentSender = newVal->dissCommand; // wrong?
         if(newVal->dissValue == TOS_NODE_ID) {
         post ShowCounter();
         // Wait 10ms and send radio
@@ -192,11 +192,11 @@ implementation {
     // TODO: you won't get the value like this! We changed the way we use the Dissemination. Think about this again (what values do we pass with disseminate)
     const ControlData* newVal = call Value.get();
       if(Value.dissCommand == ID_REQUEST){
-        if(*newVal == NODE_DISCOVERY) {			//is this after struct using essential? && *newVal is a Pointer to our data struct.
+        if(*newVal == ID_REQUEST) {			//is this after struct using essential? && *newVal is a Pointer to our data struct.
       	sendCTPMessage();
       	//post ShowCounter();
       }
-      /*if(*newVal == SELECT_SENDER) {
+      /*if(*newVal == MEASUREMENT_REQUEST) {
       rintf("recived Dissemination");
       printfflush();
       }*/
