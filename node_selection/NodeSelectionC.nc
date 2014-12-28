@@ -179,7 +179,12 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
-  void sendCTPMessage() {
+  void sendCTPMeasurementData() { // TODO do you need parameters maybe?
+    // TODO: use code as in sendCTPNodeId, just add msg->rss value and you are good to go
+
+  }
+
+  void sendCTPNodeId() {
     NodeIDMsg* msg =
       (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
     msg->nodeId = TOS_NODE_ID;
@@ -196,7 +201,7 @@ implementation {
     // TODO: wunderschoen! #deleteme
     switch(newVal->dissCommand) {
       case ID_REQUEST:
-        sendCTPMessage();
+        sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
         currentSender = newVal->dissCommand; // wrong?
