@@ -10,7 +10,7 @@ import tinyos.message.Message
 DEFAULT_MESSAGE_SIZE = 4
 
 # The Active Message type associated with this message.
-AM_TYPE = 5
+AM_TYPE = 137
 
 class MeasurementData(tinyos.message.Message.Message):
     # Create a new MeasurementData of size 4.
@@ -44,7 +44,7 @@ class MeasurementData(tinyos.message.Message.Message):
 
     #
     # Accessor methods for field: rss
-    #   Field type: int
+    #   Field type: short
     #   Offset (bits): 0
     #   Size (bits): 16
     #
@@ -74,16 +74,16 @@ class MeasurementData(tinyos.message.Message.Message):
         return 0
     
     #
-    # Return the value (as a int) of the field 'rss'
+    # Return the value (as a short) of the field 'rss'
     #
     def get_rss(self):
-        return self.getUIntElement(self.offsetBits_rss(), 16, 1)
+        return self.getSIntElement(self.offsetBits_rss(), 16, 1)
     
     #
     # Set the value of the field 'rss'
     #
     def set_rss(self, value):
-        self.setUIntElement(self.offsetBits_rss(), 16, value, 1)
+        self.setSIntElement(self.offsetBits_rss(), 16, value, 1)
     
     #
     # Return the size, in bytes, of the field 'rss'

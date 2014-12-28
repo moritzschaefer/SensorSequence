@@ -20,10 +20,8 @@ class HostController:
         self.i = 0
 
     def receive(self, src, msg):
-        print "received stuff"
-        if msg.get_amType() == MeasurementData.AM_TYPE:
-            m = MeasurementData.MeasurementData(msg.dataGet())
-            print "{}, Rss: {}, SenderNode: {}".format(time.time(), m.getRss(), m.getNodeID())
+        m = MeasurementData.MeasurementData(msg.dataGet())
+        print "{}, Rss: {}, SenderNode: {}".format(time.time(), m.get_rss(), m.get_nodeId())
 
         sys.stdout.flush()
 

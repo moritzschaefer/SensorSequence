@@ -37,3 +37,9 @@ The code doesn't work as is (you have to modify some things but you will notice 
 
 - key: 0x0000: managment
     - value: 0x0000: node discovery
+
+# Python Serial Access
+
+check this file:
+
+/usr/local/lib/python2.7/dist-packages/tinyos/message/MoteIF.py

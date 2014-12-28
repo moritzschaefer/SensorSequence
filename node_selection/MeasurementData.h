@@ -2,7 +2,7 @@
 #define MEASUREMENT_DATA_H
 
 typedef nx_struct measurement_data {
-  nx_uint16_t rss;
+  nx_int16_t rss;
   nx_uint16_t nodeId;
 } measurement_data_t;
 

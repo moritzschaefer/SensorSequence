@@ -5,6 +5,8 @@
 #include "dataTypes.h"
 #include "MeasurementData.h"
 
+#define DEBUG 1
+
 typedef nx_struct RSSMeasurementMsg {
   nx_uint16_t nodeId;
 } RSSMeasurementMsg;
@@ -43,11 +45,11 @@ module NodeSelectionC {
 
 
 implementation {
-  enum states{
+  enum states{ // TODO: no need to asign integers. we don't care about the actual values
     NODE_DETECTION_STATE = 0,
     SENDER_SELECTION_STATE = 1,
     PRINTING_STATE = 2,
-    BUSY_STATE = 3,
+    IDLE_STATE = 3,
     WAITING_STATE = 5
   };
 
@@ -67,6 +69,7 @@ implementation {
   // function declarations
   void addNodeIdToArray(uint16_t);
   void printNodesArray();
+  void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
   void statemachine();
@@ -74,6 +77,7 @@ implementation {
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
+  int measurementsTransmitted=0;
   int senderIterator=0;
   int currentSender=-1;
 
@@ -100,8 +104,6 @@ implementation {
 
   task void ShowCounter() {
     call Leds.led1On();
-    //printf("ShowCounter\n");
-    printfflush();
   }
 
   event void Boot.booted() {
@@ -134,8 +136,7 @@ implementation {
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
-        printf("Send DISCOVER to all nodes\n");
-        printfflush();
+        debugMessage("Send DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = 0;
         call Update.change((ControlData*)(&controlMsg));
@@ -145,7 +146,7 @@ implementation {
         break;
         //Node selection State
       case WAITING_STATE:  //TODO this is hacky. delete later!
-        printf("Found nodes:\n");
+        debugMessage("Found nodes:\n");
         printNodesArray();
         state = SENDER_SELECTION_STATE;
         break;
@@ -163,9 +164,12 @@ implementation {
         break;
       case PRINTING_STATE:
         // measurements done. go on
-
-        printMeasurementArray();
-        state = BUSY_STATE;
+        serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
+        measurementsTransmitted += 1;
+        if(measurementsTransmitted >= measurementCount) {
+          state = IDLE_STATE;
+        }
+        break;
     }
   }
 
@@ -177,7 +181,7 @@ implementation {
     msg->data = TOS_NODE_ID;
 
     if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
-      printf("Error sending NodeID via CTP\n");
+      debugMessage("Error sending NodeID via CTP\n");
     } else {
       sendBusy = TRUE;
     }
@@ -204,9 +208,9 @@ implementation {
 
   event void CTPSend.sendDone(message_t* m, error_t err) {
     if(err != SUCCESS) {
-      printf("Error sending NodeID via CTP\n");
+      debugMessage("Error sending NodeID via CTP\n");
     } else {
-      //printf("Sent CTP value\n");
+      debugMessage("Sent CTP value\n");
       sendBusy = FALSE;
     }
   }
@@ -216,7 +220,7 @@ implementation {
     NodeIDMsg* received =
       (NodeIDMsg*)payload;
     if(len != sizeof(NodeIDMsg)) {
-      printf("Received CTP length doesn't match expected one.\n");
+      debugMessage("Received CTP length doesn't match expected one.\n");
     } else {
       //printf("Received node ID %u\n", received->data);
       addNodeIdToArray(received->data);
@@ -247,7 +251,7 @@ implementation {
     sendBusy = FALSE;
     //printf("success sending AM packet");
     if (err != SUCCESS) {
-      printf("Error sending AM packet");
+      debugMessage("Error sending AM packet");
     }
   }
   //unnecessary helper
@@ -264,8 +268,7 @@ implementation {
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
       if(measurementCount >= 10) {
-        printf("too many measurements for our array");
-        printfflush();
+        debugMessage("too many measurements for our array");
       }
 
       measurements[measurementCount].nodeId = rss_msg->nodeId;
@@ -297,10 +300,9 @@ implementation {
     int k;
     for(k=0; k<measurementCount; k++)
     {
-      //printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].nodeId, measurements[k].measuredRss);
-      serialSend(measurements[k].nodeId, measurements[k].measuredRss);
+      printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].nodeId, measurements[k].measuredRss);
     }
-    //printfflush();
+    printfflush();
   }
 
   void printNodesArray(){
@@ -313,49 +315,59 @@ implementation {
   }
   // Serial data transfer
   bool serialSend(uint16_t nodeId, uint16_t rssValue) {
-    printf("send now serial am data\n"); printfflush();
+    // TODO: refactor: either delete debugMessages or improve their meanings (better)
     if (serialSendBusy) {
-      printf("failed1\n"); printfflush();
+      debugMessage("failed1\n");
       return FALSE;
     }
     else {
       measurement_data_t *rcm = (measurement_data_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(measurement_data_t));
-      if (rcm == NULL) {printf("failed2\n"); printfflush();return FALSE;}
+      if (rcm == NULL) {debugMessage("failed2\n"); return FALSE;}
 
       rcm->nodeId = nodeId;
       rcm->rss = rssValue;
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
-        printf("failed3\n"); printfflush();
-	return FALSE;
+        debugMessage("failed3\n");
+        return FALSE;
       }
-        printf("about to send\n"); printfflush();
 
       if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
-	serialSendBusy = TRUE;
+        serialSendBusy = TRUE;
+      } else {
+        printf("failed4\n"); printfflush();
+        return FALSE;
       }
     }
     return TRUE;
 
   }
   event void SerialAMSend.sendDone(message_t* bufPtr, error_t error) {
-      printf("received send done\n"); printfflush();
     if (&serial_packet == bufPtr) {
-      printf("successfully sent\n"); printfflush();
       serialSendBusy = FALSE;
+      debugMessage("successfully sent\n");
     }
   }
 
   event void SerialAMControl.startDone(error_t err) {
-    // do nothing
-    printf("successfully started serial control\n"); printfflush();
+    debugMessage("successfully started serial control\n");
   }
   event void SerialAMControl.stopDone(error_t err) {
     // do nothing
   }
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
-				   void* payload, uint8_t len) {
-    printf("received serial data. why..? should not happen."); printfflush();
+      void* payload, uint8_t len) {
+    debugMessage("received serial data. why..? should not happen.");
+  }
+  void debugMessage(const char *msg) {
+#if DEBUG
+    if(serialSendBusy) {
+      return;
+    } else {
+      printf(msg);
+      printfflush();
+    }
+#endif
   }
 
 }
