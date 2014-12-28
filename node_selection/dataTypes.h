@@ -1,9 +1,19 @@
-#ifndef CONTROL_H
-#define CONTROL_H
+#ifndef DATA_TYPES_H
+#define DATA_TYPES_H
 
 typedef struct ControlData {
-  uint16_t dissCommand;
-  uint16_t dissValue;
-} ControlData; 
+    uint16_t dissCommand;
+    uint16_t dissValue;
+} ControlData;
 
-#endif /* CONTROL_H */
+
+typedef nx_struct NodeIDMsg {
+    nx_uint16_t nodeId;
+    nx_uint16_t rss;
+} NodeIDMsg;
+
+typedef nx_struct RSSMeasurementMsg {
+  nx_uint16_t nodeId;
+} RSSMeasurementMsg;
+
+#endif /* DATA_TYPES_H */

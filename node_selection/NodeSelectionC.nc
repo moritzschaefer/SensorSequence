@@ -1,16 +1,18 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
-#include "utils.h"
+//#include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
+//#include "constants.h"
 #include "MeasurementData.h"
 
 #define DEBUG 1
 
-typedef nx_struct RSSMeasurementMsg {
-  nx_uint16_t nodeId;
-} RSSMeasurementMsg;
+// number of measurements per channel and node
+#define NUM_MEASUREMENTS 3
 
+
+// TODO: make this dynamic!
 #define MAX_NODE_COUNT 10
 typedef struct {
   uint16_t nodeId;
@@ -36,6 +38,7 @@ module NodeSelectionC {
   uses interface AMSend;
   uses interface Receive as AMReceive;
   uses interface CC2420Packet;
+
   // Serial Transmission
   uses interface Receive as SerialAMReceive;
   uses interface Packet as SerialAMPacket;
@@ -50,16 +53,15 @@ implementation {
     SENDER_SELECTION_STATE = 1,
     PRINTING_STATE = 2,
     IDLE_STATE = 3,
-    WAITING_STATE = 5
+    WAITING_STATE = 5,
+    DATA_COLLECTION_STATE
+
   };
 
   enum commands{
-    ID_REQUEST = 0, //no uint16_t anymore, it's a problem?
-    MEASUREMENT_REQUEST = 1
+    ID_REQUEST = 0, //no uint16_t anymore, it's a problem? # TODO "it's" -> "is it".
+    SENDER_ASSIGN = 1
   };
-
-  //const uint16_t ID_REQUEST=0;
-  //const uint16_t MEASUREMENT_REQUEST=1;
 
   // init Array
   // TODO: later we have to make this flexible!
@@ -84,6 +86,7 @@ implementation {
   // Statemachine
   int state = NODE_DETECTION_STATE;
 
+  // TODO: should we use only one sendBusy field for CTP/Serial/...? maybe they intefere..
   // Used for CTP
   message_t ctp_packet, am_packet;
   bool sendBusy = FALSE;
@@ -98,9 +101,6 @@ implementation {
   // Dissemination ControlMsg instantiation # TODO: man spricht in C nicht wirklich von instanzen AFAIK. Es ist eher eine Deklaration
   struct ControlData controlMsg;
 
-  typedef nx_struct NodeIDMsg {
-    nx_uint16_t data;
-  } NodeIDMsg;
 
   task void ShowCounter() {
     call Leds.led1On();
@@ -132,6 +132,8 @@ implementation {
     statemachine();
   }
 
+  // TODO: this function has to become a "task".
+
   void statemachine(){
     switch(state){
       //Node detection State
@@ -152,22 +154,24 @@ implementation {
         break;
       case SENDER_SELECTION_STATE:
         // change controlMsg
-        controlMsg.dissCommand = MEASUREMENT_REQUEST;
+        controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
-        printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
+        printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = PRINTING_STATE;
         }
         break;
+        // go to DATA_COLLECTION_STATE between each assigned sender
       case PRINTING_STATE:
         // measurements done. go on
         serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
         measurementsTransmitted += 1;
         if(measurementsTransmitted >= measurementCount) {
           state = IDLE_STATE;
+          measurementsTransmitted = 0;
         }
         break;
     }
@@ -178,7 +182,7 @@ implementation {
   void sendCTPMessage() {
     NodeIDMsg* msg =
       (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
-    msg->data = TOS_NODE_ID;
+    msg->nodeId = TOS_NODE_ID;
 
     if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
@@ -189,17 +193,15 @@ implementation {
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
+    // TODO: wunderschoen! #deleteme
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         sendCTPMessage();
         break;
-      case MEASUREMENT_REQUEST:
+      case SENDER_ASSIGN:
         currentSender = newVal->dissCommand; // wrong?
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
-          // Wait 10ms and send radio
-          //call Busy.wait(10);
-          // TODO send am here
           while(!sendMeasurementPacket());
           break;
         }
@@ -222,9 +224,14 @@ implementation {
     if(len != sizeof(NodeIDMsg)) {
       debugMessage("Received CTP length doesn't match expected one.\n");
     } else {
-      //printf("Received node ID %u\n", received->data);
-      addNodeIdToArray(received->data);
-      //printf("added in array...\n");
+      switch(state) {
+        case NODE_DETECTION_STATE:
+          addNodeIdToArray(received->nodeId);
+          break;
+        case DATA_COLLECTION_STATE: // TODO: SENDER_SELECTION_STATE is the wrong name as well... we need more states anyways.
+          // directly forward to serial
+          serialSend(received->nodeId, received->rss); // TODO: use BaseStation to automatically forward packets to serial
+      }
     }
     return msg;
   }
