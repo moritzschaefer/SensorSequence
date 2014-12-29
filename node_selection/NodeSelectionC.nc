@@ -54,7 +54,7 @@ implementation {
     PRINTING_STATE = 2,
     IDLE_STATE = 3,
     WAITING_STATE = 5,
-    DATA_COLLECTION_STATE
+    DATA_COLLECTION_STATE = 4
 
   };
 
@@ -74,7 +74,8 @@ implementation {
   void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
-  void statemachine();
+  void statemachineSink();  
+  void statemachineClient();
 
   // counter/array counter
   int nodeCount=0;
@@ -123,18 +124,21 @@ implementation {
 
         call RootControl.setRoot();
         post ShowCounter();
-        call Timer.startPeriodic(2000);
       }
+      call Timer.startPeriodic(2000);
     }
   }
 
   event void Timer.fired() {
-    statemachine();
+    if ( TOS_NODE_ID  == 0 ) {
+	statemachineSink();
+    }
+    else statemachineClient();
   }
 
   // TODO: this function has to become a "task".
 
-  void statemachine(){
+  void statemachineSink(){
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
@@ -161,10 +165,39 @@ implementation {
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = PRINTING_STATE;
+          state = DATA_COLLECTION_STATE;
         }
         break;
+      case DATA_COLLECTION_STATE: //TODO
+	state = PRINTING_STATE;
+	break;
         // go to DATA_COLLECTION_STATE between each assigned sender
+      case PRINTING_STATE:
+        // measurements done. go on
+        serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
+        measurementsTransmitted += 1;
+        if(measurementsTransmitted >= measurementCount) {
+          state = IDLE_STATE;
+          measurementsTransmitted = 0;
+        }
+        break;
+    }
+  }
+
+void statemachineClient(){
+    switch(state){
+      case(NODE_DETECTION_STATE):
+        state = WAITING_STATE;
+        break;
+      case WAITING_STATE:
+        state = SENDER_SELECTION_STATE;
+        break;
+      case SENDER_SELECTION_STATE:
+        state = DATA_COLLECTION_STATE;
+        break;
+      case DATA_COLLECTION_STATE: //TODO
+	state = PRINTING_STATE;
+	break;
       case PRINTING_STATE:
         // measurements done. go on
         serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
