@@ -124,16 +124,16 @@ implementation {
 
         call RootControl.setRoot();
         post ShowCounter();
-      }
-      call Timer.startPeriodic(2000);
+	call Timer.startPeriodic(2000);
+      }      
     }
   }
 
   event void Timer.fired() {
-    if ( TOS_NODE_ID  == 0 ) {
+    //if ( TOS_NODE_ID  == 0 ) {
 	statemachineSink();
-    }
-    else statemachineClient();
+    //}
+    //else statemachineClient();
   }
 
   // TODO: this function has to become a "task".
@@ -199,13 +199,7 @@ void statemachineClient(){
 	state = PRINTING_STATE;
 	break;
       case PRINTING_STATE:
-        // measurements done. go on
-        serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
-        measurementsTransmitted += 1;
-        if(measurementsTransmitted >= measurementCount) {
-          state = IDLE_STATE;
-          measurementsTransmitted = 0;
-        }
+        state = IDLE_STATE;
         break;
     }
   }
@@ -231,7 +225,6 @@ void statemachineClient(){
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
-    // TODO: wunderschoen! #deleteme
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         sendCTPNodeId();
