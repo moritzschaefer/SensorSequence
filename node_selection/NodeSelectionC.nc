@@ -75,7 +75,7 @@ implementation {
   void printMeasurementArray();
   bool sendMeasurementPacket();
   void statemachineSink();  
-  void statemachineClient();
+  //void statemachineClient();
 
   // counter/array counter
   int nodeCount=0;
@@ -130,10 +130,7 @@ implementation {
   }
 
   event void Timer.fired() {
-    //if ( TOS_NODE_ID  == 0 ) {
-	statemachineSink();
-    //}
-    //else statemachineClient();
+    statemachineSink();
   }
 
   // TODO: this function has to become a "task".
@@ -184,31 +181,20 @@ implementation {
     }
   }
 
-void statemachineClient(){
-    switch(state){
-      case(NODE_DETECTION_STATE):
-        state = WAITING_STATE;
-        break;
-      case WAITING_STATE:
-        state = SENDER_SELECTION_STATE;
-        break;
-      case SENDER_SELECTION_STATE:
-        state = DATA_COLLECTION_STATE;
-        break;
-      case DATA_COLLECTION_STATE: //TODO
-	state = PRINTING_STATE;
-	break;
-      case PRINTING_STATE:
-        state = IDLE_STATE;
-        break;
-    }
-  }
 
   event void RadioControl.stopDone(error_t err) {}
 
   void sendCTPMeasurementData() { // TODO do you need parameters maybe?
     // TODO: use code as in sendCTPNodeId, just add msg->rss value and you are good to go
+    NodeIDMsg* msg =
+      (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
+    msg->nodeId = TOS_NODE_ID;
 
+    if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
+      debugMessage("Error sending NodeID via CTP\n");
+    } else {
+      sendBusy = TRUE;
+    }
   }
 
   void sendCTPNodeId() {

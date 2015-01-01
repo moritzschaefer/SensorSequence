@@ -1,8 +1,6 @@
-step 1:
-- enum für states. keine zahlen mehr für states.
-- in der präsentation state machine zeichnen
-step 2:
-- zweites CTP Interface hinzufügen.
-step 3:
-in state-machine step 2 oder 3: disseminate auf disseminate1 mit code "2" (benutze wieder enums!). dieses signal nehmen die nodes zum anlass, ihre measurements ans CTP zu senden.
+also der nächste schritt ist data collection zu machen.
+ist eigentlich nicht viel dabei. einfach einen neuen state vor dem letzten state einrichten.
+in diesem senden die clients abwechselnd ihre daten an den sink node mit ctp. siehe die funktion sendCTPMeasurementData
+
+und schau die CTPReceive.receive an. da hab ich auch was geändert um measurements am sink zu collecten.
 
