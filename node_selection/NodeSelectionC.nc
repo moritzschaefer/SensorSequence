@@ -267,7 +267,7 @@ implementation {
         receivedNodeId = (NodeIDMsg*)payload;
         addNodeIdToArray(receivedNodeId->nodeId);
         break;
-      case sizef(CollectionDataMsg):
+      case sizeof(CollectionDataMsg):
         receivedCollectionData = (CollectionDataMsg*)payload;
         serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss); // TODO: use BaseStation to automatically forward packets to serial
         break;
