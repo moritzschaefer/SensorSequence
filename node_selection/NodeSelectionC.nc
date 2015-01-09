@@ -88,7 +88,7 @@ implementation {
 
   // TODO: should we use only one sendBusy field for CTP/Serial/...? maybe they intefere..
   // Used for CTP
-  message_t ctp_packet, am_packet;
+  message_t ctp_discover_packet, ctp_collection_packet, am_packet;
   bool sendBusy = FALSE;
 
   // Serial Transmission
@@ -179,17 +179,38 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
-  void sendCTPMeasurementData() { // TODO do you need parameters maybe?
-    // TODO: use code as in sendCTPNodeId, just add msg->rss value and you are good to go
+  void sendCTPMeasurementData(measurement m) {
+    CollectionDataMsg *msg;
 
+    if(sendBusy) {
+      debugMessage("Call to sendCTPMeasurementData while sendBusy is true\n");
+      return;
+    }
+    msg =
+      (CollectionDataMsg*)call CTPSend.getPayload(&ctp_collection_packet, sizeof(CollectionDataMsg));
+    msg->senderNodeId = m.nodeId;
+    msg->receiverNodeId = TOS_NODE_ID; // This node received the measurement
+    msg->rss = m.measuredRss;
+
+    if (call CTPSend.send(&ctp_collection_packet, sizeof(CollectionDataMsg)) != SUCCESS) {
+      debugMessage("Error sending NodeID via CTP\n");
+    } else {
+      sendBusy = TRUE;
+    }
   }
 
   void sendCTPNodeId() {
-    NodeIDMsg* msg =
-      (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
+    NodeIDMsg* msg;
+
+    if(sendBusy) {
+      debugMessage("Call to sendCTPNodeId while sendBusy is true\n");
+      return;
+    }
+    msg =
+      (NodeIDMsg*)call CTPSend.getPayload(&ctp_discover_packet, sizeof(NodeIDMsg));
     msg->nodeId = TOS_NODE_ID;
 
-    if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
+    if (call CTPSend.send(&ctp_discover_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
     } else {
       sendBusy = TRUE;
