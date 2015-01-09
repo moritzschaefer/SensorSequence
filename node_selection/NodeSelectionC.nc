@@ -92,7 +92,7 @@ implementation {
   bool sendBusy = FALSE;
 
   // Serial Transmission
-  bool serialSend(uint16_t nodeId, uint16_t rssValue);
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue);
   bool serialSendBusy = FALSE;
   message_t serial_packet;
 
@@ -167,7 +167,7 @@ implementation {
         // go to DATA_COLLECTION_STATE between each assigned sender
       case PRINTING_STATE:
         // measurements done. go on
-        serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
+        serialSend(measurements[measurementsTransmitted].nodeId, TOS_NODE_ID, measurements[measurementsTransmitted].measuredRss);
         measurementsTransmitted += 1;
         if(measurementsTransmitted >= measurementCount) {
           state = IDLE_STATE;
@@ -245,19 +245,21 @@ implementation {
 
   // CTP receive
   event message_t* CTPReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    NodeIDMsg* received =
-      (NodeIDMsg*)payload;
-    if(len != sizeof(NodeIDMsg)) {
-      debugMessage("Received CTP length doesn't match expected one.\n");
-    } else {
-      switch(state) {
-        case NODE_DETECTION_STATE:
-          addNodeIdToArray(received->nodeId);
-          break;
-        case DATA_COLLECTION_STATE: // TODO: SENDER_SELECTION_STATE is the wrong name as well... we need more states anyways.
-          // directly forward to serial
-          serialSend(received->nodeId, received->rss); // TODO: use BaseStation to automatically forward packets to serial
-      }
+    // do action dependent on packet type (= size)
+    NodeIDMsg *receivedNodeId;
+    CollectionDataMsg *receivedCollectionData;
+    switch(len) {
+      case sizeof(NodeIDMsg):
+        receivedNodeId = (NodeIDMsg*)payload;
+        addNodeIdToArray(receivedNodeId->nodeId);
+        break;
+      case sizef(CollectionDataMsg):
+        receivedCollectionData = (CollectionDataMsg*)payload;
+        serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss); // TODO: use BaseStation to automatically forward packets to serial
+        break;
+
+      default:
+        debugMessage("Received CTP length doesn't match expected one.\n");
     }
     return msg;
   }
@@ -347,7 +349,7 @@ implementation {
     printfflush();
   }
   // Serial data transfer
-  bool serialSend(uint16_t nodeId, uint16_t rssValue) {
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue) {
     // TODO: refactor: either delete debugMessages or improve their meanings (better)
     if (serialSendBusy) {
       debugMessage("failed1\n");
@@ -357,7 +359,8 @@ implementation {
       measurement_data_t *rcm = (measurement_data_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(measurement_data_t));
       if (rcm == NULL) {debugMessage("failed2\n"); return FALSE;}
 
-      rcm->nodeId = nodeId;
+      rcm->senderNodeId = senderNodeId;
+      rcm->receiverNodeId = receiverNodeId;
       rcm->rss = rssValue;
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
@@ -391,6 +394,7 @@ implementation {
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
     debugMessage("received serial data. why..? should not happen.");
+    return bufPtr;
   }
   void debugMessage(const char *msg) {
 #if DEBUG

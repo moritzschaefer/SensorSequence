@@ -3,7 +3,8 @@
 
 typedef nx_struct measurement_data {
   nx_int16_t rss;
-  nx_uint16_t nodeId;
+  nx_uint16_t senderNodeId;
+  nx_uint16_t receiverNodeId;
 } measurement_data_t;
 
 enum {
