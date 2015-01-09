@@ -32,8 +32,8 @@ implementation {
   components LedsC;
   NodeSelectionC.Leds -> LedsC;
 
-  components new TimerMilliC();
-  NodeSelectionC.Timer -> TimerMilliC;
+  //components new TimerMilliC();
+  //NodeSelectionC.Timer -> TimerMilliC; not used
 
   // CTP Part
   components CollectionC as Collector;

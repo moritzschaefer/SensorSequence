@@ -1,7 +1,7 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
 //#include "utils.h"
-#include <Timer.h>
+//#include <Timer.h> cause alt. eventmachine
 #include "dataTypes.h"
 //#include "constants.h"
 #include "MeasurementData.h"
@@ -26,7 +26,7 @@ module NodeSelectionC {
   uses interface DisseminationValue<ControlData> as Value;
   uses interface DisseminationUpdate<ControlData> as Update;
   uses interface Leds;
-  uses interface Timer<TMilli>;
+  //uses interface Timer<TMilli>; cause eventmachine
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send as CTPSend;
@@ -50,17 +50,18 @@ module NodeSelectionC {
 implementation {
   enum states{ // TODO: no need to asign integers. we don't care about the actual values
     NODE_DETECTION_STATE = 0,
-    SENDER_SELECTION_STATE = 1,
+    MEASUREMENT_STATE = 1,
     PRINTING_STATE = 2,
     IDLE_STATE = 3,
     WAITING_STATE = 5,
-    DATA_COLLECTION_STATE = 4
+    MEAUSREMENT_TABLE_REQUEST = 4
 
   };
 
   enum commands{
     ID_REQUEST = 0, //no uint16_t anymore, it's a problem? # TODO "it's" -> "is it".
-    SENDER_ASSIGN = 1
+    SENDER_ASSIGN = 1,
+    MEASUREMENT_REQUEST = 2
   };
 
   // init Array
@@ -74,7 +75,7 @@ implementation {
   void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
-  void statemachine();  
+  task void statemachine();  
 
   // counter/array counter
   int nodeCount=0;
@@ -123,18 +124,14 @@ implementation {
 
         call RootControl.setRoot();
         post ShowCounter();
-	call Timer.startPeriodic(2000);
+	post statemachine();
       }      
     }
   }
 
-  event void Timer.fired() {
-    statemachine();
-  }
-
   // TODO: this function has to become a "task".
 
-  void statemachine(){
+  task void statemachine(){
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
@@ -150,25 +147,31 @@ implementation {
       case WAITING_STATE:  //TODO this is hacky. delete later!
         debugMessage("Found nodes:\n");
         printNodesArray();
-        state = SENDER_SELECTION_STATE;
+        state = MEASUREMENT_STATE;
         break;
-      case SENDER_SELECTION_STATE:
+      case MEASUREMENT_STATE:
         // change controlMsg
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
-        call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
+        call Update.change((ControlData*)(&controlMsg));
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = DATA_COLLECTION_STATE;
+          state = MEAUSREMENT_TABLE_REQUEST;
         }
         break;
-      case DATA_COLLECTION_STATE: //TODO
-	
-	state = PRINTING_STATE;
+      case MEAUSREMENT_TABLE_REQUEST: //get from sender detection state
+	controlMsg.dissCommand = MEASUREMENT_REQUEST;
+        controlMsg.dissValue = nodeIds[senderIterator];
+        call Update.change((ControlData*)(&controlMsg));
+        printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
+        printfflush();
+	if (senderIterator >= nodeCount) {
+          state = PRINTING_STATE;
+        }
 	break;
-        // go to DATA_COLLECTION_STATE between each assigned sender
+        // go to MEAUSREMENT_TABLE_REQUEST between each assigned sender
       case PRINTING_STATE:
         // measurements done. go on
         serialSend(measurements[measurementsTransmitted].nodeId, measurements[measurementsTransmitted].measuredRss);
@@ -195,7 +198,7 @@ implementation {
         case NODE_DETECTION_STATE:
           addNodeIdToArray(received->nodeId);
           break;
-        case DATA_COLLECTION_STATE: // TODO: SENDER_SELECTION_STATE is the wrong name as well... we need more states anyways.
+        case MEAUSREMENT_TABLE_REQUEST: // TODO: MEASUREMENT_STATE is the wrong name as well... we need more states anyways.
           // directly forward to serial
           serialSend(received->nodeId, received->rss); // TODO: use BaseStation to automatically forward packets to serial
       }
@@ -203,11 +206,11 @@ implementation {
     return msg;
   }
 
-  void sendCTPMeasurementData() { // TODO do you need parameters maybe?
-    // TODO: use code as in sendCTPNodeId, just add msg->rss value and you are good to go
+  void sendCTPMeasurementData() {
+    // TODO: just add msg->rss value && sizeof measurements[] and msg format ...
     NodeIDMsg* msg =
       (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
-    msg->rss = TOS_NODE_ID;
+    msg->rss = TOS_NODE_ID; // sends only the old stuff...
 
     if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
