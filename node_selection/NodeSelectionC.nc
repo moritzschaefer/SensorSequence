@@ -48,19 +48,21 @@ module NodeSelectionC {
 
 
 implementation {
-  enum states{ // TODO: no need to asign integers. we don't care about the actual values
+  enum states { // TODO: no need to asign integers. we don't care about the actual values
     NODE_DETECTION_STATE = 0,
     SENDER_SELECTION_STATE = 1,
     PRINTING_STATE = 2,
     IDLE_STATE = 3,
     WAITING_STATE = 5,
+    MEASUREMENT_TABLE_REQUEST,
     DATA_COLLECTION_STATE
 
   };
 
   enum commands{
     ID_REQUEST = 0, //no uint16_t anymore, it's a problem? # TODO "it's" -> "is it".
-    SENDER_ASSIGN = 1
+    SENDER_ASSIGN = 1,
+    MEASUREMENT_REQUEST
   };
 
   // init Array
@@ -74,6 +76,7 @@ implementation {
   void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
+  void sendCTPMeasurementData(measurement);
   void statemachine();
 
   // counter/array counter
@@ -81,7 +84,6 @@ implementation {
   int measurementCount=0;
   int measurementsTransmitted=0;
   int senderIterator=0;
-  int currentSender=-1;
 
   // Statemachine
   int state = NODE_DETECTION_STATE;
@@ -161,10 +163,21 @@ implementation {
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          state = PRINTING_STATE;
+          state = MEASUREMENT_TABLE_REQUEST;
         }
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
+      case MEASUREMENT_TABLE_REQUEST: //get from sender detection state
+        controlMsg.dissCommand = MEASUREMENT_REQUEST; //MEASUREMENT_TABLE_REQUEST
+        controlMsg.dissValue = nodeIds[senderIterator];
+        call Update.change((ControlData*)(&controlMsg));
+        printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
+        printfflush();
+        if (senderIterator >= nodeCount) {
+          state = IDLE_STATE;
+        }
+        break;
+      // we don't use you anymore (right now)
       case PRINTING_STATE:
         // measurements done. go on
         serialSend(measurements[measurementsTransmitted].nodeId, TOS_NODE_ID, measurements[measurementsTransmitted].measuredRss);
@@ -219,18 +232,19 @@ implementation {
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
-    // TODO: wunderschoen! #deleteme
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
-        currentSender = newVal->dissCommand; // wrong?
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
           while(!sendMeasurementPacket());
-          break;
         }
+        break;
+      case MEASUREMENT_REQUEST:
+        sendCTPMeasurementData(measurements[0]);
+      break;
     }
   }
 
