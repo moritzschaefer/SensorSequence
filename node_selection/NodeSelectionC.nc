@@ -77,7 +77,7 @@ implementation {
   void printMeasurementArray();
   bool sendMeasurementPacket();
   void sendCTPMeasurementData(measurement);
-  void statemachine();
+  task void statemachine();
 
   // counter/array counter
   int nodeCount=0;
@@ -125,18 +125,19 @@ implementation {
 
         call RootControl.setRoot();
         post ShowCounter();
-        call Timer.startPeriodic(2000);
+        post statemachine();
+        //call Timer.startPeriodic(2000); //delete
       }
     }
   }
 
   event void Timer.fired() {
-    statemachine();
+    post statemachine();
   }
 
   // TODO: this function has to become a "task".
 
-  void statemachine(){
+  task void statemachine(){ //task
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
@@ -147,12 +148,15 @@ implementation {
         printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
         printfflush();
         state = WAITING_STATE;
+        call Timer.startOneShot(200);
         break;
         //Node selection State
-      case WAITING_STATE:  //TODO this is hacky. delete later!
+      case WAITING_STATE:  //TODO merge with sender_selection_state
         debugMessage("Found nodes:\n");
         printNodesArray();
         state = SENDER_SELECTION_STATE;
+
+        call Timer.startOneShot(500);
         break;
       case SENDER_SELECTION_STATE:
         // change controlMsg
@@ -165,6 +169,7 @@ implementation {
         if (senderIterator >= nodeCount) {
           state = MEASUREMENT_TABLE_REQUEST;
         }
+        call Timer.startOneShot(200);
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
       case MEASUREMENT_TABLE_REQUEST: //get from sender detection state
@@ -176,6 +181,7 @@ implementation {
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
         }
+	// continued through sendDone post
         break;
       // we don't use you anymore (right now)
       case PRINTING_STATE:
@@ -397,6 +403,7 @@ implementation {
       serialSendBusy = FALSE;
       debugMessage("successfully sent\n");
     }
+    post statemachine();
   }
 
   event void SerialAMControl.startDone(error_t err) {
