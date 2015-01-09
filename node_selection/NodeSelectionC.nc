@@ -74,8 +74,7 @@ implementation {
   void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
-  void statemachineSink();  
-  //void statemachineClient();
+  void statemachine();  
 
   // counter/array counter
   int nodeCount=0;
@@ -130,12 +129,12 @@ implementation {
   }
 
   event void Timer.fired() {
-    statemachineSink();
+    statemachine();
   }
 
   // TODO: this function has to become a "task".
 
-  void statemachineSink(){
+  void statemachine(){
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
