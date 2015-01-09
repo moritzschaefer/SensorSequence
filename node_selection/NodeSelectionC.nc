@@ -166,6 +166,7 @@ implementation {
         }
         break;
       case DATA_COLLECTION_STATE: //TODO
+	
 	state = PRINTING_STATE;
 	break;
         // go to DATA_COLLECTION_STATE between each assigned sender
@@ -184,11 +185,30 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
+  // CTP receive
+  event message_t* CTPReceive.receive(message_t* msg, void* payload, uint8_t len) {
+    NodeIDMsg* received =
+      (NodeIDMsg*)payload;
+    if(len != sizeof(NodeIDMsg)) {
+      debugMessage("Received CTP length doesn't match expected one.\n");
+    } else {
+      switch(state) {
+        case NODE_DETECTION_STATE:
+          addNodeIdToArray(received->nodeId);
+          break;
+        case DATA_COLLECTION_STATE: // TODO: SENDER_SELECTION_STATE is the wrong name as well... we need more states anyways.
+          // directly forward to serial
+          serialSend(received->nodeId, received->rss); // TODO: use BaseStation to automatically forward packets to serial
+      }
+    }
+    return msg;
+  }
+
   void sendCTPMeasurementData() { // TODO do you need parameters maybe?
     // TODO: use code as in sendCTPNodeId, just add msg->rss value and you are good to go
     NodeIDMsg* msg =
       (NodeIDMsg*)call CTPSend.getPayload(&ctp_packet, sizeof(NodeIDMsg));
-    msg->nodeId = TOS_NODE_ID;
+    msg->rss = TOS_NODE_ID;
 
     if (call CTPSend.send(&ctp_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
@@ -232,25 +252,6 @@ implementation {
       debugMessage("Sent CTP value\n");
       sendBusy = FALSE;
     }
-  }
-
-  // CTP receive
-  event message_t* CTPReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    NodeIDMsg* received =
-      (NodeIDMsg*)payload;
-    if(len != sizeof(NodeIDMsg)) {
-      debugMessage("Received CTP length doesn't match expected one.\n");
-    } else {
-      switch(state) {
-        case NODE_DETECTION_STATE:
-          addNodeIdToArray(received->nodeId);
-          break;
-        case DATA_COLLECTION_STATE: // TODO: SENDER_SELECTION_STATE is the wrong name as well... we need more states anyways.
-          // directly forward to serial
-          serialSend(received->nodeId, received->rss); // TODO: use BaseStation to automatically forward packets to serial
-      }
-    }
-    return msg;
   }
 
   // AM send
