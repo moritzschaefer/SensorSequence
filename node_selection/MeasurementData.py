@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 4
+DEFAULT_MESSAGE_SIZE = 6
 
 # The Active Message type associated with this message.
 AM_TYPE = 137
 
 class MeasurementData(tinyos.message.Message.Message):
-    # Create a new MeasurementData of size 4.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=4):
+    # Create a new MeasurementData of size 6.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=6):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -35,7 +35,11 @@ class MeasurementData(tinyos.message.Message.Message):
         except:
             pass
         try:
-            s += "  [nodeId=0x%x]\n" % (self.get_nodeId())
+            s += "  [senderNodeId=0x%x]\n" % (self.get_senderNodeId())
+        except:
+            pass
+        try:
+            s += "  [receiverNodeId=0x%x]\n" % (self.get_receiverNodeId())
         except:
             pass
         return s
@@ -98,57 +102,112 @@ class MeasurementData(tinyos.message.Message.Message):
         return 16
     
     #
-    # Accessor methods for field: nodeId
+    # Accessor methods for field: senderNodeId
     #   Field type: int
     #   Offset (bits): 16
     #   Size (bits): 16
     #
 
     #
-    # Return whether the field 'nodeId' is signed (False).
+    # Return whether the field 'senderNodeId' is signed (False).
     #
-    def isSigned_nodeId(self):
+    def isSigned_senderNodeId(self):
         return False
     
     #
-    # Return whether the field 'nodeId' is an array (False).
+    # Return whether the field 'senderNodeId' is an array (False).
     #
-    def isArray_nodeId(self):
+    def isArray_senderNodeId(self):
         return False
     
     #
-    # Return the offset (in bytes) of the field 'nodeId'
+    # Return the offset (in bytes) of the field 'senderNodeId'
     #
-    def offset_nodeId(self):
+    def offset_senderNodeId(self):
         return (16 / 8)
     
     #
-    # Return the offset (in bits) of the field 'nodeId'
+    # Return the offset (in bits) of the field 'senderNodeId'
     #
-    def offsetBits_nodeId(self):
+    def offsetBits_senderNodeId(self):
         return 16
     
     #
-    # Return the value (as a int) of the field 'nodeId'
+    # Return the value (as a int) of the field 'senderNodeId'
     #
-    def get_nodeId(self):
-        return self.getUIntElement(self.offsetBits_nodeId(), 16, 1)
+    def get_senderNodeId(self):
+        return self.getUIntElement(self.offsetBits_senderNodeId(), 16, 1)
     
     #
-    # Set the value of the field 'nodeId'
+    # Set the value of the field 'senderNodeId'
     #
-    def set_nodeId(self, value):
-        self.setUIntElement(self.offsetBits_nodeId(), 16, value, 1)
+    def set_senderNodeId(self, value):
+        self.setUIntElement(self.offsetBits_senderNodeId(), 16, value, 1)
     
     #
-    # Return the size, in bytes, of the field 'nodeId'
+    # Return the size, in bytes, of the field 'senderNodeId'
     #
-    def size_nodeId(self):
+    def size_senderNodeId(self):
         return (16 / 8)
     
     #
-    # Return the size, in bits, of the field 'nodeId'
+    # Return the size, in bits, of the field 'senderNodeId'
     #
-    def sizeBits_nodeId(self):
+    def sizeBits_senderNodeId(self):
+        return 16
+    
+    #
+    # Accessor methods for field: receiverNodeId
+    #   Field type: int
+    #   Offset (bits): 32
+    #   Size (bits): 16
+    #
+
+    #
+    # Return whether the field 'receiverNodeId' is signed (False).
+    #
+    def isSigned_receiverNodeId(self):
+        return False
+    
+    #
+    # Return whether the field 'receiverNodeId' is an array (False).
+    #
+    def isArray_receiverNodeId(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'receiverNodeId'
+    #
+    def offset_receiverNodeId(self):
+        return (32 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'receiverNodeId'
+    #
+    def offsetBits_receiverNodeId(self):
+        return 32
+    
+    #
+    # Return the value (as a int) of the field 'receiverNodeId'
+    #
+    def get_receiverNodeId(self):
+        return self.getUIntElement(self.offsetBits_receiverNodeId(), 16, 1)
+    
+    #
+    # Set the value of the field 'receiverNodeId'
+    #
+    def set_receiverNodeId(self, value):
+        self.setUIntElement(self.offsetBits_receiverNodeId(), 16, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'receiverNodeId'
+    #
+    def size_receiverNodeId(self):
+        return (16 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'receiverNodeId'
+    #
+    def sizeBits_receiverNodeId(self):
         return 16
     

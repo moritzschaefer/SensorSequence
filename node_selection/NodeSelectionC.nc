@@ -60,15 +60,14 @@ implementation {
   };
 
   enum commands{
-    ID_REQUEST = 0, //no uint16_t anymore, it's a problem? # TODO "it's" -> "is it".
+    ID_REQUEST = 0,
     SENDER_ASSIGN = 1,
     MEASUREMENT_REQUEST
   };
 
   // init Array
-  // TODO: later we have to make this flexible!
-  uint16_t nodeIds[MAX_NODE_COUNT];
-  measurement measurements[MAX_NODE_COUNT];
+  uint16_t *nodeIds=NULL;
+  measurement measurements[MAX_NODE_COUNT]; // TODO: use NUM_MEASUREMENTS*NUM_CHANNELS
 
   // function declarations
   void addNodeIdToArray(uint16_t);
@@ -167,6 +166,7 @@ implementation {
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
+          senderIterator = 0;
           state = MEASUREMENT_TABLE_REQUEST;
         }
         call Timer.startOneShot(200);
@@ -178,6 +178,7 @@ implementation {
         call Update.change((ControlData*)(&controlMsg));
         printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
         printfflush();
+        senderIterator++;
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
         }
@@ -249,7 +250,8 @@ implementation {
         }
         break;
       case MEASUREMENT_REQUEST:
-        sendCTPMeasurementData(measurements[0]);
+        if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue)
+          sendCTPMeasurementData(measurements[0]);
       break;
     }
   }
@@ -336,6 +338,8 @@ implementation {
 
   // Writing each incomming id into the Array
   void addNodeIdToArray(uint16_t nodeId) {
+
+    // first check if the node is already in the array
     int i;
     for(i = 0; i<nodeCount; i++)
     {
@@ -345,7 +349,20 @@ implementation {
         return;
       }
     }
+
+    // resize the array
+    if(nodeCount == 0) {
+      nodeIds = malloc(sizeof(uint16_t));
+    } else {
+      uint16_t *nodeIds_new = malloc(sizeof(uint16_t) * (nodeCount+1));
+      //realloc
+      memcpy(nodeIds_new, nodeIds, sizeof(uint16_t) * (nodeCount));
+      free(nodeIds);
+      nodeIds = nodeIds_new;
+    }
+
     nodeIds[nodeCount] = nodeId;
+    // add the element
     //printf("array[%d] = %u\n", i, nodeIds[nodeCount]);
     nodeCount++;
     return;
@@ -391,7 +408,7 @@ implementation {
       if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
         serialSendBusy = TRUE;
       } else {
-        printf("failed4\n"); printfflush();
+        printf("Serial send is busy. can't send\n"); printfflush();
         return FALSE;
       }
     }
