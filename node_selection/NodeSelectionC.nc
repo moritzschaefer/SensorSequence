@@ -51,18 +51,18 @@ module NodeSelectionC {
 
 implementation {
   enum states { // TODO: no need to asign integers. we don't care about the actual values
-    NODE_DETECTION_STATE = 0,
-    SENDER_SELECTION_STATE = 1,
-    IDLE_STATE = 3,
-    WAITING_STATE = 5,
-    MEASUREMENT_TABLE_REQUEST,
+    NODE_DETECTION_STATE,
+    SENDER_SELECTION_STATE,
+    IDLE_STATE,
+    WAITING_STATE,
+    MEASUREMENT_ARRAY_REQUEST,
     DATA_COLLECTION_STATE
 
   };
 
   enum commands{
-    ID_REQUEST = 0,
-    SENDER_ASSIGN = 1,
+    ID_REQUEST,
+    SENDER_ASSIGN,
     MEASUREMENT_REQUEST,
     FINISHED_MEASUREMENT_SENDING
   };
@@ -175,12 +175,12 @@ implementation {
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
-        state = MEASUREMENT_TABLE_REQUEST;
+        state = MEASUREMENT_ARRAY_REQUEST;
         // go on by disseminate signal from other node
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
-      case MEASUREMENT_TABLE_REQUEST:
-        controlMsg.dissCommand = MEASUREMENT_REQUEST; //MEASUREMENT_TABLE_REQUEST
+      case MEASUREMENT_ARRAY_REQUEST:
+        controlMsg.dissCommand = MEASUREMENT_REQUEST; //MEASUREMENT_ARRAY_REQUEST
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg));
         printf("Send MEASUREMENT_REQUEST of %u\n", nodeIds[senderIterator]);
