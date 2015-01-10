@@ -68,7 +68,7 @@ module NodeSelectionC {
 
 
 implementation {
-  enum states { // TODO: no need to asign integers. we don't care about the actual values
+  enum states {
     NODE_DETECTION_STATE,
     SENDER_SELECTION_STATE,
     IDLE_STATE,
@@ -159,6 +159,10 @@ implementation {
       // start disseminate and ctp
       call DisseminationControl.start();
       call RoutingControl.start();
+
+      // set start channel
+      nextChannel = startChannel;
+      acquireSpiResource();
 
       if (TOS_NODE_ID == 0) {
         call RootControl.setRoot();
@@ -281,7 +285,12 @@ implementation {
         break;
       case CHANGE_CHANNEL:
         // TODO wait here, because disseminate has to reach everybody
+
+        // TODO: move this code to a new timer event
+        // call ChannelTimer.startOneShot(50);
+
         nextChannel = (currentChannel+1);
+
         if(nextChannel >= startChannel+NUM_CHANNELS) {
           nextChannel = startChannel;
         }
@@ -379,7 +388,7 @@ implementation {
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
     sendBusy = FALSE;
-    //printf("success sending AM packet");
+    printf("success sending AM packet\n");
     if (err != SUCCESS) {
       debugMessage("Error sending AM packet");
     } else {
@@ -388,8 +397,6 @@ implementation {
     if(measurementSendCount < NUM_MEASUREMENTS) {
       post sendMeasurementPacket();
     } else {
-      // TODO: maybe we should wait here? I think not. delete me later!
-
       // switch channel
       controlMsg.dissCommand = CHANGE_CHANNEL;
       controlMsg.dissValue = TOS_NODE_ID;
@@ -659,6 +666,7 @@ implementation {
     call CSN.set();
 
     printf("set to channel=%d currentChannel=%d ",channel, currentChannel);
+    printfflush();
 
     atomic {
 
