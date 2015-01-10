@@ -16,6 +16,7 @@ typedef nx_struct CollectionDataMsg {
     nx_uint16_t senderNodeId;
     nx_uint16_t receiverNodeId;
     nx_uint16_t rss;
+    nx_uint8_t channel;
 } CollectionDataMsg;
 
 typedef nx_struct RSSMeasurementMsg {

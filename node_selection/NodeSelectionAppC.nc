@@ -63,4 +63,22 @@ implementation {
   NodeSelectionC.SerialAMReceive -> SerialAM.Receive[AM_MEASUREMENT_DATA];
   NodeSelectionC.SerialAMSend -> SerialAM.AMSend[AM_MEASUREMENT_DATA];
   NodeSelectionC.SerialAMPacket -> SerialAM;
+
+// channel switching stuff
+
+components HplCC2420PinsC as Pins;
+  NodeSelectionC.CSN -> Pins.CSN;
+
+  components new CC2420SpiC() as Spi;
+  NodeSelectionC.SpiResource -> Spi;
+  NodeSelectionC.SNOP        -> Spi.SNOP;
+  NodeSelectionC.STXON       -> Spi.STXON;
+  NodeSelectionC.STXONCCA    -> Spi.STXONCCA;
+  NodeSelectionC.SFLUSHTX    -> Spi.SFLUSHTX;
+  NodeSelectionC.TXCTRL      -> Spi.TXCTRL;
+  NodeSelectionC.MDMCTRL1    -> Spi.MDMCTRL1;
+  NodeSelectionC.FSCTRL 	  -> Spi.FSCTRL;
+
+  NodeSelectionC.SRXON -> Spi.SRXON;
+  NodeSelectionC.SRFOFF -> Spi.SRFOFF;
 }

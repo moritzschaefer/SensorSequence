@@ -21,7 +21,7 @@ class HostController:
 
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
-        print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId())
+        print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}, Channel: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel())
 
         sys.stdout.flush()
 

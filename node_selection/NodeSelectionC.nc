@@ -10,7 +10,7 @@
 
 // number of measurements per channel and node
 #define NUM_MEASUREMENTS 3
-#define NUM_CHANNELS 13 // TODO: check me
+#define NUM_CHANNELS 16
 
 
 // TODO: send CTP measurements all in ONE packet via CTP (and serial)
@@ -19,6 +19,7 @@
 typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
+  uint8_t channel;
 } measurement;
 
 module NodeSelectionC {
@@ -46,6 +47,23 @@ module NodeSelectionC {
   uses interface Packet as SerialAMPacket;
   uses interface AMSend as SerialAMSend;
   uses interface SplitControl as SerialAMControl;
+
+  // channel switching stuff
+  uses interface GeneralIO as CSN;
+
+  uses interface Resource as SpiResource;
+
+  uses interface CC2420Ram as TXFIFO_RAM;
+  uses interface CC2420Register as TXCTRL;
+  uses interface CC2420Strobe as SNOP;
+  uses interface CC2420Strobe as STXON;
+  uses interface CC2420Strobe as STXONCCA;
+  uses interface CC2420Strobe as SFLUSHTX;
+  uses interface CC2420Register as MDMCTRL1;
+  uses interface CC2420Register as FSCTRL;
+
+  uses interface CC2420Strobe as SRFOFF;
+  uses interface CC2420Strobe as SRXON;
 }
 
 
@@ -62,6 +80,7 @@ implementation {
   enum commands{
     ID_REQUEST,
     SENDER_ASSIGN,
+    CHANGE_CHANNEL,
     DATA_COLLECTION_REQUEST,
     FINISHED_MEASUREMENT_SENDING
   };
@@ -97,9 +116,26 @@ implementation {
   bool sendBusy = FALSE;
 
   // Serial Transmission
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue);
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel);
   bool serialSendBusy = FALSE;
   message_t serial_packet;
+
+  // Channel switching
+  const uint8_t startChannel = 11;
+  uint8_t currentChannel = CC2420_DEF_CHANNEL;
+  uint8_t curTxPower = CC2420_DEF_RFPOWER;
+  uint8_t nextTxPower = CC2420_DEF_RFPOWER;
+  uint8_t nextChannel = -1;
+  bool txpchanged = FALSE;
+
+  // private/don't use.
+  void setTxPower(uint8_t);
+  void setChannel(uint8_t);
+
+  // IMPORTANT: set nextChannel and txpchanged/nextTxPower and call acquireSpiResurce
+  error_t acquireSpiResource();
+  error_t releaseSpiResource();
+
 
 
 
@@ -174,23 +210,13 @@ implementation {
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
-        state = DATA_COLLECTION_STATE;
-        // go on by disseminate signal from other node
-        break;
-        // go to DATA_COLLECTION_STATE between each assigned sender
-      case DATA_COLLECTION_STATE:
-        controlMsg.dissCommand = DATA_COLLECTION_REQUEST; //DATA_COLLECTION_STATE
-        controlMsg.dissValue = nodeIds[senderIterator];
-        call Update.change((ControlData*)(&controlMsg));
-        printf("Send DATA_COLLECTION_REQUEST of %u\n", nodeIds[senderIterator]);
-        printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
         } else {
           state = SENDER_SELECTION_STATE;
         }
-        call Timer.startOneShot(2000); // give 2000 ms for every node to send its data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
+        // go on by disseminate signal from other node
         break;
     }
   }
@@ -209,7 +235,7 @@ implementation {
     msg->senderNodeId = m.nodeId;
     msg->receiverNodeId = TOS_NODE_ID; // This node received the measurement
     msg->rss = m.measuredRss;
-    call AMPacket.setType(&ctp_collection_packet, AM_MEASUREMENT_DATA);
+    msg->channel = m.channel;
 
     if (call CTPSend.send(&ctp_collection_packet, sizeof(CollectionDataMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
@@ -250,26 +276,39 @@ implementation {
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
           measurementSendCount = 0;
-          post  sendMeasurementPacket();
+          post sendMeasurementPacket();
         }
         break;
-      case FINISHED_MEASUREMENT_SENDING:
-        if(TOS_NODE_ID == 0) {
-          post statemachine();
+      case CHANGE_CHANNEL:
+        // TODO wait here, because disseminate has to reach everybody
+        nextChannel = (currentChannel+1);
+        if(nextChannel >= startChannel+NUM_CHANNELS) {
+          nextChannel = startChannel;
+        }
+        acquireSpiResource();
+        // channel changed
+
+        // if we reached first channel again
+        if(currentChannel == startChannel) {
+          if(newVal->dissValue != TOS_NODE_ID) { // if it's not me, that was the sender, do data collection
+
+            // start by sending first measurement and go on in sendDone
+            measurementsTransmitted = 0;
+            isTransmittingMeasurements = TRUE;
+            post sendCTPMeasurementData();
+          }
+          // sink node code
+          if(TOS_NODE_ID == 0) {
+            call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
+          }
+        } else {
+          // if it's me, that was the sender, go on with measurements
+          if(newVal->dissValue == TOS_NODE_ID) {
+            measurementSendCount = 0;
+            post sendMeasurementPacket();
+          }
         }
         break;
-
-      case DATA_COLLECTION_REQUEST:
-        //debugMessage("measurement request\n");
-        if(TOS_NODE_ID != newVal->dissValue) { // dont send if i am sender.
-
-          // i shall send all my measurements now
-          // start with sending first measurement and go on in sendDone
-          measurementsTransmitted = 0;
-          isTransmittingMeasurements = TRUE;
-          post sendCTPMeasurementData();
-        }
-      break;
     }
   }
 
@@ -284,23 +323,13 @@ implementation {
 
       }
 
-      // DOESN'T WORK because AMPACKET type is not set correctly -.-
-      /*if(call AMPacket.type(m) == AM_MEASUREMENT_DATA) {
-        measurementsTransmitted++;
-        printf("sent AMPacket type: %d\n", call AMPacket.type(m));
-        printfflush();
-      } else {
-        printf("sent AMPacket type: %d\n", call AMPacket.type(m));
-        printfflush();
-      }*/
-
       sendBusy = FALSE;
     }
-    //if(call AMPacket.type(m) == AM_MEASUREMENT_DATA && measurementsTransmitted < measurementCount) {
     if(isTransmittingMeasurements && measurementsTransmitted < measurementCount) {
       post sendCTPMeasurementData();
     } else {
       isTransmittingMeasurements = FALSE;
+      // go on here
     }
   }
 
@@ -317,8 +346,8 @@ implementation {
       case sizeof(CollectionDataMsg):
         receivedCollectionData = (CollectionDataMsg*)payload;
         // TODO: commented due to debugging
-        //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss); // TODO: use BaseStation to automatically forward packets to serial
-        printf("received rss %d from node %d. sender was node %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId);
+        //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss, receivedCollectionData->channel); // TODO: use BaseStation to automatically forward packets to serial
+        printf("received rss %d from node %d. sender was node %d. measurement channel: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel);
         printfflush();
         break;
 
@@ -359,9 +388,10 @@ implementation {
     if(measurementSendCount < NUM_MEASUREMENTS) {
       post sendMeasurementPacket();
     } else {
-      // now disseminate
       // TODO: maybe we should wait here? I think not. delete me later!
-      controlMsg.dissCommand = FINISHED_MEASUREMENT_SENDING;
+
+      // switch channel
+      controlMsg.dissCommand = CHANGE_CHANNEL;
       controlMsg.dissValue = TOS_NODE_ID;
       call Update.change((ControlData*)(&controlMsg));
     }
@@ -383,6 +413,7 @@ implementation {
       }
 
       measurements[measurementCount].nodeId = rss_msg->nodeId;
+      measurements[measurementCount].channel = currentChannel;
       measurements[measurementCount].measuredRss = (int)getRssi(msg);
       measurementCount++;
     }
@@ -440,7 +471,7 @@ implementation {
     printfflush();
   }
   // Serial data transfer
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue) {
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel) {
     // TODO: refactor: either delete debugMessages or improve their meanings (better)
     if (serialSendBusy) {
       debugMessage("failed1\n");
@@ -453,6 +484,7 @@ implementation {
       rcm->senderNodeId = senderNodeId;
       rcm->receiverNodeId = receiverNodeId;
       rcm->rss = rssValue;
+      rcm->channel = channel;
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
         debugMessage("failed3\n");
@@ -507,5 +539,160 @@ implementation {
     }
 #endif
   }
+  // Channel switching
+  event void SpiResource.granted() {
 
-}
+    printf("Request Granted\n"); printfflush();
+
+    if (txpchanged) {
+      setTxPower(nextTxPower);
+      txpchanged = FALSE;
+    }
+    else if (nextChannel >= 0) {
+      setChannel(nextChannel);
+      nextChannel = -1;
+    }
+
+
+    //if ( nextTxPower != curTxPower)
+    //	setTxPower(nextTxPower);
+
+    releaseSpiResource();
+  }
+
+  error_t acquireSpiResource() {
+    error_t error = call SpiResource.immediateRequest();
+
+    printf("AquireSpiResource()\n"); printfflush();
+
+    if ( error != SUCCESS ) {
+      printf("immediate not possible, requesting()\n"); printfflush();
+      call SpiResource.request();
+    }
+    else {
+      if (txpchanged) {
+        setTxPower(nextTxPower);
+        txpchanged = FALSE;
+      }
+      else if (nextChannel >= 0) {
+        setChannel(nextChannel);
+        nextChannel = -1;
+      }
+
+      //if ( nextTxPower != curTxPower)
+      //	setTxPower(nextTxPower);
+
+      releaseSpiResource();
+    }
+    return error;
+  }
+
+  error_t releaseSpiResource() {
+    printf("Spi resource releasing()\n"); printfflush();
+    call SpiResource.release();
+    return SUCCESS;
+  }
+  void setTxPower(uint8_t tpower) {
+    uint8_t tx_power = tpower;
+    uint16_t wr_power = 0;
+    uint16_t rd_power = 0;
+    cc2420_status_t status;
+
+    call CSN.clr();
+    call SRFOFF.strobe();
+    call CSN.set();
+
+    if ( !tx_power ) {
+      tx_power = CC2420_DEF_RFPOWER;
+    }
+    printf ("Now will set power to %d\n", tx_power); printfflush();
+    atomic{
+      call CSN.clr();
+      if ( curTxPower != tx_power ) {
+        wr_power = ( 2 << CC2420_TXCTRL_TXMIXBUF_CUR ) |
+          ( 3 << CC2420_TXCTRL_PA_CURRENT ) |
+          ( 1 << CC2420_TXCTRL_RESERVED ) |
+          ( (tx_power & 0x1F) << CC2420_TXCTRL_PA_LEVEL );
+
+        status = call TXCTRL.write( wr_power );
+      }
+      call TXCTRL.read(&rd_power);
+      call CSN.set();
+    }
+
+    call CSN.clr();
+    call SRXON.strobe();
+    call CSN.set();
+
+    printf("Written: %d(%X), Read:%d(%X)", wr_power, wr_power, rd_power, rd_power); printfflush();
+
+    if ( rd_power != wr_power)
+      ;//call Leds.led0On();
+    else {
+      ;//call Leds.led0Off();
+      curTxPower = tx_power;
+    }
+
+    if (curTxPower != tx_power) {
+      printf("\t M_TX_POWER is set to %d from %d\n", tx_power, curTxPower);
+      printfflush();
+    }
+
+    printfflush();
+  }
+
+  void setChannel (uint8_t tchannel) {
+    uint8_t channel = tchannel;
+    //currentChannel = tchannel;
+    uint16_t wr_channel = 0;
+    uint16_t rd_channel = 0;
+
+    cc2420_status_t status = 0;
+
+    if(!channel) {
+      channel = CC2420_DEF_CHANNEL;
+    }
+
+
+    call CSN.clr();
+    call SRFOFF.strobe();
+    call CSN.set();
+
+    printf("set to channel=%d currentChannel=%d ",channel, currentChannel);
+
+    atomic {
+
+      if (nextChannel >= 0) {
+        call CSN.clr();
+        call FSCTRL.read(&wr_channel);
+        wr_channel = (wr_channel & 0xFE00) | ( ( (channel - 11)*5+357 ) << CC2420_FSCTRL_FREQ );
+        call CSN.set();
+        call CSN.clr();
+        //wr_channel = ( 1 << CC2420_FSCTRL_LOCK_THR ) | ( ( (channel - 11)*5+357 ) << CC2420_FSCTRL_FREQ );
+        status = call FSCTRL.write( wr_channel );
+        call CSN.set();
+      }
+
+      do {
+        call CSN.clr();
+        call FSCTRL.read(&rd_channel);
+        call CSN.set();
+      } while (rd_channel & 0x1000);
+    }
+
+    call CSN.clr();
+    call SRXON.strobe();
+    call CSN.set();
+
+    if (rd_channel != wr_channel) {
+      printf("Problem: rd_channel=%d(0x%X) != wr_channel=%d(0x%X) && status = 0x%X SPI.owner=%d\n",rd_channel, rd_channel, wr_channel, wr_channel, status, call SpiResource.isOwner());
+      call Leds.led0On();
+    }
+    else {
+      currentChannel = channel;
+    }
+
+    printfflush();
+  }
+
+  }
