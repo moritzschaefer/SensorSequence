@@ -22,4 +22,8 @@ typedef nx_struct RSSMeasurementMsg {
   nx_uint16_t nodeId;
 } RSSMeasurementMsg;
 
+
+typedef nx_struct SerialControlMsg {
+  nx_uint16_t cmd;
+} SerialControlMsg;
 #endif /* DATA_TYPES_H */

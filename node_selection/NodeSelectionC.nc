@@ -10,10 +10,8 @@
 
 // number of measurements per channel and node
 #define NUM_MEASUREMENTS 3
+#define NUM_CHANNELS 13 // TODO: check me
 
-
-// TODO: make this dynamic!
-#define MAX_NODE_COUNT 10
 typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
@@ -67,7 +65,7 @@ implementation {
 
   // init Array
   uint16_t *nodeIds=NULL;
-  measurement measurements[MAX_NODE_COUNT]; // TODO: use NUM_MEASUREMENTS*NUM_CHANNELS
+  measurement measurements[NUM_MEASUREMENTS*NUM_CHANNELS];
 
   // function declarations
   void addNodeIdToArray(uint16_t);
@@ -75,7 +73,7 @@ implementation {
   void debugMessage(const char *);
   void printMeasurementArray();
   bool sendMeasurementPacket();
-  void sendCTPMeasurementData(measurement);
+  task void sendCTPMeasurementData();
   task void statemachine();
 
   // counter/array counter
@@ -130,13 +128,18 @@ implementation {
     }
   }
 
+
   event void Timer.fired() {
     post statemachine();
   }
 
-  // TODO: this function has to become a "task".
+  void resetState() {
+    state = NODE_DETECTION_STATE;
+    senderIterator = 0;
+    measurementsTransmitted = 0;
+  }
 
-  task void statemachine(){ //task
+  task void statemachine(){
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
@@ -199,9 +202,9 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
-  void sendCTPMeasurementData(measurement m) {
+  task void sendCTPMeasurementData() {
     CollectionDataMsg *msg;
-
+    measurement m = measurements[measurementsTransmitted];
     if(sendBusy) {
       debugMessage("Call to sendCTPMeasurementData while sendBusy is true\n");
       return;
@@ -250,18 +253,29 @@ implementation {
         }
         break;
       case MEASUREMENT_REQUEST:
-        if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue)
-          sendCTPMeasurementData(measurements[0]);
+        if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue) {
+          // i shall send all my measurements now
+          // start with sending first measurement and go on in sendDone
+          measurementsTransmitted = 0;
+          post sendCTPMeasurementData();
+        }
       break;
     }
   }
 
   event void CTPSend.sendDone(message_t* m, error_t err) {
+    // If we sent a measurementdata packet, go on by sending the next one
     if(err != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
     } else {
       debugMessage("Sent CTP value\n");
+      if(call AMPacket.type(m) == AM_MEASUREMENT_DATA) {
+        measurementsTransmitted++;
+      }
       sendBusy = FALSE;
+    }
+    if(call AMPacket.type(m) == AM_MEASUREMENT_DATA && measurementsTransmitted < measurementCount) {
+      post sendCTPMeasurementData();
     }
   }
 
@@ -324,7 +338,7 @@ implementation {
       //setLeds(btrpkt->counter);
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
-      if(measurementCount >= 10) {
+      if(measurementCount >= NUM_CHANNELS*NUM_MEASUREMENTS) {
         debugMessage("too many measurements for our array");
       }
 
@@ -431,7 +445,17 @@ implementation {
   }
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
-    debugMessage("received serial data. why..? should not happen.");
+    SerialControlMsg* control_msg;
+    if (len == sizeof(SerialControlMsg)) {
+      debugMessage("received serial data. why..? should not happen.");
+      control_msg = (SerialControlMsg*)payload;
+      // TODO: use MIP
+      if(control_msg->cmd == 0) {
+        // restart
+        resetState();
+        post statemachine();
+      }
+    }
     return bufPtr;
   }
   void debugMessage(const char *msg) {
