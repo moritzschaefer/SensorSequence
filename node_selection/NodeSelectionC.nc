@@ -167,33 +167,31 @@ implementation {
         call Timer.startOneShot(500);
         break;
       case SENDER_SELECTION_STATE:
+        measurementCount = 0;
+
         // change controlMsg
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
-        senderIterator++;
-        if (senderIterator >= nodeCount) {
-          senderIterator = 0; //TODO: skip 0, as it doesn't have to collect its own data.
-          state = MEASUREMENT_TABLE_REQUEST;
-        }
-        //call Timer.startOneShot(200);
+        state = MEASUREMENT_TABLE_REQUEST;
         // go on by disseminate signal from other node
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
-      case MEASUREMENT_TABLE_REQUEST: //get from sender detection state
+      case MEASUREMENT_TABLE_REQUEST:
         controlMsg.dissCommand = MEASUREMENT_REQUEST; //MEASUREMENT_TABLE_REQUEST
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg));
-        printf("Send MEASUREMENT_REQUEST to %u\n", nodeIds[senderIterator]);
+        printf("Send MEASUREMENT_REQUEST of %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
+        } else {
+          state = SENDER_SELECTION_STATE;
         }
         call Timer.startOneShot(2000); // give 2000 ms for every node to send its data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
-	// continued through sendDone post
         break;
     }
   }
@@ -264,8 +262,8 @@ implementation {
 
       case MEASUREMENT_REQUEST:
         //debugMessage("measurement request\n");
-        if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue) {
-          // TODO: check if i wasn't the measurement sender... (or is this implicit because measurementCount == 0 )
+        if(TOS_NODE_ID != newVal->dissValue) { // dont send if i am sender.
+
           // i shall send all my measurements now
           // start with sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
