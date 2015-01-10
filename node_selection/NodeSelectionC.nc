@@ -12,6 +12,9 @@
 #define NUM_MEASUREMENTS 3
 #define NUM_CHANNELS 13 // TODO: check me
 
+
+// TODO: send CTP measurements all in ONE packet via CTP (and serial)
+
 typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
@@ -118,8 +121,7 @@ implementation {
       call DisseminationControl.start();
       call RoutingControl.start();
 
-      if ( TOS_NODE_ID  == 0 ) {
-
+      if (TOS_NODE_ID == 0) {
         call RootControl.setRoot();
         post ShowCounter();
         post statemachine();
@@ -150,7 +152,7 @@ implementation {
         printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
         printfflush();
         state = WAITING_STATE;
-        call Timer.startOneShot(200);
+        call Timer.startOneShot(2000);
         break;
         //Node selection State
       case WAITING_STATE:  //TODO merge with sender_selection_state
@@ -169,7 +171,7 @@ implementation {
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
-          senderIterator = 0;
+          senderIterator = 0; //TODO: skip 0, as it doesn't have to collect its own data.
           state = MEASUREMENT_TABLE_REQUEST;
         }
         call Timer.startOneShot(200);
@@ -185,6 +187,7 @@ implementation {
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
         }
+        call Timer.startOneShot(2000); // give 2000 ms for every node to send its data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
 	// continued through sendDone post
         break;
       // we don't use you anymore (right now)
@@ -254,6 +257,7 @@ implementation {
         break;
       case MEASUREMENT_REQUEST:
         if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue) {
+          // TODO: check if i wasn't the measurement sender... (or is this implicit because measurementCount == 0 )
           // i shall send all my measurements now
           // start with sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
@@ -438,7 +442,6 @@ implementation {
   }
 
   event void SerialAMControl.startDone(error_t err) {
-    debugMessage("successfully started serial control\n");
   }
   event void SerialAMControl.stopDone(error_t err) {
     // do nothing
