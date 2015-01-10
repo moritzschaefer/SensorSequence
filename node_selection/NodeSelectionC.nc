@@ -55,7 +55,6 @@ implementation {
     SENDER_SELECTION_STATE,
     IDLE_STATE,
     WAITING_STATE,
-    MEASUREMENT_ARRAY_REQUEST,
     DATA_COLLECTION_STATE
 
   };
@@ -63,7 +62,7 @@ implementation {
   enum commands{
     ID_REQUEST,
     SENDER_ASSIGN,
-    MEASUREMENT_REQUEST,
+    DATA_COLLECTION_REQUEST,
     FINISHED_MEASUREMENT_SENDING
   };
 
@@ -175,15 +174,15 @@ implementation {
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
-        state = MEASUREMENT_ARRAY_REQUEST;
+        state = DATA_COLLECTION_STATE;
         // go on by disseminate signal from other node
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
-      case MEASUREMENT_ARRAY_REQUEST:
-        controlMsg.dissCommand = MEASUREMENT_REQUEST; //MEASUREMENT_ARRAY_REQUEST
+      case DATA_COLLECTION_STATE:
+        controlMsg.dissCommand = DATA_COLLECTION_REQUEST; //DATA_COLLECTION_STATE
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg));
-        printf("Send MEASUREMENT_REQUEST of %u\n", nodeIds[senderIterator]);
+        printf("Send DATA_COLLECTION_REQUEST of %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
@@ -260,7 +259,7 @@ implementation {
         }
         break;
 
-      case MEASUREMENT_REQUEST:
+      case DATA_COLLECTION_REQUEST:
         //debugMessage("measurement request\n");
         if(TOS_NODE_ID != newVal->dissValue) { // dont send if i am sender.
 
