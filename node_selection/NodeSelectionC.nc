@@ -14,6 +14,7 @@
 
 
 // TODO: send CTP measurements all in ONE packet via CTP (and serial)
+// TODO: node 1 doesn't receive first DISS packet sometimes. why??
 
 typedef struct {
   uint16_t nodeId;
@@ -52,7 +53,6 @@ implementation {
   enum states { // TODO: no need to asign integers. we don't care about the actual values
     NODE_DETECTION_STATE = 0,
     SENDER_SELECTION_STATE = 1,
-    PRINTING_STATE = 2,
     IDLE_STATE = 3,
     WAITING_STATE = 5,
     MEASUREMENT_TABLE_REQUEST,
@@ -63,7 +63,8 @@ implementation {
   enum commands{
     ID_REQUEST = 0,
     SENDER_ASSIGN = 1,
-    MEASUREMENT_REQUEST
+    MEASUREMENT_REQUEST,
+    FINISHED_MEASUREMENT_SENDING
   };
 
   // init Array
@@ -75,15 +76,18 @@ implementation {
   void printNodesArray();
   void debugMessage(const char *);
   void printMeasurementArray();
-  bool sendMeasurementPacket();
+  task void sendMeasurementPacket();
   task void sendCTPMeasurementData();
   task void statemachine();
 
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
+
+  int measurementSendCount = 0;
   int measurementsTransmitted=0;
   int senderIterator=0;
+  bool isTransmittingMeasurements=FALSE;
 
   // Statemachine
   int state = NODE_DETECTION_STATE;
@@ -174,7 +178,8 @@ implementation {
           senderIterator = 0; //TODO: skip 0, as it doesn't have to collect its own data.
           state = MEASUREMENT_TABLE_REQUEST;
         }
-        call Timer.startOneShot(200);
+        //call Timer.startOneShot(200);
+        // go on by disseminate signal from other node
         break;
         // go to DATA_COLLECTION_STATE between each assigned sender
       case MEASUREMENT_TABLE_REQUEST: //get from sender detection state
@@ -189,16 +194,6 @@ implementation {
         }
         call Timer.startOneShot(2000); // give 2000 ms for every node to send its data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
 	// continued through sendDone post
-        break;
-      // we don't use you anymore (right now)
-      case PRINTING_STATE:
-        // measurements done. go on
-        serialSend(measurements[measurementsTransmitted].nodeId, TOS_NODE_ID, measurements[measurementsTransmitted].measuredRss);
-        measurementsTransmitted += 1;
-        if(measurementsTransmitted >= measurementCount) {
-          state = IDLE_STATE;
-          measurementsTransmitted = 0;
-        }
         break;
     }
   }
@@ -217,6 +212,7 @@ implementation {
     msg->senderNodeId = m.nodeId;
     msg->receiverNodeId = TOS_NODE_ID; // This node received the measurement
     msg->rss = m.measuredRss;
+    call AMPacket.setType(&ctp_collection_packet, AM_MEASUREMENT_DATA);
 
     if (call CTPSend.send(&ctp_collection_packet, sizeof(CollectionDataMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
@@ -239,28 +235,41 @@ implementation {
     if (call CTPSend.send(&ctp_discover_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
     } else {
+      debugMessage("started sending CTP value\n");
       sendBusy = TRUE;
     }
   }
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
+    //debugMessage("received diss value: ");
     switch(newVal->dissCommand) {
       case ID_REQUEST:
+        debugMessage("command id request\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
+        //debugMessage("command sender_assign\n");
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
-          while(!sendMeasurementPacket());
+          measurementSendCount = 0;
+          post  sendMeasurementPacket();
         }
         break;
+      case FINISHED_MEASUREMENT_SENDING:
+        if(TOS_NODE_ID == 0) {
+          post statemachine();
+        }
+        break;
+
       case MEASUREMENT_REQUEST:
+        //debugMessage("measurement request\n");
         if(newVal->dissValue != 0 && TOS_NODE_ID == newVal->dissValue) {
           // TODO: check if i wasn't the measurement sender... (or is this implicit because measurementCount == 0 )
           // i shall send all my measurements now
           // start with sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
+          isTransmittingMeasurements = TRUE;
           post sendCTPMeasurementData();
         }
       break;
@@ -270,16 +279,31 @@ implementation {
   event void CTPSend.sendDone(message_t* m, error_t err) {
     // If we sent a measurementdata packet, go on by sending the next one
     if(err != SUCCESS) {
-      debugMessage("Error sending NodeID via CTP\n");
+      debugMessage("Error sending via CTP\n");
     } else {
       debugMessage("Sent CTP value\n");
-      if(call AMPacket.type(m) == AM_MEASUREMENT_DATA) {
+      if(isTransmittingMeasurements) {
         measurementsTransmitted++;
+
       }
+
+      // DOESN'T WORK because AMPACKET type is not set correctly -.-
+      /*if(call AMPacket.type(m) == AM_MEASUREMENT_DATA) {
+        measurementsTransmitted++;
+        printf("sent AMPacket type: %d\n", call AMPacket.type(m));
+        printfflush();
+      } else {
+        printf("sent AMPacket type: %d\n", call AMPacket.type(m));
+        printfflush();
+      }*/
+
       sendBusy = FALSE;
     }
-    if(call AMPacket.type(m) == AM_MEASUREMENT_DATA && measurementsTransmitted < measurementCount) {
+    //if(call AMPacket.type(m) == AM_MEASUREMENT_DATA && measurementsTransmitted < measurementCount) {
+    if(isTransmittingMeasurements && measurementsTransmitted < measurementCount) {
       post sendCTPMeasurementData();
+    } else {
+      isTransmittingMeasurements = FALSE;
     }
   }
 
@@ -295,7 +319,10 @@ implementation {
         break;
       case sizeof(CollectionDataMsg):
         receivedCollectionData = (CollectionDataMsg*)payload;
-        serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss); // TODO: use BaseStation to automatically forward packets to serial
+        // TODO: commented due to debugging
+        //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss); // TODO: use BaseStation to automatically forward packets to serial
+        printf("received rss %d from node %d. sender was node %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId);
+        printfflush();
         break;
 
       default:
@@ -305,21 +332,23 @@ implementation {
   }
 
   // AM send
-  bool sendMeasurementPacket() {
+  task void sendMeasurementPacket() {
     if (!sendBusy) {
       RSSMeasurementMsg* rss_msg = (RSSMeasurementMsg*)(call Packet.getPayload(&am_packet, sizeof(RSSMeasurementMsg)));
       if (rss_msg == NULL) {
-        return FALSE;
+        debugMessage("could not send measurement paket. repeating\n");
+        post sendMeasurementPacket();
+        return;
       }
       rss_msg->nodeId = TOS_NODE_ID;
       if (call AMSend.send(AM_BROADCAST_ADDR, &am_packet, sizeof(RSSMeasurementMsg)) == SUCCESS) {
         //printf("message fired\n");
         //printfflush();
         sendBusy = TRUE;
-        return TRUE;
+        return;
       }
     }
-    return FALSE;
+    post sendMeasurementPacket();
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
@@ -327,12 +356,22 @@ implementation {
     //printf("success sending AM packet");
     if (err != SUCCESS) {
       debugMessage("Error sending AM packet");
+    } else {
+      measurementSendCount += 1;
+    }
+    if(measurementSendCount < NUM_MEASUREMENTS) {
+      post sendMeasurementPacket();
+    } else {
+      // now disseminate
+      // TODO: maybe we should wait here? I think not. delete me later!
+      controlMsg.dissCommand = FINISHED_MEASUREMENT_SENDING;
+      controlMsg.dissValue = TOS_NODE_ID;
+      call Update.change((ControlData*)(&controlMsg));
     }
   }
-  //unnecessary helper
+
   uint16_t getRssi(message_t *msg){
-    //printf("get RSSI\n");
-    return (uint16_t) (call CC2420Packet.getRssi(msg))-45; // According to CC2420 datasheet[2], (RSSI / Energy Detection) it says there is -45 Rssi offset.
+    return (uint16_t) (call CC2420Packet.getRssi(msg))-45; // According to CC2420 datasheet, (RSSI / Energy Detection) it says there is -45 Rssi offset.
   }
 
   // AM receive
