@@ -3,15 +3,8 @@
 //#include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
-//#include "constants.h"
+#include "constants.h"
 #include "MeasurementData.h"
-
-#define DEBUG 1
-
-// number of measurements per channel and node
-#define NUM_MEASUREMENTS 3
-#define NUM_CHANNELS 16
-
 
 // TODO: send CTP measurements all in ONE packet via CTP (and serial)
 // TODO: node 1 doesn't receive first DISS packet sometimes. why??
@@ -97,6 +90,7 @@ implementation {
   void printMeasurementArray();
   task void sendMeasurementPacket();
   task void sendCTPMeasurementData();
+  task void sendCTPFullMeasurementData();
   task void statemachine();
 
   // counter/array counter
@@ -192,11 +186,16 @@ implementation {
     // if we reached first channel again
     if(currentChannel == startChannel) {
       if(currentNode != TOS_NODE_ID) { // if it's not me, that was the sender, do data collection
+        if(SEND_SINGLE_MEASUREMENT_DATA) {
+          // start by sending first measurement and go on in sendDone
+          measurementsTransmitted = 0;
+          isTransmittingMeasurements = TRUE;
+          post sendCTPMeasurementData();
+        } else {
+          post sendCTPFullMeasurementData();
 
-        // start by sending first measurement and go on in sendDone
-        measurementsTransmitted = 0;
-        isTransmittingMeasurements = TRUE;
-        post sendCTPMeasurementData();
+        }
+
       }
       // sink node code
       if(TOS_NODE_ID == 0) {
@@ -260,6 +259,33 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
+  task void sendCTPFullMeasurementData() {
+    FullCollectionDataMsg *msg;
+    int i;
+
+    if(sendBusy) {
+      debugMessage("Call to sendCTPFullMeasurementData while sendBusy is true\n");
+      return;
+    }
+    msg =
+      (FullCollectionDataMsg*)call CTPSend.getPayload(&ctp_collection_packet, sizeof(FullCollectionDataMsg));
+    msg->numData = measurementCount;
+
+    for(i=0; i<measurementCount; i++) {
+      msg->data[i].senderNodeId = measurements[i].nodeId;
+      msg->data[i].receiverNodeId = TOS_NODE_ID; // This node received the measurement
+      msg->data[i].rss = measurements[i].measuredRss;
+      msg->data[i].channel = measurements[i].channel;
+    }
+
+
+    if (call CTPSend.send(&ctp_collection_packet, sizeof(FullCollectionDataMsg)) != SUCCESS) {
+      debugMessage("Error sending FullCollectionData via CTP\n");
+    } else {
+      sendBusy = TRUE;
+    }
+
+  }
   task void sendCTPMeasurementData() {
     CollectionDataMsg *msg;
     measurement m = measurements[measurementsTransmitted];
@@ -350,6 +376,7 @@ implementation {
     // do action dependent on packet type (= size)
     NodeIDMsg *receivedNodeId;
     CollectionDataMsg *receivedCollectionData;
+    FullCollectionDataMsg *receivedFullCollectionData;
     switch(len) {
       case sizeof(NodeIDMsg):
         receivedNodeId = (NodeIDMsg*)payload;
@@ -362,7 +389,10 @@ implementation {
         printf("received rss %d from node %d. sender was node %d. measurement channel: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel);
         printfflush();
         break;
-
+      case sizeof(FullCollectionDataMsg):
+        receivedFullCollectionData = (FullCollectionDataMsg*)payload;
+        printf("received %d measurements from node %d. sender was node %d.\n", receivedFullCollectionData->numData, receivedFullCollectionData->data[0].receiverNodeId, receivedFullCollectionData->data[0].senderNodeId);
+        break;
       default:
         debugMessage("Received CTP length doesn't match expected one.\n");
     }
