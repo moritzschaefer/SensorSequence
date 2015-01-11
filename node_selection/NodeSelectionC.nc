@@ -30,6 +30,7 @@ module NodeSelectionC {
   uses interface DisseminationUpdate<ControlData> as Update;
   uses interface Leds;
   uses interface Timer<TMilli>;
+  uses interface Timer<TMilli> as ChannelTimer;
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send as CTPSend;
@@ -101,6 +102,7 @@ implementation {
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
+  int currentNode = -1; // this value is just for saving who did the channel switch. it can't be used always
 
   int measurementSendCount = 0;
   int measurementsTransmitted=0;
@@ -176,6 +178,37 @@ implementation {
 
   event void Timer.fired() {
     post statemachine();
+  }
+
+  event void ChannelTimer.fired() {
+    nextChannel = (currentChannel+1);
+
+    if(nextChannel >= startChannel+NUM_CHANNELS) {
+      nextChannel = startChannel;
+    }
+    acquireSpiResource();
+    // channel changed
+
+    // if we reached first channel again
+    if(currentChannel == startChannel) {
+      if(currentNode != TOS_NODE_ID) { // if it's not me, that was the sender, do data collection
+
+        // start by sending first measurement and go on in sendDone
+        measurementsTransmitted = 0;
+        isTransmittingMeasurements = TRUE;
+        post sendCTPMeasurementData();
+      }
+      // sink node code
+      if(TOS_NODE_ID == 0) {
+        call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
+      }
+    } else {
+      // if it's me, that was the sender, go on with measurements
+      if(currentNode  == TOS_NODE_ID) {
+        measurementSendCount = 0;
+        post sendMeasurementPacket();
+      }
+    }
   }
 
   void resetState() {
@@ -284,39 +317,9 @@ implementation {
         }
         break;
       case CHANGE_CHANNEL:
-        // TODO wait here, because disseminate has to reach everybody
-
-        // TODO: move this code to a new timer event
-        // call ChannelTimer.startOneShot(50);
-
-        nextChannel = (currentChannel+1);
-
-        if(nextChannel >= startChannel+NUM_CHANNELS) {
-          nextChannel = startChannel;
-        }
-        acquireSpiResource();
-        // channel changed
-
-        // if we reached first channel again
-        if(currentChannel == startChannel) {
-          if(newVal->dissValue != TOS_NODE_ID) { // if it's not me, that was the sender, do data collection
-
-            // start by sending first measurement and go on in sendDone
-            measurementsTransmitted = 0;
-            isTransmittingMeasurements = TRUE;
-            post sendCTPMeasurementData();
-          }
-          // sink node code
-          if(TOS_NODE_ID == 0) {
-            call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
-          }
-        } else {
-          // if it's me, that was the sender, go on with measurements
-          if(newVal->dissValue == TOS_NODE_ID) {
-            measurementSendCount = 0;
-            post sendMeasurementPacket();
-          }
-        }
+        // wait here, because disseminate has to reach everybody
+        call ChannelTimer.startOneShot(100);
+        currentNode = newVal->dissValue;
         break;
     }
   }
@@ -703,4 +706,4 @@ implementation {
     printfflush();
   }
 
-  }
+}

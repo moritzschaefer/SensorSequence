@@ -35,6 +35,10 @@ implementation {
   components new TimerMilliC();
   NodeSelectionC.Timer -> TimerMilliC;
 
+  // Timer to wait for channelswitching/dissemination
+  components new TimerMilliC() as ChannelTimer;
+  NodeSelectionC.ChannelTimer -> ChannelTimer;
+
   // CTP Part
   components CollectionC as Collector;
   components new CollectionSenderC(0x00);
