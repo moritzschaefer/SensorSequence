@@ -6,7 +6,6 @@
 #include "constants.h"
 #include "MeasurementData.h"
 
-// TODO: send CTP measurements all in ONE packet via CTP (and serial)
 // TODO: node 1 doesn't receive first DISS packet sometimes. why??
 
 typedef struct {
