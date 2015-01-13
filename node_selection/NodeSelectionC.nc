@@ -12,6 +12,7 @@ typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
   uint8_t channel;
+  uint8_t measurementNum;
 } measurement;
 
 module NodeSelectionC {
@@ -75,6 +76,7 @@ implementation {
     SENDER_ASSIGN,
     CHANGE_CHANNEL,
     DATA_COLLECTION_REQUEST,
+    DO_NOTHING,
     FINISHED_MEASUREMENT_SENDING
   };
 
@@ -135,9 +137,6 @@ implementation {
   struct ControlData controlMsg;
 
 
-  task void ShowCounter() {
-    call Leds.led1On();
-  }
 
   event void Boot.booted() {
     call RadioControl.start();
@@ -148,19 +147,20 @@ implementation {
     if (err != SUCCESS)
       call RadioControl.start();
     else {
-      // start disseminate and ctp
-      call DisseminationControl.start();
-      call RoutingControl.start();
-
       // set start channel
       nextChannel = startChannel;
       acquireSpiResource();
 
+      // start disseminate and ctp
+      call DisseminationControl.start();
+      call RoutingControl.start();
+
+
       if (TOS_NODE_ID == 0) {
         call RootControl.setRoot();
-        post ShowCounter();
+        call Leds.led0On();
         //post statemachine();
-        call Timer.startPeriodic(500);
+        call Timer.startOneShot(5000);
       }
     }
   }
@@ -178,6 +178,8 @@ implementation {
     }
 
     acquireSpiResource();
+    printfflush();
+
     // channel changed
 
     // if we reached first channel again
@@ -196,7 +198,7 @@ implementation {
       }
       // sink node code
       if(TOS_NODE_ID == 0) {
-        call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on..
+        call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on...
       }
     } else {
       // if it's me, that was the sender, go on with measurements
@@ -219,11 +221,10 @@ implementation {
       case(NODE_DETECTION_STATE):
         // RESET everything
         measurementCount = 0;
-        debugMessage("Send DISCOVER to all nodes\n");
+        debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = 0;
         call Update.change((ControlData*)(&controlMsg));
-        printf("dissCommand = %d\ndissValue = %d\n", controlMsg.dissCommand, controlMsg.dissValue);
         printfflush();
         state = WAITING_STATE;
         call Timer.startOneShot(2000);
@@ -252,6 +253,11 @@ implementation {
           state = SENDER_SELECTION_STATE;
         }
         // go on by disseminate signal from other node
+        break;
+      case IDLE_STATE:
+        controlMsg.dissCommand = DO_NOTHING;
+        controlMsg.dissValue = 0;
+        call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
         break;
     }
   }
@@ -326,17 +332,20 @@ implementation {
   }
 
   event void Value.changed() {
+
     const ControlData* newVal = call Value.get();
     //debugMessage("received diss value: ");
     switch(newVal->dissCommand) {
       case ID_REQUEST:
+        // reset state here! // TODO: all resetting here
+        measurementCount = 0;
         debugMessage("command id request\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
         debugMessage("sender assign\n");
         if(newVal->dissValue == TOS_NODE_ID) {
-          post ShowCounter();
+          call Leds.led1On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
         }
@@ -410,6 +419,7 @@ implementation {
         return;
       }
       rss_msg->nodeId = TOS_NODE_ID;
+      rss_msg->measurementNum = measurementSendCount;
       if (call AMSend.send(AM_BROADCAST_ADDR, &am_packet, sizeof(RSSMeasurementMsg)) == SUCCESS) {
         //printf("message fired\n");
         //printfflush();
@@ -455,6 +465,7 @@ implementation {
 
       measurements[measurementCount].nodeId = rss_msg->nodeId;
       measurements[measurementCount].channel = currentChannel;
+      measurements[measurementCount].measurementNum = rss_msg->measurementNum;
       measurements[measurementCount].measuredRss = (int)getRssi(msg);
       measurementCount++;
     }
@@ -624,6 +635,11 @@ implementation {
       //	setTxPower(nextTxPower);
 
       releaseSpiResource();
+    }
+    if(currentChannel == startChannel) {
+      call Leds.led2On();
+    } else {
+      call Leds.led2Off();
     }
     return error;
   }

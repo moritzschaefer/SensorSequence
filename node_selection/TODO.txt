@@ -7,9 +7,22 @@ step 3:
 in state-machine step 2 oder 3: disseminate auf disseminate1 mit code "2" (benutze wieder enums!). dieses signal nehmen die nodes zum anlass, ihre measurements ans CTP zu senden.
 
 
+# Important:
+- PC/communication UI this night! -> restart
+
 
 
 - define channels to go to
 - define collection channel
 
-- channel switching
+- make channel switching the outer loop
+
+
+
+
+
+AMSend.sendDone -> use state machine
+
+- parameters:
+- delay
+- alles mögliche
