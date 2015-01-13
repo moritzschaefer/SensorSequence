@@ -11,5 +11,8 @@
 
 #define SEND_SINGLE_MEASUREMENT_DATA 0
 
+uint8_t channels[] = {11,12,13};
+uint8_t dataCollectionChannel  = 11;
+
 #endif
 

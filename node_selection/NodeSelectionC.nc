@@ -150,7 +150,6 @@ implementation {
     else {
       // start disseminate and ctp
       call DisseminationControl.start();
-      debugMessage("finished starting disseminate\n");
       call RoutingControl.start();
 
       // set start channel
@@ -177,6 +176,7 @@ implementation {
     if(nextChannel >= startChannel+NUM_CHANNELS) {
       nextChannel = startChannel;
     }
+
     acquireSpiResource();
     // channel changed
 
@@ -217,6 +217,8 @@ implementation {
     switch(state){
       //Node detection State
       case(NODE_DETECTION_STATE):
+        // RESET everything
+        measurementCount = 0;
         debugMessage("Send DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = 0;
@@ -325,14 +327,13 @@ implementation {
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
-    debugMessage("received diss value: ");
+    //debugMessage("received diss value: ");
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         debugMessage("command id request\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
-        //debugMessage("command sender_assign\n");
         debugMessage("sender assign\n");
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
@@ -341,10 +342,9 @@ implementation {
         }
         break;
       case CHANGE_CHANNEL:
-        // wait here, because disseminate has to reach everybody
         debugMessage("change channel\n");
-        call ChannelTimer.startOneShot(100);
         currentNode = newVal->dissValue;
+        call ChannelTimer.startOneShot(100);
         break;
       default:
         debugMessage("unknown\n");
@@ -535,7 +535,7 @@ implementation {
       if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
         serialSendBusy = TRUE;
       } else {
-        printf("Serial send is busy. can't send\n"); printfflush();
+        debugMessage("Serial send is busy. can't send\n");
         return FALSE;
       }
     }
