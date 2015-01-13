@@ -131,9 +131,6 @@ implementation {
   error_t acquireSpiResource();
   error_t releaseSpiResource();
 
-
-
-
   // Dissemination ControlMsg instantiation # TODO: man spricht in C nicht wirklich von instanzen AFAIK. Es ist eher eine Deklaration
   struct ControlData controlMsg;
 
@@ -153,6 +150,7 @@ implementation {
     else {
       // start disseminate and ctp
       call DisseminationControl.start();
+      debugMessage("finished starting disseminate\n");
       call RoutingControl.start();
 
       // set start channel
@@ -162,8 +160,8 @@ implementation {
       if (TOS_NODE_ID == 0) {
         call RootControl.setRoot();
         post ShowCounter();
-        post statemachine();
-        //call Timer.startPeriodic(2000); //delete
+        //post statemachine();
+        call Timer.startPeriodic(500);
       }
     }
   }
@@ -327,7 +325,7 @@ implementation {
 
   event void Value.changed() {
     const ControlData* newVal = call Value.get();
-    //debugMessage("received diss value: ");
+    debugMessage("received diss value: ");
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         debugMessage("command id request\n");
@@ -335,6 +333,7 @@ implementation {
         break;
       case SENDER_ASSIGN:
         //debugMessage("command sender_assign\n");
+        debugMessage("sender assign\n");
         if(newVal->dissValue == TOS_NODE_ID) {
           post ShowCounter();
           measurementSendCount = 0;
@@ -343,9 +342,12 @@ implementation {
         break;
       case CHANGE_CHANNEL:
         // wait here, because disseminate has to reach everybody
+        debugMessage("change channel\n");
         call ChannelTimer.startOneShot(100);
         currentNode = newVal->dissValue;
         break;
+      default:
+        debugMessage("unknown\n");
     }
   }
 
