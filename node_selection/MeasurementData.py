@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 6
+DEFAULT_MESSAGE_SIZE = 8
 
 # The Active Message type associated with this message.
 AM_TYPE = 137
 
 class MeasurementData(tinyos.message.Message.Message):
-    # Create a new MeasurementData of size 6.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=6):
+    # Create a new MeasurementData of size 8.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=8):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -40,6 +40,14 @@ class MeasurementData(tinyos.message.Message.Message):
             pass
         try:
             s += "  [receiverNodeId=0x%x]\n" % (self.get_receiverNodeId())
+        except:
+            pass
+        try:
+            s += "  [channel=0x%x]\n" % (self.get_channel())
+        except:
+            pass
+        try:
+            s += "  [measurementNum=0x%x]\n" % (self.get_measurementNum())
         except:
             pass
         return s
@@ -210,4 +218,114 @@ class MeasurementData(tinyos.message.Message.Message):
     #
     def sizeBits_receiverNodeId(self):
         return 16
+    
+    #
+    # Accessor methods for field: channel
+    #   Field type: short
+    #   Offset (bits): 48
+    #   Size (bits): 8
+    #
+
+    #
+    # Return whether the field 'channel' is signed (False).
+    #
+    def isSigned_channel(self):
+        return False
+    
+    #
+    # Return whether the field 'channel' is an array (False).
+    #
+    def isArray_channel(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'channel'
+    #
+    def offset_channel(self):
+        return (48 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'channel'
+    #
+    def offsetBits_channel(self):
+        return 48
+    
+    #
+    # Return the value (as a short) of the field 'channel'
+    #
+    def get_channel(self):
+        return self.getUIntElement(self.offsetBits_channel(), 8, 1)
+    
+    #
+    # Set the value of the field 'channel'
+    #
+    def set_channel(self, value):
+        self.setUIntElement(self.offsetBits_channel(), 8, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'channel'
+    #
+    def size_channel(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'channel'
+    #
+    def sizeBits_channel(self):
+        return 8
+    
+    #
+    # Accessor methods for field: measurementNum
+    #   Field type: short
+    #   Offset (bits): 56
+    #   Size (bits): 8
+    #
+
+    #
+    # Return whether the field 'measurementNum' is signed (False).
+    #
+    def isSigned_measurementNum(self):
+        return False
+    
+    #
+    # Return whether the field 'measurementNum' is an array (False).
+    #
+    def isArray_measurementNum(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'measurementNum'
+    #
+    def offset_measurementNum(self):
+        return (56 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'measurementNum'
+    #
+    def offsetBits_measurementNum(self):
+        return 56
+    
+    #
+    # Return the value (as a short) of the field 'measurementNum'
+    #
+    def get_measurementNum(self):
+        return self.getUIntElement(self.offsetBits_measurementNum(), 8, 1)
+    
+    #
+    # Set the value of the field 'measurementNum'
+    #
+    def set_measurementNum(self, value):
+        self.setUIntElement(self.offsetBits_measurementNum(), 8, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'measurementNum'
+    #
+    def size_measurementNum(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'measurementNum'
+    #
+    def sizeBits_measurementNum(self):
+        return 8
     

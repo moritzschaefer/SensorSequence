@@ -1,11 +1,12 @@
 #define NEW_PRINTF_SEMANTICS
-#include "printf.h"
 //#include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
 #include "constants.h"
 #include "MeasurementData.h"
+#include "SerialControl.h"
 
+#include "printf.h"
 // TODO: node 1 doesn't receive first DISS packet sometimes. why??
 
 typedef struct {
@@ -113,7 +114,7 @@ implementation {
   bool sendBusy = FALSE;
 
   // Serial Transmission
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel);
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum);
   bool serialSendBusy = FALSE;
   message_t serial_packet;
 
@@ -160,7 +161,7 @@ implementation {
         call RootControl.setRoot();
         call Leds.led0On();
         //post statemachine();
-        call Timer.startOneShot(5000);
+        //call Timer.startOneShot(5000); // TODO: enable me
       }
     }
   }
@@ -304,6 +305,7 @@ implementation {
     msg->receiverNodeId = TOS_NODE_ID; // This node received the measurement
     msg->rss = m.measuredRss;
     msg->channel = m.channel;
+    msg->measurementNum = m.measurementNum;
 
     if (call CTPSend.send(&ctp_collection_packet, sizeof(CollectionDataMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
@@ -395,8 +397,8 @@ implementation {
       case sizeof(CollectionDataMsg):
         receivedCollectionData = (CollectionDataMsg*)payload;
         // TODO: commented due to debugging
-        //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss, receivedCollectionData->channel); // TODO: use BaseStation to automatically forward packets to serial
-        printf("received rss %d from node %d. sender was node %d. measurement channel: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel);
+        //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss, receivedCollectionData->channel, receivedCollectionData->measurementNum);
+        printf("rss %d node %d sender %d channel: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel);
         printfflush();
         break;
       case sizeof(FullCollectionDataMsg):
@@ -432,7 +434,7 @@ implementation {
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
     sendBusy = FALSE;
-    printf("success sending AM packet\n");
+    debugMessage("success sending AM packet\n");
     if (err != SUCCESS) {
       debugMessage("Error sending AM packet");
     } else {
@@ -523,7 +525,7 @@ implementation {
     printfflush();
   }
   // Serial data transfer
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel) {
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum) {
     // TODO: refactor: either delete debugMessages or improve their meanings (better)
     if (serialSendBusy) {
       debugMessage("failed1\n");
@@ -537,6 +539,7 @@ implementation {
       rcm->receiverNodeId = receiverNodeId;
       rcm->rss = rssValue;
       rcm->channel = channel;
+      rcm->measurementNum = measurementNum;
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
         debugMessage("failed3\n");
@@ -568,16 +571,13 @@ implementation {
   }
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
-    SerialControlMsg* control_msg;
-    if (len == sizeof(SerialControlMsg)) {
-      debugMessage("received serial data. why..? should not happen.");
-      control_msg = (SerialControlMsg*)payload;
-      // TODO: use MIP
-      if(control_msg->cmd == 0) {
-        // restart
-        resetState();
-        post statemachine();
-      }
+    serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
+    call Leds.led0On();
+    // TODO: use MIP
+    if(control_msg->cmd == 0) {
+      // restart
+      resetState();
+      post statemachine();
     }
     return bufPtr;
   }

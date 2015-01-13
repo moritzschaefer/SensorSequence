@@ -1,7 +1,7 @@
 #ifndef CONSTANTS
 #define CONSTANTS
 
-#define DEBUG 1
+#define DEBUG 0
 
 // number of measurements per channel and node
 #define NUM_MEASUREMENTS 5

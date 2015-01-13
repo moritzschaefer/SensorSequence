@@ -1,11 +1,14 @@
 COMPONENT=NodeSelectionAppC
 
 # for serial data upload
-TOSMAKE_PRE_EXE_DEPS += MeasurementData.py
-TOSMAKE_CLEAN_EXTRA = *.pyc MeasurementData.py
+TOSMAKE_PRE_EXE_DEPS += MeasurementData.py SerialControl.py
+TOSMAKE_CLEAN_EXTRA = *.pyc MeasurementData.py SerialControl.py
 
 MeasurementData.py:
 	nescc-mig python $(CFLAGS) -python-classname=MeasurementData MeasurementData.h measurement_data -o $@
+
+SerialControl.py:
+	nescc-mig python $(CFLAGS) -python-classname=SerialControl SerialControl.h serial_control -o $@
 
 # for ctp:
 CFLAGS += -I$(TINYOS_OS_DIR)/lib/net \
