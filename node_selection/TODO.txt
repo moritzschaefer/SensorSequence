@@ -1,28 +1,29 @@
-step 1:
-- enum für states. keine zahlen mehr für states.
-- in der präsentation state machine zeichnen
-step 2:
-- zweites CTP Interface hinzufügen.
-step 3:
-in state-machine step 2 oder 3: disseminate auf disseminate1 mit code "2" (benutze wieder enums!). dieses signal nehmen die nodes zum anlass, ihre measurements ans CTP zu senden.
+---------------------
+add designs choice DETAILS and problems
+--------------------
 
+details:
 
-# Important:
-- PC/communication UI this night! -> restart
+- node detection. how to 'ensure' to reach all nodes
+  send disseminate
+  wait for nodes to respond (time is configurable)
 
+problems:
+  disseminate sends after reset
+  ctp find out packet size
 
+---------------------------
+todo
+---------------------------
 
+- assign the sender which should send measurements
+- make channel configurable
 - define channels to go to
 - define collection channel
-
-- make channel switching the outer loop
-
-
-
-
-
+- make channel switching the outer loop ( maybe )
 AMSend.sendDone -> use state machine
 
-- parameters:
-- delay
-- alles mögliche
+parameters to support
+- delays (channel switching, wait for node ids, ...)
+- num measurements
+- channels
