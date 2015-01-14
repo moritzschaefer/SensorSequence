@@ -323,7 +323,7 @@ implementation {
     if (call CTPSend.send(&ctp_discover_packet, sizeof(NodeIDMsg)) != SUCCESS) {
       debugMessage("Error sending NodeID via CTP\n");
     } else {
-      debugMessage("started sending CTP value\n");
+      debugMessage("Sent Node ID\n");
       sendBusy = TRUE;
     }
   }
@@ -341,7 +341,7 @@ implementation {
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
         measurementCount = 0;
-        debugMessage("command id request\n");
+        debugMessage("ID Request from Sink node\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
@@ -356,12 +356,12 @@ implementation {
           isSender = FALSE;
         break;
       case CHANGE_CHANNEL:
-        debugMessage("change channel\n");
+        //debugMessage("change channel\n");
         nextChannel = newVal->dissValue;
-        call ChannelTimer.startOneShot(600);
+        call ChannelTimer.startOneShot(150);
         break;
       default:
-        debugMessage("unknown\n");
+        debugMessage("waiting\n");
     }
   }
 
@@ -370,7 +370,7 @@ implementation {
     if(err != SUCCESS) {
       debugMessage("Error sending via CTP\n");
     } else {
-      debugMessage("Sent CTP value\n");
+      debugMessage("transmitted measurement value to sink\n");
       if(isTransmittingMeasurements) {
         measurementsTransmitted++;
 
@@ -401,7 +401,7 @@ implementation {
         receivedCollectionData = (CollectionDataMsg*)payload;
         // TODO: commented due to debugging
         //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss, receivedCollectionData->channel, receivedCollectionData->measurementNum);
-        printf("rss %d node %d sender %d channel: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel);
+        printf("received data: rss %d node %d sender %d channel: %d\n meas.num: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel, receivedCollectionData->measurementNum);
         printfflush();
         break;
       case sizeof(FullCollectionDataMsg):
@@ -437,10 +437,10 @@ implementation {
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
     sendBusy = FALSE;
-    debugMessage("success sending AM packet\n");
     if (err != SUCCESS) {
       debugMessage("Error sending AM packet");
     } else {
+      debugMessage("sent measurement\n");
       measurementSendCount += 1;
     }
     if(measurementSendCount < NUM_MEASUREMENTS) {
@@ -621,7 +621,7 @@ implementation {
   error_t acquireSpiResource() {
     error_t error = call SpiResource.immediateRequest();
 
-    printf("AquireSpiResource()\n"); printfflush();
+    //printf("AquireSpiResource()\n"); printfflush();
 
     if ( error != SUCCESS ) {
       printf("immediate not possible, requesting()\n"); printfflush();

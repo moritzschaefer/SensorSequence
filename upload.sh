@@ -5,7 +5,11 @@ if [ "$?" -ne "0" ]; then
    echo "COMPILE ERROR!"
    exit 1
 fi
-if [ "$#" -eq "2" ]; then
+if "$#" -eq "3" ]; then
+  node0=$1
+  node1=$2
+  node2=$3
+elif [ "$#" -eq "2" ]; then
   node0=$1
   node1=$2
 else
@@ -13,7 +17,9 @@ else
   node1=1
 fi
 echo "Programming Node 1"
-make tmote reinstall,2 bsl,/dev/ttyUSB0
+if [ -n $node2 ]; then
+  make tmote reinstall,2 bsl,/dev/ttyUSB$node2
+fi
 make tmote reinstall,1 bsl,/dev/ttyUSB$node1 || {
   echo "Error programming node 1"
   exit 1
