@@ -16,6 +16,8 @@ problems:
 todo
 ---------------------------
 
+- make Serial Data Reading work!!!!
+- assign nodes who should send measurement-ctp
 - assign the sender which should send measurements
 - make channel configurable
 - define channels to go to
