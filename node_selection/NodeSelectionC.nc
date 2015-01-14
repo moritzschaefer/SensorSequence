@@ -7,7 +7,6 @@
 #include "SerialControl.h"
 
 #include "printf.h"
-// TODO: node 1 doesn't receive first DISS packet sometimes. why??
 
 typedef struct {
   uint16_t nodeId;
@@ -98,7 +97,8 @@ implementation {
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
-  int currentNode = -1; // this value is just for saving who did the channel switch. it can't be used always
+  bool isSender = FALSE; // this value is just for saving who did the channel switch. it can't be used always
+  bool justStarted = TRUE;
 
   int measurementSendCount = 0;
   int measurementsTransmitted=0;
@@ -172,11 +172,6 @@ implementation {
   }
 
   event void ChannelTimer.fired() {
-    nextChannel = (currentChannel+1);
-
-    if(nextChannel >= startChannel+NUM_CHANNELS) {
-      nextChannel = startChannel;
-    }
 
     acquireSpiResource();
     printfflush();
@@ -185,7 +180,7 @@ implementation {
 
     // if we reached first channel again
     if(currentChannel == startChannel) {
-      if(currentNode != TOS_NODE_ID) { // if it's not me, that was the sender, do data collection
+      if(!isSender) { // if it's not me, that was the sender, do data collection
         if(SEND_SINGLE_MEASUREMENT_DATA) {
           // start by sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
@@ -203,7 +198,7 @@ implementation {
       }
     } else {
       // if it's me, that was the sender, go on with measurements
-      if(currentNode  == TOS_NODE_ID) {
+      if(isSender) {
         measurementSendCount = 0;
         post sendMeasurementPacket();
       }
@@ -334,28 +329,36 @@ implementation {
   }
 
   event void Value.changed() {
-
     const ControlData* newVal = call Value.get();
+    // ignore first disseminate command if we just started and command is not id_request
+    if(justStarted && newVal->dissCommand != ID_REQUEST) {
+      return;
+    }
+
     //debugMessage("received diss value: ");
     switch(newVal->dissCommand) {
       case ID_REQUEST:
         // reset state here! // TODO: all resetting here
+        justStarted = FALSE;
         measurementCount = 0;
         debugMessage("command id request\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
+        measurementCount = 0;
         debugMessage("sender assign\n");
         if(newVal->dissValue == TOS_NODE_ID) {
+          isSender = TRUE;
           call Leds.led1On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
-        }
+        } else
+          isSender = FALSE;
         break;
       case CHANGE_CHANNEL:
         debugMessage("change channel\n");
-        currentNode = newVal->dissValue;
-        call ChannelTimer.startOneShot(100);
+        nextChannel = newVal->dissValue;
+        call ChannelTimer.startOneShot(600);
         break;
       default:
         debugMessage("unknown\n");
@@ -445,7 +448,10 @@ implementation {
     } else {
       // switch channel
       controlMsg.dissCommand = CHANGE_CHANNEL;
-      controlMsg.dissValue = TOS_NODE_ID;
+      controlMsg.dissValue = currentChannel+1; // TODO:
+      if(controlMsg.dissValue >= startChannel+NUM_CHANNELS) {
+        controlMsg.dissValue = startChannel;
+      }
       call Update.change((ControlData*)(&controlMsg));
     }
   }

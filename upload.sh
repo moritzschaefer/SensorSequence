@@ -1,4 +1,5 @@
 pkill -f "PrintfClient"
+pkill -f "host_controller"
 make tmote
 if [ "$?" -ne "0" ]; then
    echo "COMPILE ERROR!"
@@ -12,7 +13,7 @@ else
   node1=1
 fi
 echo "Programming Node 1"
-#make tmote reinstall,2 bsl,/dev/ttyUSB2
+make tmote reinstall,2 bsl,/dev/ttyUSB0
 make tmote reinstall,1 bsl,/dev/ttyUSB$node1 || {
   echo "Error programming node 1"
   exit 1
