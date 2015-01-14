@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 1
+DEFAULT_MESSAGE_SIZE = 9
 
 # The Active Message type associated with this message.
 AM_TYPE = 144
 
 class SerialControl(tinyos.message.Message.Message):
-    # Create a new SerialControl of size 1.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=1):
+    # Create a new SerialControl of size 9.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=9):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -32,6 +32,26 @@ class SerialControl(tinyos.message.Message.Message):
         s = "Message <SerialControl> \n"
         try:
             s += "  [cmd=0x%x]\n" % (self.get_cmd())
+        except:
+            pass
+        try:
+            s += "  [num_measurements=0x%x]\n" % (self.get_num_measurements())
+        except:
+            pass
+        try:
+            s += "  [debug=0x%x]\n" % (self.get_debug())
+        except:
+            pass
+        try:
+            s += "  [data_collection_channel=0x%x]\n" % (self.get_data_collection_channel())
+        except:
+            pass
+        try:
+            s += "  [channel_wait_time=0x%x]\n" % (self.get_channel_wait_time())
+        except:
+            pass
+        try:
+            s += "  [id_request_wait_time=0x%x]\n" % (self.get_id_request_wait_time())
         except:
             pass
         return s
@@ -92,4 +112,279 @@ class SerialControl(tinyos.message.Message.Message):
     #
     def sizeBits_cmd(self):
         return 8
+    
+    #
+    # Accessor methods for field: num_measurements
+    #   Field type: int
+    #   Offset (bits): 8
+    #   Size (bits): 16
+    #
+
+    #
+    # Return whether the field 'num_measurements' is signed (False).
+    #
+    def isSigned_num_measurements(self):
+        return False
+    
+    #
+    # Return whether the field 'num_measurements' is an array (False).
+    #
+    def isArray_num_measurements(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'num_measurements'
+    #
+    def offset_num_measurements(self):
+        return (8 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'num_measurements'
+    #
+    def offsetBits_num_measurements(self):
+        return 8
+    
+    #
+    # Return the value (as a int) of the field 'num_measurements'
+    #
+    def get_num_measurements(self):
+        return self.getUIntElement(self.offsetBits_num_measurements(), 16, 1)
+    
+    #
+    # Set the value of the field 'num_measurements'
+    #
+    def set_num_measurements(self, value):
+        self.setUIntElement(self.offsetBits_num_measurements(), 16, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'num_measurements'
+    #
+    def size_num_measurements(self):
+        return (16 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'num_measurements'
+    #
+    def sizeBits_num_measurements(self):
+        return 16
+    
+    #
+    # Accessor methods for field: debug
+    #   Field type: short
+    #   Offset (bits): 24
+    #   Size (bits): 8
+    #
+
+    #
+    # Return whether the field 'debug' is signed (False).
+    #
+    def isSigned_debug(self):
+        return False
+    
+    #
+    # Return whether the field 'debug' is an array (False).
+    #
+    def isArray_debug(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'debug'
+    #
+    def offset_debug(self):
+        return (24 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'debug'
+    #
+    def offsetBits_debug(self):
+        return 24
+    
+    #
+    # Return the value (as a short) of the field 'debug'
+    #
+    def get_debug(self):
+        return self.getUIntElement(self.offsetBits_debug(), 8, 1)
+    
+    #
+    # Set the value of the field 'debug'
+    #
+    def set_debug(self, value):
+        self.setUIntElement(self.offsetBits_debug(), 8, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'debug'
+    #
+    def size_debug(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'debug'
+    #
+    def sizeBits_debug(self):
+        return 8
+    
+    #
+    # Accessor methods for field: data_collection_channel
+    #   Field type: short
+    #   Offset (bits): 32
+    #   Size (bits): 8
+    #
+
+    #
+    # Return whether the field 'data_collection_channel' is signed (False).
+    #
+    def isSigned_data_collection_channel(self):
+        return False
+    
+    #
+    # Return whether the field 'data_collection_channel' is an array (False).
+    #
+    def isArray_data_collection_channel(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'data_collection_channel'
+    #
+    def offset_data_collection_channel(self):
+        return (32 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'data_collection_channel'
+    #
+    def offsetBits_data_collection_channel(self):
+        return 32
+    
+    #
+    # Return the value (as a short) of the field 'data_collection_channel'
+    #
+    def get_data_collection_channel(self):
+        return self.getUIntElement(self.offsetBits_data_collection_channel(), 8, 1)
+    
+    #
+    # Set the value of the field 'data_collection_channel'
+    #
+    def set_data_collection_channel(self, value):
+        self.setUIntElement(self.offsetBits_data_collection_channel(), 8, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'data_collection_channel'
+    #
+    def size_data_collection_channel(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'data_collection_channel'
+    #
+    def sizeBits_data_collection_channel(self):
+        return 8
+    
+    #
+    # Accessor methods for field: channel_wait_time
+    #   Field type: int
+    #   Offset (bits): 40
+    #   Size (bits): 16
+    #
+
+    #
+    # Return whether the field 'channel_wait_time' is signed (False).
+    #
+    def isSigned_channel_wait_time(self):
+        return False
+    
+    #
+    # Return whether the field 'channel_wait_time' is an array (False).
+    #
+    def isArray_channel_wait_time(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'channel_wait_time'
+    #
+    def offset_channel_wait_time(self):
+        return (40 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'channel_wait_time'
+    #
+    def offsetBits_channel_wait_time(self):
+        return 40
+    
+    #
+    # Return the value (as a int) of the field 'channel_wait_time'
+    #
+    def get_channel_wait_time(self):
+        return self.getUIntElement(self.offsetBits_channel_wait_time(), 16, 1)
+    
+    #
+    # Set the value of the field 'channel_wait_time'
+    #
+    def set_channel_wait_time(self, value):
+        self.setUIntElement(self.offsetBits_channel_wait_time(), 16, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'channel_wait_time'
+    #
+    def size_channel_wait_time(self):
+        return (16 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'channel_wait_time'
+    #
+    def sizeBits_channel_wait_time(self):
+        return 16
+    
+    #
+    # Accessor methods for field: id_request_wait_time
+    #   Field type: int
+    #   Offset (bits): 56
+    #   Size (bits): 16
+    #
+
+    #
+    # Return whether the field 'id_request_wait_time' is signed (False).
+    #
+    def isSigned_id_request_wait_time(self):
+        return False
+    
+    #
+    # Return whether the field 'id_request_wait_time' is an array (False).
+    #
+    def isArray_id_request_wait_time(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'id_request_wait_time'
+    #
+    def offset_id_request_wait_time(self):
+        return (56 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'id_request_wait_time'
+    #
+    def offsetBits_id_request_wait_time(self):
+        return 56
+    
+    #
+    # Return the value (as a int) of the field 'id_request_wait_time'
+    #
+    def get_id_request_wait_time(self):
+        return self.getUIntElement(self.offsetBits_id_request_wait_time(), 16, 1)
+    
+    #
+    # Set the value of the field 'id_request_wait_time'
+    #
+    def set_id_request_wait_time(self, value):
+        self.setUIntElement(self.offsetBits_id_request_wait_time(), 16, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'id_request_wait_time'
+    #
+    def size_id_request_wait_time(self):
+        return (16 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'id_request_wait_time'
+    #
+    def sizeBits_id_request_wait_time(self):
+        return 16
     

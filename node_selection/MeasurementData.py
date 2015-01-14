@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 8
+DEFAULT_MESSAGE_SIZE = 9
 
 # The Active Message type associated with this message.
 AM_TYPE = 137
 
 class MeasurementData(tinyos.message.Message.Message):
-    # Create a new MeasurementData of size 8.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=8):
+    # Create a new MeasurementData of size 9.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=9):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -276,9 +276,9 @@ class MeasurementData(tinyos.message.Message.Message):
     
     #
     # Accessor methods for field: measurementNum
-    #   Field type: short
+    #   Field type: int
     #   Offset (bits): 56
-    #   Size (bits): 8
+    #   Size (bits): 16
     #
 
     #
@@ -306,26 +306,26 @@ class MeasurementData(tinyos.message.Message.Message):
         return 56
     
     #
-    # Return the value (as a short) of the field 'measurementNum'
+    # Return the value (as a int) of the field 'measurementNum'
     #
     def get_measurementNum(self):
-        return self.getUIntElement(self.offsetBits_measurementNum(), 8, 1)
+        return self.getUIntElement(self.offsetBits_measurementNum(), 16, 1)
     
     #
     # Set the value of the field 'measurementNum'
     #
     def set_measurementNum(self, value):
-        self.setUIntElement(self.offsetBits_measurementNum(), 8, value, 1)
+        self.setUIntElement(self.offsetBits_measurementNum(), 16, value, 1)
     
     #
     # Return the size, in bytes, of the field 'measurementNum'
     #
     def size_measurementNum(self):
-        return (8 / 8)
+        return (16 / 8)
     
     #
     # Return the size, in bits, of the field 'measurementNum'
     #
     def sizeBits_measurementNum(self):
-        return 8
+        return 16
     

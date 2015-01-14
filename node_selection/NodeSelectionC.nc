@@ -12,7 +12,7 @@ typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
   uint8_t channel;
-  uint8_t measurementNum;
+  uint16_t measurementNum;
 } measurement;
 
 module NodeSelectionC {
@@ -80,9 +80,15 @@ implementation {
     FINISHED_MEASUREMENT_SENDING
   };
 
+  uint16_t numMeasurements = 5;
+  uint16_t channelWaitTime = 150;
+  uint16_t idRequestWaitTime = 2000;
+  uint16_t startUpWaitTime = 5000;
+  uint8_t dataCollectionChannel  = 11;
+
   // init Array
   uint16_t *nodeIds=NULL;
-  measurement measurements[NUM_MEASUREMENTS*NUM_CHANNELS];
+  measurement *measurements;
 
   // function declarations
   void addNodeIdToArray(uint16_t);
@@ -160,8 +166,8 @@ implementation {
       if (TOS_NODE_ID == 0) {
         call RootControl.setRoot();
         call Leds.led0On();
-        //post statemachine();
-        //call Timer.startOneShot(5000); // TODO: enable me
+        // Wait before starting to receive "dead" disseminate
+        //call Timer.startOneShot(startUpWaitTime);
       }
     }
   }
@@ -194,7 +200,7 @@ implementation {
       }
       // sink node code
       if(TOS_NODE_ID == 0) {
-        call Timer.startOneShot(2000); // give 2000 ms to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on...
+        call Timer.startOneShot(4000); // give time to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on...
       }
     } else {
       // if it's me, that was the sender, go on with measurements
@@ -219,11 +225,11 @@ implementation {
         measurementCount = 0;
         debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
-        controlMsg.dissValue = 0;
+        controlMsg.dissValue = numMeasurements;
         call Update.change((ControlData*)(&controlMsg));
         printfflush();
         state = WAITING_STATE;
-        call Timer.startOneShot(2000);
+        call Timer.startOneShot(idRequestWaitTime);
         break;
         //Node selection State
       case WAITING_STATE:  //TODO merge with sender_selection_state
@@ -341,6 +347,11 @@ implementation {
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
         measurementCount = 0;
+        numMeasurements = newVal->dissValue;
+        if(measurements) {
+          free(measurements);
+        }
+        measurements = malloc(sizeof(measurement)*numMeasurements*NUM_CHANNELS);
         debugMessage("ID Request from Sink node\n");
         sendCTPNodeId();
         break;
@@ -443,7 +454,7 @@ implementation {
       debugMessage("sent measurement\n");
       measurementSendCount += 1;
     }
-    if(measurementSendCount < NUM_MEASUREMENTS) {
+    if(measurementSendCount < numMeasurements) {
       post sendMeasurementPacket();
     } else {
       // switch channel
@@ -467,7 +478,7 @@ implementation {
       //setLeds(btrpkt->counter);
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
-      if(measurementCount >= NUM_CHANNELS*NUM_MEASUREMENTS) {
+      if(measurementCount >= NUM_CHANNELS*numMeasurements) {
         debugMessage("too many measurements for our array");
       }
 
@@ -581,8 +592,24 @@ implementation {
     call Leds.led0On();
     // TODO: use MIP
     if(control_msg->cmd == 0) {
-      // restart
       resetState();
+
+      // set all data from packet
+      if(control_msg->num_measurements > 0) {
+        numMeasurements = control_msg->num_measurements;
+      }
+      //debug = control_msg->debug;
+
+      if(control_msg->channel_wait_time > 0) {
+        channelWaitTime = control_msg->channel_wait_time;
+      }
+      if(control_msg->id_request_wait_time > 0) {
+        idRequestWaitTime = control_msg->id_request_wait_time;
+      }
+      if(control_msg->data_collection_channel > 0) {
+        dataCollectionChannel = control_msg->data_collection_channel;
+      }
+
       post statemachine();
     }
     return bufPtr;

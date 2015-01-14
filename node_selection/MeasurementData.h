@@ -6,7 +6,7 @@ typedef nx_struct measurement_data {
   nx_uint16_t senderNodeId;
   nx_uint16_t receiverNodeId;
   nx_uint8_t channel;
-  nx_uint8_t measurementNum;
+  nx_uint16_t measurementNum;
 } measurement_data_t;
 
 enum {

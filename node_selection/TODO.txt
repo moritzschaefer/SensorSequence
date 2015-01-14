@@ -22,8 +22,11 @@ todo
 - define collection channel
 - make channel switching the outer loop ( maybe )
 AMSend.sendDone -> use state machine
+- use another timer for resetting channel to 11
 
 parameters to support
 - delays (channel switching, wait for node ids, ...)
 - num measurements
 - channels
+
+MAX: ändere alle snake_case zu camelCase (außer in host_controller.py) und außer die measurement_data_t und serial_control_t

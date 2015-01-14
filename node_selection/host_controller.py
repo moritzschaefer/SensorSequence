@@ -31,6 +31,11 @@ class HostController:
     def send(self):
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
+        # 0 means, don't change the value
+        smsg.set_num_measurements(0)
+        smsg.set_channel_wait_time(0)
+        smsg.set_id_request_wait_time(0)
+        smsg.set_data_collection_channel(0)
         self.mif.sendMsg(self.tos_source, 0xFFFF, smsg.get_amType(), 0, smsg)
 
     def main_loop(self):
