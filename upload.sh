@@ -16,10 +16,14 @@ else
   node0=0
   node1=1
 fi
-echo "Programming Node 1"
+echo "Programming Node 2"
 if [ -n "$node2" ]; then
-  make tmote reinstall,2 bsl,/dev/ttyUSB$node2
+  make tmote reinstall,2 bsl,/dev/ttyUSB$node2 || {
+  echo "Error programming node 2"
+  exit 1
+  }
 fi
+echo "Programming Node 1"
 make tmote reinstall,1 bsl,/dev/ttyUSB$node1 || {
   echo "Error programming node 1"
   exit 1
