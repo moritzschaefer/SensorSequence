@@ -32,7 +32,7 @@ class HostController:
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
         # 0 means, don't change the value
-        smsg.set_num_measurements(0)
+        smsg.set_num_measurements(2)
         smsg.set_channel_wait_time(0)
         smsg.set_id_request_wait_time(0)
         smsg.set_data_collection_channel(0)

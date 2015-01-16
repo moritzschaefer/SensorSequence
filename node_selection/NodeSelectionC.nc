@@ -24,6 +24,7 @@ module NodeSelectionC {
   uses interface Leds;
   uses interface Timer<TMilli>;
   uses interface Timer<TMilli> as ChannelTimer;
+  uses interface Timer<TMilli> as ResetTimer;
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send as CTPSend;
@@ -175,6 +176,11 @@ implementation {
 
   event void Timer.fired() {
     post statemachine();
+  }
+  event void ResetTimer.fired() {
+    // go back to channel eleven
+    nextChannel = startChannel;
+    acquireSpiResource();
   }
 
   event void ChannelTimer.fired() {

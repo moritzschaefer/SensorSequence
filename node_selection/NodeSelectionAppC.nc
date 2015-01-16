@@ -15,9 +15,7 @@ implementation {
   components MainC;
   NodeSelectionC.Boot -> MainC;
   components ActiveMessageC;
-  NodeSelectionC.RadioControl -> ActiveMessageC;
-
-
+  NodeSelectionC.RadioControl -> ActiveMessageC
   components DisseminationC;
   NodeSelectionC.DisseminationControl -> DisseminationC;
 
@@ -38,6 +36,11 @@ implementation {
   // Timer to wait for channelswitching/dissemination
   components new TimerMilliC() as ChannelTimer;
   NodeSelectionC.ChannelTimer -> ChannelTimer;
+
+  // Timer to reset if no changes
+  components new TimerMilliC() as ResetTimer;
+  NodeSelectionC.ResetTimer -> ResetTimer;
+
 
   // CTP Part
   components CollectionC as Collector;
