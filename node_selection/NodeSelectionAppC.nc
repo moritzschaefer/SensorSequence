@@ -15,7 +15,7 @@ implementation {
   components MainC;
   NodeSelectionC.Boot -> MainC;
   components ActiveMessageC;
-  NodeSelectionC.RadioControl -> ActiveMessageC
+  NodeSelectionC.RadioControl -> ActiveMessageC;
   components DisseminationC;
   NodeSelectionC.DisseminationControl -> DisseminationC;
 

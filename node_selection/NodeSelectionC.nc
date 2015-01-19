@@ -8,6 +8,8 @@
 
 #include "printf.h"
 
+// TODO: separate channelwaittimes
+
 typedef struct {
   uint16_t nodeId;
   uint16_t measuredRss;
@@ -106,10 +108,13 @@ implementation {
   int measurementCount=0;
   bool isSender = FALSE; // this value is just for saving who did the channel switch. it can't be used always
   bool justStarted = TRUE;
+  int currentSender = -1;
 
+  int receivedDataPackets=0;
   int measurementSendCount = 0;
   int measurementsTransmitted=0;
   int senderIterator=0;
+  int dataSenderIterator=0;
   bool isTransmittingMeasurements=FALSE;
 
   // Statemachine
@@ -141,7 +146,7 @@ implementation {
   error_t acquireSpiResource();
   error_t releaseSpiResource();
 
-  // Dissemination ControlMsg instantiation # TODO: man spricht in C nicht wirklich von instanzen AFAIK. Es ist eher eine Deklaration
+  // Dissemination ControlMsg
   struct ControlData controlMsg;
 
 
@@ -190,23 +195,13 @@ implementation {
 
     // channel changed
 
-    // if we reached first channel again
+    // if we reach first channel again
     if(currentChannel == startChannel) {
-      if(!isSender) { // if it's not me, that was the sender, do data collection
-        if(SEND_SINGLE_MEASUREMENT_DATA) {
-          // start by sending first measurement and go on in sendDone
-          measurementsTransmitted = 0;
-          isTransmittingMeasurements = TRUE;
-          post sendCTPMeasurementData();
-        } else {
-          post sendCTPFullMeasurementData();
-
-        }
-
-      }
-      // sink node code
       if(TOS_NODE_ID == 0) {
-        call Timer.startOneShot(4000); // give time to collect all data. TODO: don't do this with time. check on ctpreceive if everything got in and then go on...
+        // Select Node for sending data
+        dataSenderIterator = 0;
+        state = DATA_COLLECTION_STATE;
+        post statemachine();
       }
     } else {
       // if it's me, that was the sender, go on with measurements
@@ -228,7 +223,6 @@ implementation {
       //Node detection State
       case(NODE_DETECTION_STATE):
         // RESET everything
-        measurementCount = 0;
         debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = numMeasurements;
@@ -246,22 +240,38 @@ implementation {
         call Timer.startOneShot(500);
         break;
       case SENDER_SELECTION_STATE:
-        measurementCount = 0;
-
         // change controlMsg
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
-        call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
+        call Update.change((ControlData*)(&controlMsg));
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
-        } else {
-          state = SENDER_SELECTION_STATE;
         }
         // go on by disseminate signal from other node
         break;
+      case DATA_COLLECTION_STATE:
+        if(nodeIds[dataSenderIterator] == currentSender) {
+          dataSenderIterator++;
+          if(dataSenderIterator >= nodeCount) {
+            // go on with next node measurings
+            state = SENDER_SELECTION_STATE;
+            post statemachine();
+            break;
+          }
+        }
+        controlMsg.dissCommand = DATA_COLLECTION_REQUEST;
+        controlMsg.dissValue = nodeIds[dataSenderIterator];
+        call Update.change((ControlData*)(&controlMsg));
+        printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
+        printfflush();
+        dataSenderIterator++;
+        if (dataSenderIterator >= nodeCount) {
+          state = SENDER_SELECTION_STATE;
+        }
+
       case IDLE_STATE:
         controlMsg.dissCommand = DO_NOTHING;
         controlMsg.dissValue = 0;
@@ -352,7 +362,6 @@ implementation {
       case ID_REQUEST:
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
-        measurementCount = 0;
         numMeasurements = newVal->dissValue;
         if(measurements) {
           free(measurements);
@@ -364,6 +373,7 @@ implementation {
       case SENDER_ASSIGN:
         measurementCount = 0;
         debugMessage("sender assign\n");
+        currentSender = newVal->dissValue;
         if(newVal->dissValue == TOS_NODE_ID) {
           isSender = TRUE;
           call Leds.led1On();
@@ -375,8 +385,23 @@ implementation {
       case CHANGE_CHANNEL:
         //debugMessage("change channel\n");
         nextChannel = newVal->dissValue;
-        call ChannelTimer.startOneShot(150);
+        if(isSender) {
+          call ChannelTimer.startOneShot(channelWaitTime*2); // if i am sender, wait longer!
+        } else {
+          call ChannelTimer.startOneShot(channelWaitTime);
+        }
         break;
+      case DATA_COLLECTION_REQUEST:
+        if(newVal->dissValue == TOS_NODE_ID) { // if i am selected, do data collection
+          if(SEND_SINGLE_MEASUREMENT_DATA) {
+            // start by sending first measurement and go on in sendDone
+            measurementsTransmitted = 0;
+            isTransmittingMeasurements = TRUE;
+            post sendCTPMeasurementData();
+          } else {
+            post sendCTPFullMeasurementData();
+          }
+        }
       default:
         debugMessage("waiting\n");
     }
@@ -420,6 +445,11 @@ implementation {
         //serialSend(receivedCollectionData->senderNodeId, receivedCollectionData->receiverNodeId, receivedCollectionData->rss, receivedCollectionData->channel, receivedCollectionData->measurementNum);
         printf("received data: rss %d node %d sender %d channel: %d\n meas.num: %d\n", receivedCollectionData->rss, receivedCollectionData->receiverNodeId, receivedCollectionData->senderNodeId, receivedCollectionData->channel, receivedCollectionData->measurementNum);
         printfflush();
+        receivedDataPackets++;
+        if(receivedDataPackets >= NUM_CHANNELS*numMeasurements) {
+          receivedDataPackets = 0;
+          post statemachine();
+        }
         break;
       case sizeof(FullCollectionDataMsg):
         receivedFullCollectionData = (FullCollectionDataMsg*)payload;
@@ -465,7 +495,7 @@ implementation {
     } else {
       // switch channel
       controlMsg.dissCommand = CHANGE_CHANNEL;
-      controlMsg.dissValue = currentChannel+1; // TODO:
+      controlMsg.dissValue = currentChannel+1; // TODO: choose channel from list
       if(controlMsg.dissValue >= startChannel+NUM_CHANNELS) {
         controlMsg.dissValue = startChannel;
       }
@@ -549,14 +579,13 @@ implementation {
   }
   // Serial data transfer
   bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum) {
-    // TODO: refactor: either delete debugMessages or improve their meanings (better)
     if (serialSendBusy) {
-      debugMessage("failed1\n");
+      debugMessage("failed serial: serialSendBusy is true.\n");
       return FALSE;
     }
     else {
       measurement_data_t *rcm = (measurement_data_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(measurement_data_t));
-      if (rcm == NULL) {debugMessage("failed2\n"); return FALSE;}
+      if (rcm == NULL) {debugMessage("failed serial: getting rcm\n"); return FALSE;}
 
       rcm->senderNodeId = senderNodeId;
       rcm->receiverNodeId = receiverNodeId;
@@ -565,14 +594,14 @@ implementation {
       rcm->measurementNum = measurementNum;
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
-        debugMessage("failed3\n");
+        debugMessage("failed serial: wrong packet size\n");
         return FALSE;
       }
 
       if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
         serialSendBusy = TRUE;
       } else {
-        debugMessage("Serial send is busy. can't send\n");
+        debugMessage("failed serial: send returns false\n");
         return FALSE;
       }
     }
@@ -596,7 +625,6 @@ implementation {
       void* payload, uint8_t len) {
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
     call Leds.led0On();
-    // TODO: use MIP
     if(control_msg->cmd == 0) {
       resetState();
 
