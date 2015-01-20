@@ -334,7 +334,7 @@ implementation {
     } else {
       msg->senderNodeId = 0;
       msg->receiverNodeId = 0;
-      msg->rss = 0;
+      msg->measuredRss = 0;
       msg->channel = 0;
       msg->measurementNum = 0;
     }
@@ -459,7 +459,7 @@ implementation {
         break;
       case sizeof(CollectionDataMsg):
         receivedCollectionData = (CollectionDataMsg*)payload;
-        measurements[receivedDataPackets] = receivedCollectionData;
+        measurements[receivedDataPackets] = *receivedCollectionData;
         receivedDataPackets++;
         if(receivedDataPackets >= NUM_CHANNELS*numMeasurements) {
           receivedDataPackets = 0;
@@ -608,7 +608,7 @@ implementation {
 
       rcm->senderNodeId = senderNodeId;
       rcm->receiverNodeId = receiverNodeId;
-      rcm->measuredRss = rssValue;
+      rcm->rss = rssValue;
       rcm->channel = channel;
       rcm->measurementNum = measurementNum;
 
