@@ -241,6 +241,11 @@ implementation {
         break;
       case SENDER_SELECTION_STATE:
         // change controlMsg
+        if (senderIterator >= nodeCount) {
+          state = IDLE_STATE;
+          call Timer.startOneShot(150);
+          break;
+        }
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg));
@@ -253,6 +258,8 @@ implementation {
         // go on by disseminate signal from other node
         break;
       case DATA_COLLECTION_STATE:
+        printf("%d,%d\n", currentSender,dataSenderIterator ); // TODO delete
+        printfflush(); // TODO delete
         if(nodeIds[dataSenderIterator] == currentSender) {
           dataSenderIterator++;
           if(dataSenderIterator >= nodeCount) {
@@ -271,8 +278,9 @@ implementation {
         if (dataSenderIterator >= nodeCount) {
           state = SENDER_SELECTION_STATE;
         }
-
+        break;
       case IDLE_STATE:
+        debugMessage("send wait signal\n"); // TODO delete
         controlMsg.dissCommand = DO_NOTHING;
         controlMsg.dissValue = 0;
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
@@ -392,8 +400,10 @@ implementation {
         }
         break;
       case DATA_COLLECTION_REQUEST:
+        debugMessage("received request for data collection\n"); // TODO delete
         if(newVal->dissValue == TOS_NODE_ID) { // if i am selected, do data collection
           if(SEND_SINGLE_MEASUREMENT_DATA) {
+            debugMessage("received request for data collection for me\n");
             // start by sending first measurement and go on in sendDone
             measurementsTransmitted = 0;
             isTransmittingMeasurements = TRUE;
@@ -515,6 +525,7 @@ implementation {
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
       if(measurementCount >= NUM_CHANNELS*numMeasurements) {
+        printf("measurementCount=%d, channels*numMeasu=%d\n", measurementCount, NUM_CHANNELS*numMeasurements);
         debugMessage("too many measurements for our array");
       }
 

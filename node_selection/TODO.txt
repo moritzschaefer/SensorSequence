@@ -11,6 +11,7 @@ details:
 problems:
   disseminate sends after reset
   ctp find out packet size
+  After Channel switch some still waited and didn't switch channel, missed next measurements and next channel switch.
 
 ---------------------------
 todo
