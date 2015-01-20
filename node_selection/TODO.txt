@@ -12,6 +12,9 @@ problems:
   disseminate sends after reset
   ctp find out packet size
   After Channel switch some still waited and didn't switch channel, missed next measurements and next channel switch.
+  ctp receive cancels transmitting to pc. solution: as sink node first send own data(to clear the buffer) to pc. then receive one node after another their data. fill own buffer with them und transfer to pc
+  why is channel switch inner loop? cause of space for measurements
+  why data_sender_selection? ctp packet interference!
 
 ---------------------------
 todo
