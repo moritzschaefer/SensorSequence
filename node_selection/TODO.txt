@@ -16,6 +16,8 @@ problems:
   why is channel switch inner loop? cause of space for measurements
   why data_sender_selection? ctp packet interference!
 
+Testing with channel wait times: 60/120 is too less (way double 60? other ideas?). 100/200 works. testing:
+
 ---------------------------
 todo
 ---------------------------

@@ -8,7 +8,6 @@
 
 #include "printf.h"
 
-// TODO: separate channelwaittimes
 // TODO: find better name to for CollectionDataMsg
 // Green: I'm on START_CHANNEL
 // Blue: I am sender
@@ -82,7 +81,8 @@ implementation {
   };
 
   uint16_t numMeasurements = 5;
-  uint16_t channelWaitTime = 150;
+  uint16_t channelWaitTime = 50;
+  uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
   uint16_t startUpWaitTime = 5000;
   uint8_t dataCollectionChannel  = 11;
@@ -416,7 +416,7 @@ implementation {
         //debugMessage("change channel\n");
         nextChannel = newVal->dissValue;
         if(currentSender == TOS_NODE_ID) {
-          call ChannelTimer.startOneShot(channelWaitTime*2); // if i am sender, wait longer!
+          call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sender, wait longer!
         } else {
           call ChannelTimer.startOneShot(channelWaitTime);
         }
@@ -669,6 +669,9 @@ implementation {
 
       if(control_msg->channel_wait_time > 0) {
         channelWaitTime = control_msg->channel_wait_time;
+      }
+      if(control_msg->sender_channel_wait_time > 0) {
+        senderChannelWaitTime = control_msg->sender_channel_wait_time;
       }
       if(control_msg->id_request_wait_time > 0) {
         idRequestWaitTime = control_msg->id_request_wait_time;

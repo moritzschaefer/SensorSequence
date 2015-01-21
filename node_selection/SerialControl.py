@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 9
+DEFAULT_MESSAGE_SIZE = 11
 
 # The Active Message type associated with this message.
 AM_TYPE = 144
 
 class SerialControl(tinyos.message.Message.Message):
-    # Create a new SerialControl of size 9.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=9):
+    # Create a new SerialControl of size 11.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=11):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -48,6 +48,10 @@ class SerialControl(tinyos.message.Message.Message):
             pass
         try:
             s += "  [channel_wait_time=0x%x]\n" % (self.get_channel_wait_time())
+        except:
+            pass
+        try:
+            s += "  [sender_channel_wait_time=0x%x]\n" % (self.get_sender_channel_wait_time())
         except:
             pass
         try:
@@ -334,9 +338,64 @@ class SerialControl(tinyos.message.Message.Message):
         return 16
     
     #
-    # Accessor methods for field: id_request_wait_time
+    # Accessor methods for field: sender_channel_wait_time
     #   Field type: int
     #   Offset (bits): 56
+    #   Size (bits): 16
+    #
+
+    #
+    # Return whether the field 'sender_channel_wait_time' is signed (False).
+    #
+    def isSigned_sender_channel_wait_time(self):
+        return False
+    
+    #
+    # Return whether the field 'sender_channel_wait_time' is an array (False).
+    #
+    def isArray_sender_channel_wait_time(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'sender_channel_wait_time'
+    #
+    def offset_sender_channel_wait_time(self):
+        return (56 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'sender_channel_wait_time'
+    #
+    def offsetBits_sender_channel_wait_time(self):
+        return 56
+    
+    #
+    # Return the value (as a int) of the field 'sender_channel_wait_time'
+    #
+    def get_sender_channel_wait_time(self):
+        return self.getUIntElement(self.offsetBits_sender_channel_wait_time(), 16, 1)
+    
+    #
+    # Set the value of the field 'sender_channel_wait_time'
+    #
+    def set_sender_channel_wait_time(self, value):
+        self.setUIntElement(self.offsetBits_sender_channel_wait_time(), 16, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'sender_channel_wait_time'
+    #
+    def size_sender_channel_wait_time(self):
+        return (16 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'sender_channel_wait_time'
+    #
+    def sizeBits_sender_channel_wait_time(self):
+        return 16
+    
+    #
+    # Accessor methods for field: id_request_wait_time
+    #   Field type: int
+    #   Offset (bits): 72
     #   Size (bits): 16
     #
 
@@ -356,13 +415,13 @@ class SerialControl(tinyos.message.Message.Message):
     # Return the offset (in bytes) of the field 'id_request_wait_time'
     #
     def offset_id_request_wait_time(self):
-        return (56 / 8)
+        return (72 / 8)
     
     #
     # Return the offset (in bits) of the field 'id_request_wait_time'
     #
     def offsetBits_id_request_wait_time(self):
-        return 56
+        return 72
     
     #
     # Return the value (as a int) of the field 'id_request_wait_time'
