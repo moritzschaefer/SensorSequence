@@ -10,6 +10,9 @@
 
 // TODO: separate channelwaittimes
 // TODO: find better name to for CollectionDataMsg
+// Green: I'm on START_CHANNEL
+// Blue: I am sender
+// Red: I am the boss (sink)
 
 module NodeSelectionC {
   uses interface Boot;
@@ -395,11 +398,11 @@ implementation {
         debugMessage("sender assign\n");
         currentSender = newVal->dissValue;
         if(newVal->dissValue == TOS_NODE_ID) {
-          call Leds.led0On();
+          call Leds.led2On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
         } else {
-          call Leds.led0Off();
+          call Leds.led2Off();
 
         }
         break;
@@ -649,7 +652,6 @@ implementation {
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
-    call Leds.led0On();
     if(control_msg->cmd == 0) {
       resetState();
 
