@@ -395,11 +395,11 @@ implementation {
         debugMessage("sender assign\n");
         currentSender = newVal->dissValue;
         if(newVal->dissValue == TOS_NODE_ID) {
-          call Leds.led1On();
+          call Leds.led0On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
         } else {
-          call Leds.led1Off();
+          call Leds.led0Off();
 
         }
         break;
@@ -729,9 +729,9 @@ implementation {
       releaseSpiResource();
     }
     if(currentChannel == startChannel) {
-      call Leds.led2On();
+      call Leds.led1On();
     } else {
-      call Leds.led2Off();
+      call Leds.led1Off();
     }
     return error;
   }
