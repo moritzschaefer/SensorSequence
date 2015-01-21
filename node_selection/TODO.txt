@@ -16,24 +16,22 @@ problems:
   why is channel switch inner loop? cause of space for measurements
   why data_sender_selection? ctp packet interference!
 
-Testing with channel wait times: 60/120 is too less (way double 60? other ideas?). 100/200 works. testing:
+Testing with channel wait times: 120/60 works (why double 60? explain! other ideas?). 120/30 works 120/5 works (no multi hop). 50/20 works. 30/15 failed 30/5 works. conclusion: there has to be difference between sender channel waiting and normal channel waiting of 20+ms to work properly.
+recommendation though is waiting
 
 ---------------------------
 todo
 ---------------------------
+- Data to file!
+- GUI
 
-- make Serial Data Reading work!!!!
-- assign nodes who should send measurement-ctp
-- assign the sender which should send measurements
 - make channel configurable
 - define channels to go to
 - define collection channel
-- make channel switching the outer loop ( maybe )
+- make channel switching the outer loop ( maybe ) please dont
 AMSend.sendDone -> use state machine
-- use another timer for resetting channel to 11
-
+- use another timer for resetting channel to 11!!
 parameters to support
-- delays (channel switching, wait for node ids, ...)
 - num measurements
 - channels
 
