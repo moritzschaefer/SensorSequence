@@ -268,14 +268,24 @@ implementation {
           post statemachine();
           break;
         }
-        while(!serialSend(measurements[serialMeasurementsTransmitted].senderNodeId, measurements[serialMeasurementsTransmitted].receiverNodeId, measurements[serialMeasurementsTransmitted].measuredRss, measurements[serialMeasurementsTransmitted].channel, measurements[serialMeasurementsTransmitted].measurementNum));
-        serialMeasurementsTransmitted++;
+        if(!serialSend(measurements[serialMeasurementsTransmitted].senderNodeId, measurements[serialMeasurementsTransmitted].receiverNodeId, measurements[serialMeasurementsTransmitted].measuredRss, measurements[serialMeasurementsTransmitted].channel, measurements[serialMeasurementsTransmitted].measurementNum)) {
+          call Timer.startOneShot(50);
+        } else {
+          serialMeasurementsTransmitted++;
+        }
         break;
 
       case DATA_COLLECTION_STATE:
+        if (dataSenderIterator >= nodeCount) {
+          dataSenderIterator = 0;
+          state = SENDER_SELECTION_STATE;
+          post statemachine();
+          break;
+        }
         if(nodeIds[dataSenderIterator] == currentSender || nodeIds[dataSenderIterator] == 0) { // skip me and the current sender (the sender cant send measurement data)
           dataSenderIterator++;
           if(dataSenderIterator >= nodeCount) {
+            dataSenderIterator = 0;
             // go on with next node measurings
             state = SENDER_SELECTION_STATE;
           }
@@ -289,9 +299,6 @@ implementation {
 //!        printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
 //!        printfflush();
         dataSenderIterator++;
-        if (dataSenderIterator >= nodeCount) {
-          state = SENDER_SELECTION_STATE;
-        }
         break;
       case IDLE_STATE:
         controlMsg.dissCommand = DO_NOTHING;
@@ -403,7 +410,6 @@ implementation {
           post sendMeasurementPacket();
         } else {
           call Leds.led2Off();
-
         }
         break;
       case CHANGE_CHANNEL:
