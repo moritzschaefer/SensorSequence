@@ -399,7 +399,7 @@ implementation {
           measurementSendCount = 0;
           post sendMeasurementPacket();
         } else {
-          call Leds.led1On();
+          call Leds.led1Off();
 
         }
         break;
