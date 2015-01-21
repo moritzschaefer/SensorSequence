@@ -194,9 +194,14 @@ implementation {
     // if we reach first channel again
     if(currentChannel == startChannel) {
       if(TOS_NODE_ID == 0) {
-        // First send own data here
         serialMeasurementsTransmitted=0;
-        state = SERIAL_SINK_DATA_STATE;
+        if(currentSender != TOS_NODE_ID) { // if i'm not the sender
+          // send my own data to PC first
+          state = SERIAL_SINK_DATA_STATE;
+        } else {
+          // go directly to channel switching
+          state = DATA_COLLECTION_STATE;
+        }
         post statemachine();
 
       }
