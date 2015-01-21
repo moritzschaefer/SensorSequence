@@ -101,7 +101,6 @@ implementation {
   // counter/array counter
   int nodeCount=0;
   int measurementCount=0;
-  bool isSender = FALSE; // this value is just for saving who did the channel switch. it can't be used always
   bool justStarted = TRUE;
   int currentSender = -1;
 
@@ -207,7 +206,7 @@ implementation {
       }
     } else {
       // if it's me, that was the sender, go on with measurements
-      if(isSender) {
+      if(currentSender == TOS_NODE_ID) {
         measurementSendCount = 0;
         post sendMeasurementPacket();
       }
@@ -396,17 +395,18 @@ implementation {
         debugMessage("sender assign\n");
         currentSender = newVal->dissValue;
         if(newVal->dissValue == TOS_NODE_ID) {
-          isSender = TRUE;
           call Leds.led1On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
-        } else
-          isSender = FALSE;
+        } else {
+          call Leds.led1On();
+
+        }
         break;
       case CHANGE_CHANNEL:
         //debugMessage("change channel\n");
         nextChannel = newVal->dissValue;
-        if(isSender) {
+        if(currentSender == TOS_NODE_ID) {
           call ChannelTimer.startOneShot(channelWaitTime*2); // if i am sender, wait longer!
         } else {
           call ChannelTimer.startOneShot(channelWaitTime);
