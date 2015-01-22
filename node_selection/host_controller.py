@@ -4,8 +4,6 @@ import os
 import sys
 import time
 import struct
-import signal
-
 #tos stuff
 import MeasurementData
 import SerialControl
@@ -24,9 +22,9 @@ class HostController:
 
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
-        print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}, Channel: {}, MeasuringNum: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_measurementNum())
-
-        sys.stdout.flush()
+        print '\t'.join((int(x) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum())))
+        #print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}, Channel: {}, MeasuringNum: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_measurementNum())
+        #sys.stdout.flush()
 
     def send(self):
         smsg = SerialControl.SerialControl()
@@ -50,7 +48,6 @@ class HostController:
             self.send()
 
 def main():
-
     if '-h' in sys.argv:
         print "Usage:", sys.argv[0], "serial@/dev/ttyUSB0:115200"
         sys.exit()
@@ -59,12 +56,7 @@ def main():
     else:
         dl = HostController(sys.argv[1])
 
-    def handler(signum, frame):
-        dl.marked = True
-
-
-    signal.signal(signal.SIGUSR1, handler)
-    dl.main_loop()  # don't expect this to return...
+    dl.main_loop()
 
 if __name__ == "__main__":
     try:

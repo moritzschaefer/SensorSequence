@@ -23,7 +23,10 @@ recommendation though is waiting
 todo
 ---------------------------
 - Data to file!
-- GUI
+- GUI/Configuration file
+- configura channels!!
+
+
 
 - make channel configurable
 - define channels to go to
