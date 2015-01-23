@@ -9,6 +9,39 @@ rm("getSendersWinningReceivers")
 ## Load Functions
 #source("userFunctions.R")
 
+mostFreqReceiver <- function (valueSet, tIndex=1) { mfr <- names(rev(sort(table(valueSet)))[tIndex]); return(mfr) }
+findProbability <- function (valueSet, tIndex=1, setLength) { rev(sort(table(valueSet)))[tIndex]/setLength }
+findProbabilityByName <- function (valueSet, name){table(valueSet[as.character(name)])/length(valueSet)}
+findWeight <- function(placedReceivers, weightSet) { ix<-(placedReceivers+1); return(weightSet[ix]) }
+
+setTruth <- function (TruthList,referencenode) { #print(TruthList)
+  if (TruthList[length(TruthList)] == referencenode)
+    return(rev(TruthList))
+  else
+    return(TruthList)
+}
+
+computeProbabilities <- function (probDF, vRows){
+  probs <- c()
+  for(rr in 1:vRows)
+  {
+    prob <- 1
+    if (TRUE)
+      for (cc in 1:ncol(probDF))
+      {
+        #cat(" probabilitiesDF[",rr,",",cc,"]=",probabilitiesDF[rr,cc], sep="")
+        prob <- prob * probDF[rr,cc]
+      }
+    prob <- prod(probDF[rr,])
+    #print("\n")
+    probs <- c(probs,prob)
+    #cat("probabilitySeqDF[",rr,",prob] <- ",prob,"=>",probabilitySeqDF[rr,"prob"],"\n",sep="")
+  }
+  #print(probabilitySeqDF[1:validRows,]); #print(probabilitiesDF)
+  return(probs)
+}
+
+
 #override this function from userFunctions.R: compare with 1 packet only
 if(FALSE)
 getSendersWinningReceivers <- function (allPackets, theSender, excludeList=NULL, includeList=NULL, maxPacketNum=(10^6)) {
@@ -127,7 +160,6 @@ getSendersWinningReceivers <- function (allPackets, theSender, excludeList=NULL,
   senderPackets <- ddply(senderPackets, .(receiver,sender,channel), summarize, rssiQuantileMean=mean(subset(rssi, rssi>=quantile(rssi, topQuantile))) )
   
   sendersWinningReceivers <- c()
-  channelsOfWinningReceivers <- c()
   for (c in channelSet) 
   {
       sendersNthPackets <- subset(senderPackets,channel==c)   # find all reports for {s, c, n}
@@ -155,7 +187,6 @@ getSendersWinningReceivers <- function (allPackets, theSender, excludeList=NULL,
         if(rssDifference <= rssMaxDifference)
         {
           sendersWinningReceivers <- c(sendersWinningReceivers,theWinningReceiver) # put it into the list.
-          channelsOfWinningReceivers <- c(channelsOfWinningReceivers,c)
           
           if (firstRssi != firstRssiDummy && FALSE)
           {
