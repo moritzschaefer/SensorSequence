@@ -452,7 +452,7 @@ implementation {
 
       sendBusy = FALSE;
     }
-    if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements+EMPTY_PACKETS) {
+    if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements) {
       post sendCTPMeasurementData();
     } else {
       isTransmittingMeasurements = FALSE;
