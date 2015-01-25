@@ -405,6 +405,7 @@ implementation {
         debugMessage("sender assign\n");
         currentSender = newVal->dissValue;
         if(newVal->dissValue == TOS_NODE_ID) {
+          debugMessage("im sender now\n");
           call Leds.led2On();
           measurementSendCount = 0;
           post sendMeasurementPacket();
