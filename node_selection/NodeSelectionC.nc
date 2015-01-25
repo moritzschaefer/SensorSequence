@@ -344,7 +344,7 @@ implementation {
       (CollectionDataMsg*)call CTPSend.getPayload(&ctp_collection_packet, sizeof(CollectionDataMsg));
 
     if(measurementsTransmitted < measurementCount) {
-      (*msg) = measurements[measurementsTransmitted]; // TODO does this work or do i need memcpy
+      (*msg) = measurements[measurementsTransmitted];
     } else {
       msg->senderNodeId = 0;
       msg->receiverNodeId = 0;
@@ -452,7 +452,7 @@ implementation {
 
       sendBusy = FALSE;
     }
-    if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements) {
+    if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements+EMPTY_PACKETS) {
       post sendCTPMeasurementData();
     } else {
       isTransmittingMeasurements = FALSE;
