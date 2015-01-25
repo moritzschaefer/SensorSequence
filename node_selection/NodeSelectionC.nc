@@ -686,11 +686,11 @@ implementation {
   }
   void debugMessage(const char *msg) {
 #if DEBUG
-    if(serialSendBusy) {
+    if(serialSendBusy || TOS_NODE_ID == 0) { // don't send printfs if i am sink node
       return;
     } else {
-//!      printf(msg);
-//!      printfflush();
+      printf(msg);
+      printfflush();
     }
 #endif
   }
