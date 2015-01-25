@@ -30,9 +30,9 @@ class HostController:
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
         # 0 means, don't change the value
-        smsg.set_num_measurements(40)
-        smsg.set_channel_wait_time(self.channel_wait_time) # 100 works well. 60 is too less
-        smsg.set_sender_channel_wait_time(self.sender_channel_wait_time) # 100 works well. 60 is too less
+        smsg.set_num_measurements(10)
+        smsg.set_channel_wait_time(self.channel_wait_time)
+        smsg.set_sender_channel_wait_time(self.sender_channel_wait_time)
         smsg.set_id_request_wait_time(0)
         smsg.set_data_collection_channel(0)
         self.mif.sendMsg(self.tos_source, 0xFFFF, smsg.get_amType(), 0, smsg)
@@ -43,7 +43,7 @@ class HostController:
             try:
                 self.sender_channel_wait_time, self.channel_wait_time = (int(x) for x in line.split())
             except ValueError:
-                self.sender_channel_wait_time, self.channel_wait_time = (150,60)
+                self.sender_channel_wait_time, self.channel_wait_time = (110,40)
 
             self.send()
 

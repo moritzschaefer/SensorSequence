@@ -347,7 +347,7 @@ implementation {
       (*msg) = measurements[measurementsTransmitted];
     } else {
       msg->senderNodeId = 0;
-      msg->receiverNodeId = 0;
+      msg->receiverNodeId = TOS_NODE_ID;
       msg->measuredRss = 0;
       msg->channel = 0;
       msg->measurementNum = 0;
