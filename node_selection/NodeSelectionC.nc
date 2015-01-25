@@ -13,6 +13,12 @@
 // Blue: I am sender
 // Red: I am the boss (sink)
 
+// Disable printfs
+#if DEBUG
+#elif
+#define printf (void)sizeof
+#endif
+
 module NodeSelectionC {
   uses interface Boot;
   uses interface SplitControl as RadioControl;
@@ -189,7 +195,7 @@ implementation {
   event void ChannelTimer.fired() {
 
     acquireSpiResource();
-//!    printfflush();
+    printfflush();
 
     // channel changed
 
@@ -231,7 +237,7 @@ implementation {
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = numMeasurements;
         call Update.change((ControlData*)(&controlMsg));
-//!        printfflush();
+        printfflush();
         state = WAITING_STATE;
         call Timer.startOneShot(idRequestWaitTime);
         break;
@@ -253,8 +259,8 @@ implementation {
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         call Update.change((ControlData*)(&controlMsg));
-//!        printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
-//!        printfflush();
+        printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
+        printfflush();
         senderIterator++;
         if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
@@ -296,8 +302,8 @@ implementation {
         controlMsg.dissCommand = DATA_COLLECTION_REQUEST;
         controlMsg.dissValue = nodeIds[dataSenderIterator];
         call Update.change((ControlData*)(&controlMsg));
-//!        printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
-//!        printfflush();
+        printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
+        printfflush();
         dataSenderIterator++;
         break;
       case IDLE_STATE:
@@ -484,7 +490,7 @@ implementation {
         break;
       case sizeof(FullCollectionDataMsg):
         receivedFullCollectionData = (FullCollectionDataMsg*)payload;
-//!        printf("received %d measurements from node %d. sender was node %d.\n", receivedFullCollectionData->numData, receivedFullCollectionData->data[0].receiverNodeId, receivedFullCollectionData->data[0].senderNodeId);
+        printf("received %d measurements from node %d. sender was node %d.\n", receivedFullCollectionData->numData, receivedFullCollectionData->data[0].receiverNodeId, receivedFullCollectionData->data[0].senderNodeId);
         break;
       default:
         debugMessage("Received CTP length doesn't match expected one.\n");
@@ -546,7 +552,7 @@ implementation {
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
       if(measurementCount >= NUM_CHANNELS*numMeasurements) {
-//!        printf("measurementCount=%d, channels*numMeasu=%d\n", measurementCount, NUM_CHANNELS*numMeasurements);
+        printf("measurementCount=%d, channels*numMeasu=%d\n", measurementCount, NUM_CHANNELS*numMeasurements);
         debugMessage("too many measurements for our array");
       }
 
@@ -597,22 +603,31 @@ implementation {
     int k;
     for(k=0; k<measurementCount; k++)
     {
-//!      printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].senderNodeId, measurements[k].measuredRss);
+      printf("rss measurement nr. %d from node %d: %d\n", k, measurements[k].senderNodeId, measurements[k].measuredRss);
     }
-//!    printfflush();
+    printfflush();
   }
 
   void printNodesArray(){
     int k;
     for(k=0; k<nodeCount; k++)
     {
-//!      printf("nodes[%d] = %u\n", k, nodeIds[k]);
+      printf("nodes[%d] = %u\n", k, nodeIds[k]);
     }
-//!    printfflush();
+    printfflush();
   }
   // Serial data transfer
   // TODO: pass a measurement struct....
   bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum) {
+#if DEBUG
+    // just printf and go back to statemachine
+    printf("%u, %u, %u, %u, %u\n", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
+    printfflush();
+    if(state == SERIAL_SINK_DATA_STATE)
+      post statemachine();
+    return TRUE;
+#endif
+
     if (serialSendBusy) {
       debugMessage("failed serial: serialSendBusy is true.\n");
       return FALSE;
@@ -687,7 +702,7 @@ implementation {
   }
   void debugMessage(const char *msg) {
 #if DEBUG
-    if(serialSendBusy || TOS_NODE_ID == 0) { // don't send printfs if i am sink node
+    if(serialSendBusy) {
       return;
     } else {
       printf(msg);
@@ -698,7 +713,7 @@ implementation {
   // Channel switching
   event void SpiResource.granted() {
 
-//!    printf("Request Granted\n"); printfflush();
+    printf("Request Granted\n"); printfflush();
 
     if (txpchanged) {
       setTxPower(nextTxPower);
@@ -722,7 +737,7 @@ implementation {
     //printf("AquireSpiResource()\n"); printfflush();
 
     if ( error != SUCCESS ) {
-//!      printf("immediate not possible, requesting()\n"); printfflush();
+      printf("immediate not possible, requesting()\n"); printfflush();
       call SpiResource.request();
     }
     else {
@@ -749,7 +764,7 @@ implementation {
   }
 
   error_t releaseSpiResource() {
-//!    printf("Spi resource releasing()\n"); printfflush();
+    printf("Spi resource releasing()\n"); printfflush();
     call SpiResource.release();
     return SUCCESS;
   }
@@ -766,7 +781,7 @@ implementation {
     if ( !tx_power ) {
       tx_power = CC2420_DEF_RFPOWER;
     }
-//!    printf ("Now will set power to %d\n", tx_power); printfflush();
+    printf ("Now will set power to %d\n", tx_power); printfflush();
     atomic{
       call CSN.clr();
       if ( curTxPower != tx_power ) {
@@ -785,7 +800,7 @@ implementation {
     call SRXON.strobe();
     call CSN.set();
 
-//!    printf("Written: %d(%X), Read:%d(%X)", wr_power, wr_power, rd_power, rd_power); printfflush();
+    printf("Written: %d(%X), Read:%d(%X)", wr_power, wr_power, rd_power, rd_power); printfflush();
 
     if ( rd_power != wr_power)
       ;//call Leds.led0On();
@@ -795,11 +810,11 @@ implementation {
     }
 
     if (curTxPower != tx_power) {
-//!      printf("\t M_TX_POWER is set to %d from %d\n", tx_power, curTxPower);
-//!      printfflush();
+      printf("\t M_TX_POWER is set to %d from %d\n", tx_power, curTxPower);
+      printfflush();
     }
 
-//!    printfflush();
+    printfflush();
   }
 
   void setChannel (uint8_t tchannel) {
@@ -819,8 +834,8 @@ implementation {
     call SRFOFF.strobe();
     call CSN.set();
 
-//!    printf("set to channel=%d currentChannel=%d ",channel, currentChannel);
-//!    printfflush();
+    printf("set to channel=%d currentChannel=%d ",channel, currentChannel);
+    printfflush();
 
     atomic {
 
@@ -847,14 +862,14 @@ implementation {
     call CSN.set();
 
     if (rd_channel != wr_channel) {
-//!      printf("Problem: rd_channel=%d(0x%X) != wr_channel=%d(0x%X) && status = 0x%X SPI.owner=%d\n",rd_channel, rd_channel, wr_channel, wr_channel, status, call SpiResource.isOwner());
+      printf("Problem: rd_channel=%d(0x%X) != wr_channel=%d(0x%X) && status = 0x%X SPI.owner=%d\n",rd_channel, rd_channel, wr_channel, wr_channel, status, call SpiResource.isOwner());
       call Leds.led0On();
     }
     else {
       currentChannel = channel;
     }
 
-//!    printfflush();
+    printfflush();
   }
 
 }
