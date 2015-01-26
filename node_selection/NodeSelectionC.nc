@@ -440,8 +440,10 @@ implementation {
             post sendCTPFullMeasurementData();
           }
         }
+        break;
       case DO_NOTHING:
         debugMessage("end of the story\n");
+        break;
       default:
         printf("received unknown diss command: %u, value: %u", newVal->dissCommand, newVal->dissValue);
         printfflush();
