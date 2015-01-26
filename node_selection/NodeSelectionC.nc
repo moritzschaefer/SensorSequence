@@ -202,7 +202,7 @@ implementation {
     // if we reach first channel again
     if(currentChannel == startChannel) {
       if(TOS_NODE_ID == currentSender) {
-        debugMessage("finished sending measurements");
+        debugMessage("finished sending measurements\n");
       }
       if(TOS_NODE_ID == 0) {
         serialMeasurementsTransmitted=0;
@@ -286,7 +286,7 @@ implementation {
           post statemachine();
           break;
         }
-        if(nodeIds[dataSenderIterator] == currentSender || nodeIds[dataSenderIterator] == 0) { // skip me and the current sender (the sender cant send measurement data)
+        if(nodeIds[dataSenderIterator] == currentSender) {
           dataSenderIterator++;
           if(dataSenderIterator >= nodeCount) {
             dataSenderIterator = 0;
