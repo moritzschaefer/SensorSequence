@@ -516,6 +516,8 @@ implementation {
         sendBusy = TRUE;
         return;
       }
+    } else {
+      debugMessage("wanted to send measurement with sendbusy true\n");
     }
     post sendMeasurementPacket();
   }
