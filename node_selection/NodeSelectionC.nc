@@ -206,13 +206,8 @@ implementation {
       }
       if(TOS_NODE_ID == 0) {
         serialMeasurementsTransmitted=0;
-        if(currentSender != TOS_NODE_ID) { // if i'm not the sender
-          // send my own data to PC first
-          state = SERIAL_SINK_DATA_STATE;
-        } else {
-          // go directly to channel switching
-          state = DATA_COLLECTION_STATE;
-        }
+        dataSenderIterator = 0;
+        state = DATA_COLLECTION_STATE;
         post statemachine();
       }
     } else {
