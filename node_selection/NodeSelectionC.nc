@@ -422,7 +422,7 @@ implementation {
         }
         break;
       case CHANGE_CHANNEL:
-        printf("received channel change to %u\n", controlMsg.dissValue);
+        printf("received channel change to %u\n", newVal.dissValue);
         printfflush();
         nextChannel = newVal.dissValue;
         if(currentSender == TOS_NODE_ID) {
@@ -493,11 +493,11 @@ implementation {
         measurements[receivedDataPackets] = *receivedCollectionData;
         receivedDataPackets++;
         if(receivedDataPackets >= NUM_CHANNELS*numMeasurements) {
-          Timer.stop();
+          call Timer.stop();
           post statemachine(); // go to serial transmission
         } else {
           // fallback timer. if we don't receive a next data packet in 300 seconds, just go on
-          Timer.startOneShot(300);
+          call Timer.startOneShot(300);
         }
         break;
       case sizeof(FullCollectionDataMsg):
