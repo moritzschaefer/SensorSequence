@@ -201,6 +201,9 @@ implementation {
 
     // if we reach first channel again
     if(currentChannel == startChannel) {
+      if(TOS_NODE_ID == currentSender) {
+        debugMessage("finished sending measurements");
+      }
       if(TOS_NODE_ID == 0) {
         serialMeasurementsTransmitted=0;
         if(currentSender != TOS_NODE_ID) { // if i'm not the sender
@@ -211,7 +214,6 @@ implementation {
           state = DATA_COLLECTION_STATE;
         }
         post statemachine();
-
       }
     } else {
       // if it's me, that was the sender, go on with measurements
@@ -269,6 +271,7 @@ implementation {
         break;
       case SERIAL_SINK_DATA_STATE:
         if(serialMeasurementsTransmitted >= numMeasurements*NUM_CHANNELS) {
+          debugMessage("\nserial-transmitted all measurements\n");
           serialMeasurementsTransmitted = 0;
           state=DATA_COLLECTION_STATE;
           post statemachine();
@@ -452,7 +455,7 @@ implementation {
     if(err != SUCCESS) {
       debugMessage("Error sending via CTP\n");
     } else {
-      debugMessage("transmitted measurement value to sink\n");
+      //debugMessage("transmitted measurement value to sink\n");
       if(isTransmittingMeasurements) {
         measurementsTransmitted++;
 
@@ -463,6 +466,7 @@ implementation {
     if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements) {
       post sendCTPMeasurementData();
     } else {
+      debugMessage("transmitted all measurement values to sink\n");
       isTransmittingMeasurements = FALSE;
       // go on here
     }
@@ -527,7 +531,7 @@ implementation {
     if (err != SUCCESS) {
       debugMessage("Error sending AM packet");
     } else {
-      debugMessage("sent measurement\n");
+      //debugMessage("sent measurement\n");
       measurementSendCount += 1;
     }
     if(measurementSendCount < numMeasurements) {
@@ -626,7 +630,7 @@ implementation {
   bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, int16_t rssValue, uint8_t channel, uint8_t measurementNum) {
 #if DEBUG
     // just printf and go back to statemachine
-    printf("%u, %u, %u, %d, %u\n", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
+    printf("%u, %u, %u, %d, %u", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
     printfflush();
     if(state == SERIAL_SINK_DATA_STATE)
       post statemachine();
