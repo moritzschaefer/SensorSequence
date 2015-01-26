@@ -230,6 +230,7 @@ implementation {
       //Node detection State
       case(NODE_DETECTION_STATE):
         // RESET everything
+        resetNodeIds();
         debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = numMeasurements;
@@ -576,6 +577,11 @@ implementation {
   }
 
 
+  void resetNodeIds() {
+    nodeCount = 0;
+    free(nodeIds);
+
+  }
   // Writing each incomming id into the Array
   void addNodeIdToArray(uint16_t nodeId) {
 
