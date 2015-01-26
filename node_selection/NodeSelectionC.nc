@@ -389,8 +389,8 @@ implementation {
   }
 
   event void Value.changed() {
-    ResetTimer.startOneShot(5000);
     const ControlData newVal = *(call Value.get());
+    call ResetTimer.startOneShot(5000);
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
@@ -448,7 +448,7 @@ implementation {
         break;
       case DO_NOTHING:
         debugMessage("end of the story\n");
-        ResetTimer.stop();
+        call ResetTimer.stop();
         break;
       default:
         printf("received unknown diss command: %u, value: %u", newVal.dissCommand, newVal.dissValue);
