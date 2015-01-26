@@ -15,7 +15,7 @@
 
 // Disable printfs
 #if DEBUG
-#elif
+#else
 #define printf (void)sizeof
 #endif
 
