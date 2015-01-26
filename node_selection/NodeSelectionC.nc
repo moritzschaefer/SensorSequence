@@ -130,7 +130,7 @@ implementation {
   bool sendBusy = FALSE;
 
   // Serial Transmission
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum);
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, int16_t rssValue, uint8_t channel, uint8_t measurementNum);
   bool serialSendBusy = FALSE;
   message_t serial_packet;
 
@@ -420,7 +420,8 @@ implementation {
         }
         break;
       case CHANGE_CHANNEL:
-        //debugMessage("change channel\n");
+        printf("received channel change to %u\n", controlMsg.dissValue);
+        printfflush();
         nextChannel = newVal->dissValue;
         if(currentSender == TOS_NODE_ID) {
           call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sender, wait longer!
@@ -536,12 +537,14 @@ implementation {
       if(controlMsg.dissValue >= startChannel+NUM_CHANNELS) {
         controlMsg.dissValue = startChannel;
       }
+      printf("send diss to change to %u\n", controlMsg.dissValue);
+      printfflush();
       call Update.change((ControlData*)(&controlMsg));
     }
   }
 
-  uint16_t getRssi(message_t *msg){
-    return (uint16_t) (call CC2420Packet.getRssi(msg))-45; // According to CC2420 datasheet, (RSSI / Energy Detection) it says there is -45 Rssi offset.
+  int16_t getRssi(message_t *msg){
+    return (int16_t) (call CC2420Packet.getRssi(msg))-45; // According to CC2420 datasheet, (RSSI / Energy Detection) it says there is -45 Rssi offset.
   }
 
   // AM receive
@@ -559,7 +562,7 @@ implementation {
       measurements[measurementCount].senderNodeId = rss_msg->nodeId;
       measurements[measurementCount].channel = currentChannel;
       measurements[measurementCount].measurementNum = rss_msg->measurementNum;
-      measurements[measurementCount].measuredRss = (int)getRssi(msg);
+      measurements[measurementCount].measuredRss = (int16_t)getRssi(msg);
       measurements[measurementCount].receiverNodeId = TOS_NODE_ID;
       measurementCount++;
     }
@@ -618,10 +621,10 @@ implementation {
   }
   // Serial data transfer
   // TODO: pass a measurement struct....
-  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, uint16_t rssValue, uint8_t channel, uint8_t measurementNum) {
+  bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, int16_t rssValue, uint8_t channel, uint8_t measurementNum) {
 #if DEBUG
     // just printf and go back to statemachine
-    printf("%u, %u, %u, %u, %u\n", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
+    printf("%u, %u, %u, %d, %u\n", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
     printfflush();
     if(state == SERIAL_SINK_DATA_STATE)
       post statemachine();

@@ -10,13 +10,13 @@ typedef struct ControlData {
 
 typedef nx_struct NodeIDMsg {
     nx_uint16_t nodeId;
-    nx_uint16_t rss;
+    nx_int16_t rss;
 } NodeIDMsg;
 
 typedef nx_struct CollectionDataMsg {
     nx_uint16_t senderNodeId;
     nx_uint16_t receiverNodeId;
-    nx_uint16_t measuredRss;
+    nx_int16_t measuredRss;
     nx_uint8_t channel;
     nx_uint16_t measurementNum;
 } CollectionDataMsg;
