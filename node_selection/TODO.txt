@@ -8,6 +8,13 @@ details:
   send disseminate
   wait for nodes to respond (time is configurable)
 
+- ResetTimer for going back to start channel
+- we send always the same amount of measurements to go on..
+- Timer if not all measurements received
+
+- channel wait times..
+
+
 problems:
   disseminate sends after reset
   ctp find out packet size

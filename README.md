@@ -43,3 +43,8 @@ The code doesn't work as is (you have to modify some things but you will notice 
 check this file:
 
 /usr/local/lib/python2.7/dist-packages/tinyos/message/MoteIF.py
+
+# Lmitation:
+
+number of measurements: 256
+node ids: 256
