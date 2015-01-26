@@ -99,6 +99,7 @@ implementation {
 
   // function declarations
   void addNodeIdToArray(uint16_t);
+  void resetNodeIds();
   void printNodesArray();
   void debugMessage(const char *);
   void printMeasurementArray();
@@ -266,7 +267,8 @@ implementation {
         // go on by disseminate signal from other node
         break;
       case SERIAL_SINK_DATA_STATE:
-        if(serialMeasurementsTransmitted >= numMeasurements*NUM_CHANNELS) {
+        if(serialMeasurementsTransmitted >= receivedDataPackets) {
+          receivedDataPackets = 0;
           debugMessage("\nserial-transmitted all measurements\n");
           serialMeasurementsTransmitted = 0;
           state=DATA_COLLECTION_STATE;
@@ -303,6 +305,7 @@ implementation {
         call Update.change((ControlData*)(&controlMsg));
         printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
         printfflush();
+        state = SERIAL_SINK_DATA_STATE;
         dataSenderIterator++;
         break;
       case IDLE_STATE:
@@ -485,13 +488,16 @@ implementation {
         addNodeIdToArray(receivedNodeId->nodeId);
         break;
       case sizeof(CollectionDataMsg):
+        printf("%d", receivedDataPackets);printfflush(); // TODO deleteme
         receivedCollectionData = (CollectionDataMsg*)payload;
         measurements[receivedDataPackets] = *receivedCollectionData;
         receivedDataPackets++;
         if(receivedDataPackets >= NUM_CHANNELS*numMeasurements) {
-          receivedDataPackets = 0;
-          state = SERIAL_SINK_DATA_STATE;
-          post statemachine();
+          Timer.stop();
+          post statemachine(); // go to serial transmission
+        } else {
+          // fallback timer. if we don't receive a next data packet in 300 seconds, just go on
+          Timer.startOneShot(300);
         }
         break;
       case sizeof(FullCollectionDataMsg):

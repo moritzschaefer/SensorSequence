@@ -43,7 +43,7 @@ class HostController:
             try:
                 self.sender_channel_wait_time, self.channel_wait_time = (int(x) for x in line.split())
             except ValueError:
-                self.sender_channel_wait_time, self.channel_wait_time = (110,40)
+                self.sender_channel_wait_time, self.channel_wait_time = (110,30)
 
             self.send()
 
