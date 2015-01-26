@@ -389,6 +389,7 @@ implementation {
   }
 
   event void Value.changed() {
+    ResetTimer.startOneShot(5000);
     const ControlData newVal = *(call Value.get());
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
@@ -447,6 +448,7 @@ implementation {
         break;
       case DO_NOTHING:
         debugMessage("end of the story\n");
+        ResetTimer.stop();
         break;
       default:
         printf("received unknown diss command: %u, value: %u", newVal.dissCommand, newVal.dissValue);
@@ -488,7 +490,7 @@ implementation {
         addNodeIdToArray(receivedNodeId->nodeId);
         break;
       case sizeof(CollectionDataMsg):
-        printf("%d", receivedDataPackets);printfflush(); // TODO deleteme
+        //printf("%d", receivedDataPackets);printfflush(); // TODO deleteme
         receivedCollectionData = (CollectionDataMsg*)payload;
         measurements[receivedDataPackets] = *receivedCollectionData;
         receivedDataPackets++;
