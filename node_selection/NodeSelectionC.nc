@@ -385,18 +385,18 @@ implementation {
   }
 
   event void Value.changed() {
-    const ControlData* newVal = call Value.get();
+    const ControlData newVal = *(call Value.get());
     // ignore first disseminate command if we just started and command is not id_request
-    if(justStarted && newVal->dissCommand != ID_REQUEST) {
+    if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
     }
 
     //debugMessage("received diss value: ");
-    switch(newVal->dissCommand) {
+    switch(newVal.dissCommand) {
       case ID_REQUEST:
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
-        numMeasurements = newVal->dissValue;
+        numMeasurements = newVal.dissValue;
         if(measurements) {
           free(measurements);
         }
@@ -407,8 +407,8 @@ implementation {
       case SENDER_ASSIGN:
         measurementCount = 0;
         debugMessage("sender assign\n");
-        currentSender = newVal->dissValue;
-        if(newVal->dissValue == TOS_NODE_ID) {
+        currentSender = newVal.dissValue;
+        if(newVal.dissValue == TOS_NODE_ID) {
           debugMessage("im sender now\n");
           call Leds.led2On();
           measurementSendCount = 0;
@@ -420,7 +420,7 @@ implementation {
       case CHANGE_CHANNEL:
         printf("received channel change to %u\n", controlMsg.dissValue);
         printfflush();
-        nextChannel = newVal->dissValue;
+        nextChannel = newVal.dissValue;
         if(currentSender == TOS_NODE_ID) {
           call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sender, wait longer!
         } else {
@@ -429,7 +429,7 @@ implementation {
         break;
       case DATA_COLLECTION_REQUEST:
         debugMessage("received request for data collection\n"); // TODO delete
-        if(newVal->dissValue == TOS_NODE_ID) { // if i am selected, do data collection
+        if(newVal.dissValue == TOS_NODE_ID) { // if i am selected, do data collection
           if(SEND_SINGLE_MEASUREMENT_DATA) {
             debugMessage("received request for data collection for me\n");
             // start by sending first measurement and go on in sendDone
@@ -445,7 +445,7 @@ implementation {
         debugMessage("end of the story\n");
         break;
       default:
-        printf("received unknown diss command: %u, value: %u", newVal->dissCommand, newVal->dissValue);
+        printf("received unknown diss command: %u, value: %u", newVal.dissCommand, newVal.dissValue);
         printfflush();
     }
   }
