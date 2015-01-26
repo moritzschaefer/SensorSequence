@@ -83,7 +83,7 @@ implementation {
     CHANGE_CHANNEL,
     DATA_COLLECTION_REQUEST,
     DO_NOTHING,
-    FINISHED_MEASUREMENT_SENDING
+    FINISHED
   };
 
   uint16_t numMeasurements = 5;
@@ -259,9 +259,9 @@ implementation {
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
-        if (senderIterator >= nodeCount) {
+        /*if (senderIterator >= nodeCount) {
           state = IDLE_STATE;
-        }
+        }*/
         // go on by disseminate signal from other node
         break;
       case SERIAL_SINK_DATA_STATE:
@@ -440,8 +440,11 @@ implementation {
             post sendCTPFullMeasurementData();
           }
         }
+      case DO_NOTHING:
+        debugMessage("end of the story\n");
       default:
-        debugMessage("waiting\n");
+        printf("received unknown diss command: %u, value: %u", newVal->dissCommand, newVal->dissValue);
+        printfflush();
     }
   }
 
