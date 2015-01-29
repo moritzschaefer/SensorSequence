@@ -73,8 +73,8 @@ implementation {
     IDLE_STATE,
     WAITING_STATE,
     DATA_COLLECTION_STATE,
-    SERIAL_SINK_DATA_STATE
-
+    SERIAL_SINK_DATA_STATE,
+    CHANGE_CHANNEL_STATE
   };
 
   enum commands{
@@ -83,7 +83,8 @@ implementation {
     CHANGE_CHANNEL,
     DATA_COLLECTION_REQUEST,
     DO_NOTHING,
-    FINISHED
+    FINISHED,
+    FINISHED_MEASUREMENTS
   };
 
   uint16_t numMeasurements = 5;
@@ -95,7 +96,7 @@ implementation {
 
   // init Array
   uint16_t *nodeIds=NULL;
-  CollectionDataMsg *measurements;
+  CollectionDataMsg measurements[1500];
 
   // function declarations
   void addNodeIdToArray(uint16_t);
@@ -118,6 +119,7 @@ implementation {
   int measurementSendCount = 0;
   int serialMeasurementsTransmitted=0;
   int measurementsTransmitted=0;
+  int channelIterator=0;
   int senderIterator=0;
   int dataSenderIterator=0;
   bool isTransmittingMeasurements=FALSE;
@@ -196,28 +198,12 @@ implementation {
   event void ChannelTimer.fired() {
 
     acquireSpiResource();
-    printfflush();
-
     // channel changed
-
-    // if we reach first channel again
-    if(currentChannel == startChannel) {
-      if(TOS_NODE_ID == currentSender) {
-        debugMessage("finished sending measurements\n");
-      }
-      if(TOS_NODE_ID == 0) {
-        serialMeasurementsTransmitted=0;
-        dataSenderIterator = 0;
-        state = DATA_COLLECTION_STATE;
-        post statemachine();
-      }
-    } else {
-      // if it's me, that was the sender, go on with measurements
-      if(currentSender == TOS_NODE_ID) {
-        measurementSendCount = 0;
-        post sendMeasurementPacket();
-      }
+    debugMessage("channel changed");
+    if(TOS_NODE_ID == 0) {
+      post statemachine();
     }
+
   }
 
   void resetState() {
@@ -251,21 +237,20 @@ implementation {
       case SENDER_SELECTION_STATE:
         // change controlMsg
         if (senderIterator >= nodeCount) {
-          state = IDLE_STATE;
-          call Timer.startOneShot(150);
+          senderIterator = 0;
+          state = DATA_COLLECTION_STATE;
+          post statemachine();
           break;
         }
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
+        controlMsg.dissValue2 = currentChannel;
         call Update.change((ControlData*)(&controlMsg));
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
         senderIterator++;
-        /*if (senderIterator >= nodeCount) {
-          state = IDLE_STATE;
-        }*/
-        // go on by disseminate signal from other node
         break;
+
       case SERIAL_SINK_DATA_STATE:
         if(serialMeasurementsTransmitted >= receivedDataPackets) {
           receivedDataPackets = 0;
@@ -285,7 +270,7 @@ implementation {
       case DATA_COLLECTION_STATE:
         if (dataSenderIterator >= nodeCount) {
           dataSenderIterator = 0;
-          state = SENDER_SELECTION_STATE;
+          state = CHANGE_CHANNEL_STATE;
           post statemachine();
           break;
         }
@@ -294,7 +279,7 @@ implementation {
           if(dataSenderIterator >= nodeCount) {
             dataSenderIterator = 0;
             // go on with next node measurings
-            state = SENDER_SELECTION_STATE;
+            state = CHANGE_CHANNEL_STATE;
           }
           post statemachine();
           break;
@@ -307,6 +292,20 @@ implementation {
         printfflush();
         state = SERIAL_SINK_DATA_STATE;
         dataSenderIterator++;
+        break;
+      case CHANGE_CHANNEL_STATE:
+        controlMsg.dissCommand = CHANGE_CHANNEL;
+        // set next channel. TODO: first channel is always 11. change this with ID_REQUEST
+        channelIterator++;
+        if(channelIterator > numChannels) {
+          channelIterator = 0;
+          state = IDLE_STATE;
+        } else {
+          state = SENDER_SELECTION_STATE;
+        }
+        controlMsg.dissValue = channels[channelIterator];
+        call Update.change((ControlData*)(&controlMsg));
+
         break;
       case IDLE_STATE:
         controlMsg.dissCommand = DO_NOTHING;
@@ -402,14 +401,11 @@ implementation {
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
         numMeasurements = newVal.dissValue;
-        if(measurements) {
-          free(measurements);
-        }
-        measurements = malloc(sizeof(CollectionDataMsg)*numMeasurements*NUM_CHANNELS);
         debugMessage("ID Request from Sink node\n");
         sendCTPNodeId();
         break;
       case SENDER_ASSIGN:
+        // change channel and sender begin
         measurementCount = 0;
         debugMessage("sender assign\n");
         currentSender = newVal.dissValue;
@@ -417,17 +413,25 @@ implementation {
           debugMessage("im sender now\n");
           call Leds.led2On();
           measurementSendCount = 0;
+          // TODO WAIT before sending!
           post sendMeasurementPacket();
         } else {
           call Leds.led2Off();
+        }
+        break;
+
+      case FINISHED_MEASUREMENTS:
+        // select next sender. if all selected go over
+        if(TOS_NODE_ID == 0) {
+          post statemachine();
         }
         break;
       case CHANGE_CHANNEL:
         printf("received channel change to %u\n", newVal.dissValue);
         printfflush();
         nextChannel = newVal.dissValue;
-        if(currentSender == TOS_NODE_ID) {
-          call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sender, wait longer!
+        if(0 == TOS_NODE_ID) {
+          call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sink, wait longer!
         } else {
           call ChannelTimer.startOneShot(channelWaitTime);
         }
@@ -546,13 +550,10 @@ implementation {
     if(measurementSendCount < numMeasurements) {
       post sendMeasurementPacket();
     } else {
-      // switch channel
-      controlMsg.dissCommand = CHANGE_CHANNEL;
-      controlMsg.dissValue = currentChannel+1; // TODO: choose channel from list
-      if(controlMsg.dissValue >= startChannel+NUM_CHANNELS) {
-        controlMsg.dissValue = startChannel;
-      }
-      printf("send diss to change to %u\n", controlMsg.dissValue);
+      // inform everyone that i finished sending
+      controlMsg.dissCommand = FINISHED_MEASUREMENTS;
+      controlMsg.dissValue = 0;
+      printf("inform everyone that sending is finished %u\n");
       printfflush();
       call Update.change((ControlData*)(&controlMsg));
     }

@@ -12,7 +12,8 @@
 
 #define SEND_SINGLE_MEASUREMENT_DATA 1
 
-uint8_t channels[] = {11,12,13};
+uint8_t numChannels = 4;
+uint8_t channels[] = {11,12,13,14};
 
 #endif
 
