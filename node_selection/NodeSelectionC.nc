@@ -120,6 +120,7 @@ implementation {
   int measurementsTransmitted=0;
   int senderIterator=0;
   int dataSenderIterator=0;
+  bool isSink=FALSE;
   bool isTransmittingMeasurements=FALSE;
 
   // Statemachine
@@ -174,7 +175,7 @@ implementation {
       call RoutingControl.start();
 
 
-      if (TOS_NODE_ID == 0) {
+      if (isSink) {
         call RootControl.setRoot();
         call Leds.led0On();
         // Wait before starting to receive "dead" disseminate
@@ -205,7 +206,7 @@ implementation {
       if(TOS_NODE_ID == currentSender) {
         debugMessage("finished sending measurements\n");
       }
-      if(TOS_NODE_ID == 0) {
+      if(isSink) {
         serialMeasurementsTransmitted=0;
         dataSenderIterator = 0;
         state = DATA_COLLECTION_STATE;
@@ -696,6 +697,7 @@ implementation {
   }
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
+    isSink = TRUE;
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
     if(control_msg->cmd == 0) {
       resetState();
