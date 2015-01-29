@@ -697,8 +697,8 @@ implementation {
   }
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
-    isSink = TRUE;
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
+    isSink = TRUE;
     if(control_msg->cmd == 0) {
       resetState();
 
