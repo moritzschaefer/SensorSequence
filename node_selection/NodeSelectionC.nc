@@ -299,7 +299,7 @@ implementation {
         controlMsg.dissCommand = CHANGE_CHANNEL;
         // set next channel. TODO: first channel is always 11. change this with ID_REQUEST
         channelIterator++;
-        if(channelIterator > numChannels) {
+        if(channelIterator >= numChannels) {
           channelIterator = 0;
           state = IDLE_STATE;
         } else {
@@ -432,7 +432,7 @@ implementation {
         printf("received channel change to %u\n", newVal.dissValue);
         printfflush();
         nextChannel = newVal.dissValue;
-        if(0 == TOS_NODE_ID) {
+        if(isSink) {
           call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sink, wait longer!
         } else {
           call ChannelTimer.startOneShot(channelWaitTime);
