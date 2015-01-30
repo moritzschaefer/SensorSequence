@@ -408,7 +408,6 @@ implementation {
         break;
       case SENDER_ASSIGN:
         // change channel and sender begin
-        measurementCount = 0;
         debugMessage("sender assign\n");
         currentSender = newVal.dissValue;
         if(newVal.dissValue == TOS_NODE_ID) {
@@ -429,6 +428,7 @@ implementation {
         }
         break;
       case CHANGE_CHANNEL:
+        measurementCount = 0;
         printf("received channel change to %u\n", newVal.dissValue);
         printfflush();
         nextChannel = newVal.dissValue;
@@ -473,9 +473,12 @@ implementation {
 
       }
 
-      sendBusy = FALSE;
     }
-    if(isTransmittingMeasurements && measurementsTransmitted < NUM_CHANNELS*numMeasurements) {
+    sendBusy = FALSE;
+    if(!isTransmittingMeasurements) {
+      debugMessage("transmitted Node ID\n");
+    }
+    else if(measurementsTransmitted < measurementCount) {
       post sendCTPMeasurementData();
     } else {
       debugMessage("transmitted all measurement values to sink\n");
@@ -496,11 +499,10 @@ implementation {
         addNodeIdToArray(receivedNodeId->nodeId);
         break;
       case sizeof(CollectionDataMsg):
-        //printf("%d", receivedDataPackets);printfflush(); // TODO deleteme
         receivedCollectionData = (CollectionDataMsg*)payload;
         measurements[receivedDataPackets] = *receivedCollectionData;
         receivedDataPackets++;
-        if(receivedDataPackets >= NUM_CHANNELS*numMeasurements) {
+        if(receivedDataPackets >= (nodeCount-1)*numMeasurements) {
           call Timer.stop();
           post statemachine(); // go to serial transmission
         } else {
