@@ -96,7 +96,7 @@ implementation {
 
   // init Array
   uint16_t *nodeIds=NULL;
-  CollectionDataMsg measurements[1500];
+  CollectionDataMsg measurements[1000];
 
   // function declarations
   void addNodeIdToArray(uint16_t);
