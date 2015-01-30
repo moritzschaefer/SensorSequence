@@ -423,7 +423,7 @@ implementation {
 
       case FINISHED_MEASUREMENTS:
         // select next sender. if all selected go over
-        if(TOS_NODE_ID == 0) {
+        if(isSink) {
           post statemachine();
         }
         break;
