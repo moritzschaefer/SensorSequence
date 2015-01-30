@@ -642,7 +642,7 @@ implementation {
   bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, int16_t rssValue, uint8_t channel, uint8_t measurementNum) {
 #if DEBUG
     // just printf and go back to statemachine
-    printf("%u, %u, %u, %d, %u", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
+    printf("%u, %u, %u, %d, %u\n", senderNodeId, receiverNodeId, channel, rssValue, measurementNum);
     printfflush();
     if(state == SERIAL_SINK_DATA_STATE)
       post statemachine();
