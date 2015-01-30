@@ -24,7 +24,7 @@ class HostController:
         m = MeasurementData.MeasurementData(msg.dataGet())
         print '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum())))
         #print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}, Channel: {}, MeasuringNum: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_measurementNum())
-        #sys.stdout.flush()
+        sys.stdout.flush()
 
     def send(self):
         smsg = SerialControl.SerialControl()
