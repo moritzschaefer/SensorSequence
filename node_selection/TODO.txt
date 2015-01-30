@@ -22,6 +22,11 @@ problems:
   ctp receive cancels transmitting to pc. solution: as sink node first send own data(to clear the buffer) to pc. then receive one node after another their data. fill own buffer with them und transfer to pc
   why is channel switch inner loop? cause of space for measurements
   why data_sender_selection? ctp packet interference!
+serial transfer and printf intefere: hard to debug
+change from channel inner loop to channel outer loop. why how.
+limitations: measurement memory (1000 measurements)
+
+
 
 Testing with channel wait times: 120/60 works (why double 60? explain! other ideas?). 120/30 works 120/5 works (no multi hop). 50/20 works. 30/15 failed 30/5 works. conclusion: there has to be difference between sender channel waiting and normal channel waiting of 20+ms to work properly.
 recommendation though is waiting
