@@ -698,7 +698,8 @@ implementation {
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
-    call RootControl.setRoot();
+    if(!isSink)
+      call RootControl.setRoot();
     call Leds.led0On();
     isSink = TRUE;
     if(control_msg->cmd == 0) {
