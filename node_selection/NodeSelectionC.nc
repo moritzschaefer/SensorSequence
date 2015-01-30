@@ -7,7 +7,6 @@
 #include "SerialControl.h"
 
 #include "printf.h"
-
 // TODO: find better name to for CollectionDataMsg
 // Green: I'm on START_CHANNEL
 // Blue: I am sender
@@ -114,7 +113,6 @@ implementation {
   int nodeCount=0;
   int measurementCount=0;
   bool justStarted = TRUE;
-  int currentSender = -1;
 
   int receivedDataPackets=0;
   int measurementSendCount = 0;
@@ -200,8 +198,7 @@ implementation {
   event void ChannelTimer.fired() {
 
     acquireSpiResource();
-    // channel changed
-    debugMessage("channel changed");
+    debugMessage("channel changed\n");
     if(isSink) {
       post statemachine();
     }
@@ -240,7 +237,8 @@ implementation {
         // change controlMsg
         if (senderIterator >= nodeCount) {
           senderIterator = 0;
-          state = DATA_COLLECTION_STATE;
+          receivedDataPackets = measurementCount; // TODO: delete receivedDataPackets and just use measurementCount
+          state = SERIAL_SINK_DATA_STATE;
           post statemachine();
           break;
         }
@@ -276,13 +274,8 @@ implementation {
           post statemachine();
           break;
         }
-        if(nodeIds[dataSenderIterator] == currentSender) {
+        if(nodeIds[dataSenderIterator] == TOS_NODE_ID && isSink) { // no data collection for sink node! (i transmitted my stuff already)
           dataSenderIterator++;
-          if(dataSenderIterator >= nodeCount) {
-            dataSenderIterator = 0;
-            // go on with next node measurings
-            state = CHANGE_CHANNEL_STATE;
-          }
           post statemachine();
           break;
         }
@@ -290,7 +283,7 @@ implementation {
         controlMsg.dissCommand = DATA_COLLECTION_REQUEST;
         controlMsg.dissValue = nodeIds[dataSenderIterator];
         call Update.change((ControlData*)(&controlMsg));
-        printf("Send DATA_COLLECTION_STATE to %u\n", nodeIds[dataSenderIterator]);
+        printf("Send DATA_COLLECTION_REQUEST to %u\n", nodeIds[dataSenderIterator]);
         printfflush();
         state = SERIAL_SINK_DATA_STATE;
         dataSenderIterator++;
@@ -409,7 +402,6 @@ implementation {
       case SENDER_ASSIGN:
         // change channel and sender begin
         debugMessage("sender assign\n");
-        currentSender = newVal.dissValue;
         if(newVal.dissValue == TOS_NODE_ID) {
           debugMessage("im sender now\n");
           call Leds.led2On();
