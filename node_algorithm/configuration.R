@@ -35,7 +35,7 @@ if (exp.set.name == "SetB") {
                       )
 } else 
 if (exp.set.name == "SetC") {
-  experimentSet <- 1:2000
+  experimentSet <- 1:1
   Truth    <- rev(c(10,0,20));
   
   directory <- switch (workstation,

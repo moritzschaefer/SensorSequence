@@ -17,6 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+[Previously saved workspace restored]
+
 > ## probabilisticSeq.R - O.Ergin - 17.06.2013
 > # v2 - 14.08.2013
 > # Description ...
@@ -56,9 +58,6 @@ Type 'q()' to quit R.
 [1] "Loading configuration.R"
 > 
 > source("probSeqFunctions.R")
-Warning message:
-In rm("getSendersWinningReceivers") :
-  object 'getSendersWinningReceivers' not found
 > 
 > run.verbose <- FALSE
 > 
@@ -125,37 +124,9 @@ In rm("getSendersWinningReceivers") :
 + 	winnerSeq <- probabilitySeqDF[1,1:numnodes] 
 + 	verdict <- all(winnerSeq == Truth)
 + 	cat("Verdict is:", verdict,"\n"); 
++ 	cat("Result Sequence is:\n");
++ 	print(winnerSeq) 
 +   
-+ maxRankToCompare <- 2
-+ for (mainRank in 1:maxRankToCompare)
-+ {
-+   cat("Verify", mainRank,"\n")
-+ 	verifySeqDF <- findProbSequences(packets,refnode=probabilitySeqDF[mainRank,numnodes], produceOutput=produceOutput, verbose=run.verbose);
-+     probOrder <- with(verifySeqDF,order(-prob))
-+     verifySeqDF <- verifySeqDF[probOrder,]
-+   cat("Verify", mainRank,"is", all(rev(verifySeqDF[1,1:numnodes])==Truth), "\n" )
-+   
-+   for (verifyRank in 1:maxRankToCompare) 
-+   {
-+     i <- (mainRank-1)*maxRankToCompare+verifyRank;
-+     
-+   	analyse[i,"expNo"] <- expNo; 
-+     
-+     analyse[i,"Rank"] <- mainRank; 
-+     analyse[i,"isCorrect"] <- all(probabilitySeqDF[mainRank,1:numnodes] == Truth); 
-+     analyse[i,"prob"] <- probabilitySeqDF[mainRank,"prob"];
-+   
-+   	analyse[i,"verifyRank"] <- verifyRank; 
-+     analyse[i,"verifyIsCorrect"] <- all(rev(verifySeqDF[verifyRank,1:numnodes])==Truth); 
-+     analyse[i,"verifyProb"] <- verifySeqDF[verifyRank,"prob"];
-+   
-+     analyse[i,"match"] <- all(probabilitySeqDF[mainRank,1:numnodes] == rev(verifySeqDF[verifyRank,1:numnodes]));
-+     analyse[i,"jointProb"] <- probabilitySeqDF[mainRank,"prob"] * verifySeqDF[verifyRank,"prob"];
-+   
-+     analyse[i,"computedSeq"] <- paste(probabilitySeqDF[mainRank,1:numnodes], collapse=",");
-+     analyse[i,"verifySeq"] <- paste(verifySeqDF[verifyRank,1:numnodes],collapse=",");
-+   }
-+ }
 + 	## Print Elapsed Time
 + 	endTime <- proc.time()
 + 	print(endTime-startTime)
@@ -166,8 +137,7 @@ In rm("getSendersWinningReceivers") :
 + 	}
 + 	cat("TotalSUCCESS=",totalSuccess,"\n");
 + 	
-+ 	print(analyse)
-+   write.table(analyse, file=outputFileName, sep=" ", append=TRUE, col.names=(expNo==experimentSet[1]), row.names=FALSE)
++ 	
 + 	if (TRUE)
 +   {
 +   	rm(packets)
@@ -179,31 +149,27 @@ Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_1.txt
   N1 N2 N3         P      prob
 1 20 10  0 0.8235294 0.8235294
 Verdict is: FALSE 
-Verify 1 
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%
-Verify 1 is FALSE 
-Verify 2 
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%
-Verify 2 is FALSE 
+Result Sequence is:
+  N1 N2 N3
+1 20 10  0
    user  system elapsed 
-  0.314   0.004   0.319 
+  0.107   0.007   0.117 
 TotalSUCCESS= 0 
-  expNo Rank isCorrect      prob verifyRank verifyIsCorrect verifyProb match
-1     1    1     FALSE 0.8235294          1           FALSE  0.5882353  TRUE
-2     1    1     FALSE 0.8235294          2           FALSE  0.4117647 FALSE
-3     1    2      TRUE 0.1764706          1           FALSE  0.8235294 FALSE
-4     1    2      TRUE 0.1764706          2            TRUE  0.1764706  TRUE
-   jointProb computedSeq verifySeq
-1 0.48442907     20,10,0   0,10,20
-2 0.33910035     20,10,0   0,20,10
-3 0.14532872     20,0,10   10,20,0
-4 0.03114187     20,0,10   10,0,20
-Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_2.txt 
-Error in file(file, "rt") : cannot open the connection
-Calls: read.table -> file
-In addition: Warning messages:
-1: In write.table(analyse, file = outputFileName, sep = " ", append = TRUE,  :
-  appending column names to file
-2: In file(file, "rt") :
-  cannot open file '/home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_2.txt': No such file or directory
-Execution halted
+> 
+> # Run: Rank Verdict prob RankCheck VerdictCheck ProbCheck
+> # n     1    T/F     p1    1         T/F          pc1
+> # n     1    T/F     p1    2         T/F          pc2
+> # n     2    T/F     p1    1         T/F          pc1
+> # n     2    T/F     p1    2         T/F          pc2
+> # 
+> # expNo: Rank Verdict prob RankCheck VerdictCheck ProbCheck Same JointProb ComputedSeq CheckSeq
+> #   n     1    F       p1    1         T          pc1         F   
+> #   n     1    F       p1    2         F          pc2         ?
+> #   n     2    T       p1    1         T          pc1         T
+> #   n     2    T       p1    2         F          pc2         F
+> 
+> write(as.numeric(winnerSeq),"finalresult.txt")
+> 
+> proc.time()
+   user  system elapsed 
+  0.553   0.055   0.643 

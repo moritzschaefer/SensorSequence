@@ -102,37 +102,9 @@ for(expNo in experimentSet)
 	winnerSeq <- probabilitySeqDF[1,1:numnodes] 
 	verdict <- all(winnerSeq == Truth)
 	cat("Verdict is:", verdict,"\n"); 
+	cat("Result Sequence is:\n");
+	print(winnerSeq) 
   
-maxRankToCompare <- 2
-for (mainRank in 1:maxRankToCompare)
-{
-  cat("Verify", mainRank,"\n")
-	verifySeqDF <- findProbSequences(packets,refnode=probabilitySeqDF[mainRank,numnodes], produceOutput=produceOutput, verbose=run.verbose);
-    probOrder <- with(verifySeqDF,order(-prob))
-    verifySeqDF <- verifySeqDF[probOrder,]
-  cat("Verify", mainRank,"is", all(rev(verifySeqDF[1,1:numnodes])==Truth), "\n" )
-  
-  for (verifyRank in 1:maxRankToCompare) 
-  {
-    i <- (mainRank-1)*maxRankToCompare+verifyRank;
-    
-  	analyse[i,"expNo"] <- expNo; 
-    
-    analyse[i,"Rank"] <- mainRank; 
-    analyse[i,"isCorrect"] <- all(probabilitySeqDF[mainRank,1:numnodes] == Truth); 
-    analyse[i,"prob"] <- probabilitySeqDF[mainRank,"prob"];
-  
-  	analyse[i,"verifyRank"] <- verifyRank; 
-    analyse[i,"verifyIsCorrect"] <- all(rev(verifySeqDF[verifyRank,1:numnodes])==Truth); 
-    analyse[i,"verifyProb"] <- verifySeqDF[verifyRank,"prob"];
-  
-    analyse[i,"match"] <- all(probabilitySeqDF[mainRank,1:numnodes] == rev(verifySeqDF[verifyRank,1:numnodes]));
-    analyse[i,"jointProb"] <- probabilitySeqDF[mainRank,"prob"] * verifySeqDF[verifyRank,"prob"];
-  
-    analyse[i,"computedSeq"] <- paste(probabilitySeqDF[mainRank,1:numnodes], collapse=",");
-    analyse[i,"verifySeq"] <- paste(verifySeqDF[verifyRank,1:numnodes],collapse=",");
-  }
-}
 	## Print Elapsed Time
 	endTime <- proc.time()
 	print(endTime-startTime)
@@ -143,8 +115,7 @@ for (mainRank in 1:maxRankToCompare)
 	}
 	cat("TotalSUCCESS=",totalSuccess,"\n");
 	
-	print(analyse)
-  write.table(analyse, file=outputFileName, sep=" ", append=TRUE, col.names=(expNo==experimentSet[1]), row.names=FALSE)
+	
 	if (TRUE)
   {
   	rm(packets)
@@ -162,3 +133,5 @@ for (mainRank in 1:maxRankToCompare)
 #   n     1    F       p1    2         F          pc2         ?
 #   n     2    T       p1    1         T          pc1         T
 #   n     2    T       p1    2         F          pc2         F
+
+write(as.numeric(winnerSeq),"finalresult.txt")
