@@ -96,7 +96,8 @@ implementation {
 
   // init Array
   uint16_t *nodeIds=NULL;
-  CollectionDataMsg measurements[1000];
+#define  MAX_MEASUREMENTS 1000
+  CollectionDataMsg measurements[MAX_MEASUREMENTS];
 
   // function declarations
   void addNodeIdToArray(uint16_t);
@@ -554,7 +555,7 @@ implementation {
       // inform everyone that i finished sending
       controlMsg.dissCommand = FINISHED_MEASUREMENTS;
       controlMsg.dissValue = 0;
-      printf("inform everyone that sending is finished %u\n");
+      printf("inform everyone that sending is finished\n");
       printfflush();
       call Update.change((ControlData*)(&controlMsg));
     }
@@ -571,9 +572,10 @@ implementation {
       //setLeds(btrpkt->counter);
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
-      if(measurementCount >= NUM_CHANNELS*numMeasurements) {
-        printf("measurementCount=%d, channels*numMeasu=%d\n", measurementCount, NUM_CHANNELS*numMeasurements);
-        debugMessage("too many measurements for our array");
+      if(measurementCount >= MAX_MEASUREMENTS) {
+        printf("measurementCount=%d, channels*numMeasu=%d, max_measurements=%d\n", measurementCount, NUM_CHANNELS*numMeasurements, MAX_MEASUREMENTS);
+        debugMessage("too many measurements for our array. decrementing measurementCount");
+        measurementCount--;
       }
 
       measurements[measurementCount].senderNodeId = rss_msg->nodeId;
