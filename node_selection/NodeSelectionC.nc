@@ -122,6 +122,7 @@ implementation {
   int channelIterator=0;
   int senderIterator=0;
   int dataSenderIterator=0;
+  bool isSink=FALSE;
   bool isTransmittingMeasurements=FALSE;
 
   // Statemachine
@@ -176,9 +177,9 @@ implementation {
       call RoutingControl.start();
 
 
-      if (TOS_NODE_ID == 0) {
-        call RootControl.setRoot();
-        call Leds.led0On();
+      if (isSink) {
+        //call RootControl.setRoot();
+        //call Leds.led0On();
         // Wait before starting to receive "dead" disseminate
         //call Timer.startOneShot(startUpWaitTime);
       }
@@ -200,7 +201,7 @@ implementation {
     acquireSpiResource();
     // channel changed
     debugMessage("channel changed");
-    if(TOS_NODE_ID == 0) {
+    if(isSink) {
       post statemachine();
     }
 
@@ -698,6 +699,10 @@ implementation {
   event message_t* SerialAMReceive.receive(message_t* bufPtr,
       void* payload, uint8_t len) {
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
+    if(!isSink)
+      call RootControl.setRoot();
+    call Leds.led0On();
+    isSink = TRUE;
     if(control_msg->cmd == 0) {
       resetState();
 

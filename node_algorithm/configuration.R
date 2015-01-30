@@ -36,7 +36,7 @@ if (exp.set.name == "SetB") {
 } else 
 if (exp.set.name == "SetC") {
   experimentSet <- 1:2000
-  Truth    <- rev(c(154, 11, 148, 15, 146, 91, 142, 95, 137, 97));
+  Truth    <- rev(c(10,0,20));
   
   directory <- switch (workstation,
                        MacBookPro = "/TestTest/",
