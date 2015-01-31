@@ -22,7 +22,8 @@ class HostController:
 
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
-        print '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum())))
+        if m.get_rss() != 0:
+            print '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum())))
         #print "{}, Rss: {}, SenderNode: {}, ReceiverNode: {}, Channel: {}, MeasuringNum: {}".format(time.time(), m.get_rss(), m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_measurementNum())
         sys.stdout.flush()
 
@@ -30,7 +31,7 @@ class HostController:
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
         # 0 means, don't change the value
-        smsg.set_num_measurements(10)
+        smsg.set_num_measurements(20)
         smsg.set_channel_wait_time(self.channel_wait_time)
         smsg.set_sender_channel_wait_time(self.sender_channel_wait_time)
         smsg.set_id_request_wait_time(0)
