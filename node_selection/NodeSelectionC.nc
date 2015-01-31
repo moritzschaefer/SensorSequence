@@ -445,6 +445,9 @@ implementation {
         }
         break;
       case DO_NOTHING:
+        if(isSink) {
+          // send serial packet
+        }
         debugMessage("end of the story\n");
         call ResetTimer.stop();
         break;
@@ -636,6 +639,32 @@ implementation {
       printf("nodes[%d] = %u\n", k, nodeIds[k]);
     }
     printfflush();
+  }
+  bool serialSendFinish() {
+    if (serialSendBusy) {
+      debugMessage("failed serial: serialSendBusy is true.\n");
+      return FALSE;
+    }
+    else {
+      serial_control_t *rcm = (serial_control_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(serial_control_t));
+      if (rcm == NULL) {debugMessage("failed serial: getting rcm\n"); return FALSE;}
+
+      rcm->cmd = 0;
+
+      if (call SerialAMPacket.maxPayloadLength() < sizeof(serial_control_t)) {
+        debugMessage("failed serial: wrong packet size\n");
+        return FALSE;
+      }
+
+      if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(serial_control_t)) == SUCCESS) {
+        serialSendBusy = TRUE;
+      } else {
+        debugMessage("failed serial: send returns false\n");
+        return FALSE;
+      }
+    }
+    return TRUE;
+
   }
   // Serial data transfer
   // TODO: pass a measurement struct....
