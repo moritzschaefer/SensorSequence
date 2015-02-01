@@ -4,8 +4,8 @@
 #include "constants.h"
 typedef struct ControlData {
     uint8_t dissCommand;
-    uint8_t dissValue;
-    uint8_t dissValue2;
+    uint16_t dissValue;
+    uint16_t dissValue2;
 } ControlData;
 
 
