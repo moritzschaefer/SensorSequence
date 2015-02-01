@@ -1,0 +1,80 @@
+---------Measurement1--------------
+Nodes:   {154 11 148 15 146 91 142 95 137 97}
+Channels: 11-26
+Num Measurements: 20
+time: x
+runtime: y
+bugs: revceiving channel 11 to the wrong time, maby to long CTP time (improving)
+
+-------Measurement2--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-26
+Num Measurements: 20
+time: 31.1.14 4:25 pm 
+runtime: 4 min
+bugs: not sure that he finished all channel
+
+-------Measurement3--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-26
+Num Measurements: 20
+time: 31.1.14 4:30 pm 
+runtime: 4 min
+bugs: channel 22-26 loosing measurements, try run only 11-22
+
+-------Measurement4--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-26
+Num Measurements: 20
+time: 31.1.14 5:05 pm 
+runtime: 4  min
+bugs: same
+idee: erease all nodes in network and then run only channels 11-22
+
+-------Measurement5--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-26
+Num Measurements: 20
+time: 31.1.14 5:30 pm 
+runtime: 4  min
+bugs: running only channel 26?
+Idea: wrong nodecount in constants.h
+
+
+-------Measurement6--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-20
+Num Measurements: 20
+time: 31.1.14 5:30 pm 
+runtime: 4  min
+bugs: measure count of measuring 22-26  
+idee: the bug is in the testbed
+
+-------Measurement7--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-20
+Num Measurements: 20
+time: 31.1.14 6:25 pm 
+runtime: 2  min
+bugs: --- 
+idee: test huge distance with our nodes
+
+
+-------Measurement8--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-20
+Num Measurements: 20
+time: 31.1.14 6:26 pm 
+runtime: 2  min
+bugs: --- 
+idee: huger distance!
+
+
+-------Measurement9--------------
+Nodes:   {154 11 148 15 146}
+Channels: 11-20
+Num Measurements: 20
+time: 31.1.14 6:28 pm 
+runtime: 2  min
+bugs: Bug comes again 
+idee: the lost node sends on star channel a lot stuff

@@ -498,8 +498,8 @@ implementation {
           call Timer.stop();
           post statemachine(); // go to serial transmission
         } else {
-          // fallback timer. if we don't receive a next data packet in 300 seconds, just go on
-          call Timer.startOneShot(300);
+          // fallback timer. if we don't receive a next data packet in X seconds, just go on
+          call Timer.startOneShot(3000);
         }
         break;
       case sizeof(FullCollectionDataMsg):
