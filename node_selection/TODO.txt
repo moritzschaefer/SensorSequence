@@ -8,12 +8,12 @@ details:
   send disseminate
   wait for nodes to respond (time is configurable)
 
+
 - ResetTimer for going back to start channel
 - we send always the same amount of measurements to go on..
 - Timer if not all measurements received
 
 - channel wait times..
-
 
 problems:
   disseminate sends after reset
@@ -23,10 +23,7 @@ problems:
   why is channel switch inner loop? cause of space for measurements
   why data_sender_selection? ctp packet interference!
 serial transfer and printf intefere: hard to debug
-change from channel inner loop to channel outer loop. why how.
 limitations: measurement memory (1000 measurements)
-
-
 
 Testing with channel wait times: 120/60 works (why double 60? explain! other ideas?). 120/30 works 120/5 works (no multi hop). 50/20 works. 30/15 failed 30/5 works. conclusion: there has to be difference between sender channel waiting and normal channel waiting of 20+ms to work properly.
 recommendation though is waiting
@@ -37,17 +34,3 @@ todo
 - Data to file!
 - GUI/Configuration file
 - configura channels!!
-
-
-
-- make channel configurable
-- define channels to go to
-- define collection channel
-- make channel switching the outer loop ( maybe ) please dont
-AMSend.sendDone -> use state machine
-- use another timer for resetting channel to 11!!
-parameters to support
-- num measurements
-- channels
-
-MAX: ändere alle snake_case zu camelCase (außer in host_controller.py) und außer die measurement_data_t und serial_control_t
