@@ -12,12 +12,14 @@ from tinyos.message import *
 from tinyos.message.Message import *
 from tinyos.message.SerialPacket import *
 from tinyos.packet.Serial import Serial
+import threading
 
 
 class HostController:
-    def __init__(self, motestring, outfile):
+    def __init__(self, motestring, outfile, wait_event):
         if outfile:
             self.outfile = open(outfile, 'w')
+        self.wait_event = wait_event
 
         self.mif = MoteIF.MoteIF()
         self.tos_source = self.mif.addSource(motestring)
@@ -26,14 +28,13 @@ class HostController:
 
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
-        print msg.get_amType()
         if msg.get_amType()==137:
             if m.get_channel() == 0:
                 try:
                     self.outfile.close()
                 except AttributeError:
                     pass
-                sys.exit(0)
+                self.wait_event.set()
             elif m.get_rss() != 0:
                 output_line = '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum()))) + '\n'
                 try:
@@ -77,15 +78,11 @@ def main():
 
     # TODO: print usage if -h in arguments
 
-    dl = HostController(args.nodepath, args.outfile)
+    wait_event = threading.Event()
+    dl = HostController(args.nodepath, args.outfile, wait_event)
     dl.send(args)
+    wait_event.wait()
 
-    # do nothing
-    while True:
-        try:
-            raw_input()
-        except KeyboardInterrupt:
-            print "Program was exited by user"
 
 if __name__ == '__main__':
     try:

@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 9
+DEFAULT_MESSAGE_SIZE = 8
 
 # The Active Message type associated with this message.
 AM_TYPE = 137
 
 class MeasurementData(tinyos.message.Message.Message):
-    # Create a new MeasurementData of size 9.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=9):
+    # Create a new MeasurementData of size 8.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=8):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -56,9 +56,9 @@ class MeasurementData(tinyos.message.Message.Message):
 
     #
     # Accessor methods for field: rss
-    #   Field type: short
+    #   Field type: byte
     #   Offset (bits): 0
-    #   Size (bits): 16
+    #   Size (bits): 8
     #
 
     #
@@ -86,33 +86,33 @@ class MeasurementData(tinyos.message.Message.Message):
         return 0
     
     #
-    # Return the value (as a short) of the field 'rss'
+    # Return the value (as a byte) of the field 'rss'
     #
     def get_rss(self):
-        return self.getSIntElement(self.offsetBits_rss(), 16, 1)
+        return self.getSIntElement(self.offsetBits_rss(), 8, 1)
     
     #
     # Set the value of the field 'rss'
     #
     def set_rss(self, value):
-        self.setSIntElement(self.offsetBits_rss(), 16, value, 1)
+        self.setSIntElement(self.offsetBits_rss(), 8, value, 1)
     
     #
     # Return the size, in bytes, of the field 'rss'
     #
     def size_rss(self):
-        return (16 / 8)
+        return (8 / 8)
     
     #
     # Return the size, in bits, of the field 'rss'
     #
     def sizeBits_rss(self):
-        return 16
+        return 8
     
     #
     # Accessor methods for field: senderNodeId
     #   Field type: int
-    #   Offset (bits): 16
+    #   Offset (bits): 8
     #   Size (bits): 16
     #
 
@@ -132,13 +132,13 @@ class MeasurementData(tinyos.message.Message.Message):
     # Return the offset (in bytes) of the field 'senderNodeId'
     #
     def offset_senderNodeId(self):
-        return (16 / 8)
+        return (8 / 8)
     
     #
     # Return the offset (in bits) of the field 'senderNodeId'
     #
     def offsetBits_senderNodeId(self):
-        return 16
+        return 8
     
     #
     # Return the value (as a int) of the field 'senderNodeId'
@@ -167,7 +167,7 @@ class MeasurementData(tinyos.message.Message.Message):
     #
     # Accessor methods for field: receiverNodeId
     #   Field type: int
-    #   Offset (bits): 32
+    #   Offset (bits): 24
     #   Size (bits): 16
     #
 
@@ -187,13 +187,13 @@ class MeasurementData(tinyos.message.Message.Message):
     # Return the offset (in bytes) of the field 'receiverNodeId'
     #
     def offset_receiverNodeId(self):
-        return (32 / 8)
+        return (24 / 8)
     
     #
     # Return the offset (in bits) of the field 'receiverNodeId'
     #
     def offsetBits_receiverNodeId(self):
-        return 32
+        return 24
     
     #
     # Return the value (as a int) of the field 'receiverNodeId'
@@ -222,7 +222,7 @@ class MeasurementData(tinyos.message.Message.Message):
     #
     # Accessor methods for field: channel
     #   Field type: short
-    #   Offset (bits): 48
+    #   Offset (bits): 40
     #   Size (bits): 8
     #
 
@@ -242,13 +242,13 @@ class MeasurementData(tinyos.message.Message.Message):
     # Return the offset (in bytes) of the field 'channel'
     #
     def offset_channel(self):
-        return (48 / 8)
+        return (40 / 8)
     
     #
     # Return the offset (in bits) of the field 'channel'
     #
     def offsetBits_channel(self):
-        return 48
+        return 40
     
     #
     # Return the value (as a short) of the field 'channel'
@@ -277,7 +277,7 @@ class MeasurementData(tinyos.message.Message.Message):
     #
     # Accessor methods for field: measurementNum
     #   Field type: int
-    #   Offset (bits): 56
+    #   Offset (bits): 48
     #   Size (bits): 16
     #
 
@@ -297,13 +297,13 @@ class MeasurementData(tinyos.message.Message.Message):
     # Return the offset (in bytes) of the field 'measurementNum'
     #
     def offset_measurementNum(self):
-        return (56 / 8)
+        return (48 / 8)
     
     #
     # Return the offset (in bits) of the field 'measurementNum'
     #
     def offsetBits_measurementNum(self):
-        return 56
+        return 48
     
     #
     # Return the value (as a int) of the field 'measurementNum'
