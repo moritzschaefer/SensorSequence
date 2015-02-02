@@ -25,20 +25,19 @@ class HostController:
         self.i = 0
 
     def receive(self, src, msg):
-        import ipdb; ipdb.set_trace()
         m = MeasurementData.MeasurementData(msg.dataGet())
         if msg.get_amType()==137:
             if m.get_rss() != 0:
                 output_line = '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum()))) + '\n'
                 try:
                     self.outfile.write(output_line)
-                except NameError:
-                    print output_line
+                except AttributeError:
+                    sys.stdout.write(output_line)
                     sys.stdout.flush()
         elif msg.get_amType()==142:
             try:
                 self.outfile.close()
-            except NameError:
+            except AttributeError:
                 pass
             sys.exit(0)
 
@@ -60,12 +59,12 @@ def main():
     #argparse
     parser = argparse.ArgumentParser()
     # 0 is using values from nesc code
-    parser.add_argument('--measurements', default=20, type=int, helper='How many measurements per node and channel')
-    parser.add_argument('--channelWait', default=0, type=int, helper='How much time to wait after a channel switch')
-    parser.add_argument('--senderChannelWait', default=0, type=int, helper='How much time to wait after a channel switch (sink node)')
-    parser.add_argument('--idWait', default=0, type=int, helper='How much time to wait for node ids?')
-    #parser.add_argument('--collectionChannel', default=0, type=int, helper='') # not supported yet
-    parser.add_argument('--outfile', type=str, helper='Write to stdout or to a filename')
+    parser.add_argument('--measurements', default=20, type=int, help='How many measurements per node and channel')
+    parser.add_argument('--channelWait', default=0, type=int, help='How much time to wait after a channel switch')
+    parser.add_argument('--senderChannelWait', default=0, type=int, help='How much time to wait after a channel switch (sink node)')
+    parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
+    #parser.add_argument('--collectionChannel', default=0, type=int, help='') # not supported yet
+    parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
     parser.add_argument('--nodepath', default='serial@/dev/ttyUSB0:115200', type=str)
     args = parser.parse_args()
 
