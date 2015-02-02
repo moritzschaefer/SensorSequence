@@ -134,6 +134,7 @@ implementation {
 
   // Serial Transmission
   bool serialSend(uint16_t senderNodeId, uint16_t receiverNodeId, int16_t rssValue, uint8_t channel, uint8_t measurementNum);
+  bool serialSendFinish();
   bool serialSendBusy = FALSE;
   message_t serial_packet;
 
@@ -446,7 +447,7 @@ implementation {
         break;
       case DO_NOTHING:
         if(isSink) {
-          // send serial packet
+          while(!serialSendFinish());
         }
         debugMessage("end of the story\n");
         call ResetTimer.stop();
@@ -646,17 +647,18 @@ implementation {
       return FALSE;
     }
     else {
-      serial_control_t *rcm = (serial_control_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(serial_control_t));
+      measurement_data_t *rcm = (measurement_data_t*)call SerialAMPacket.getPayload(&serial_packet, sizeof(measurement_data_t));
       if (rcm == NULL) {debugMessage("failed serial: getting rcm\n"); return FALSE;}
 
-      rcm->cmd = 0;
+      // This is like the "command for finish " #hacky #TODO
+      rcm->channel = 0;
 
-      if (call SerialAMPacket.maxPayloadLength() < sizeof(serial_control_t)) {
+      if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
         debugMessage("failed serial: wrong packet size\n");
         return FALSE;
       }
 
-      if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(serial_control_t)) == SUCCESS) {
+      if (call SerialAMSend.send(AM_BROADCAST_ADDR, &serial_packet, sizeof(measurement_data_t)) == SUCCESS) {
         serialSendBusy = TRUE;
       } else {
         debugMessage("failed serial: send returns false\n");

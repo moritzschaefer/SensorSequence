@@ -26,24 +26,31 @@ class HostController:
 
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
+        print msg.get_amType()
         if msg.get_amType()==137:
-            if m.get_rss() != 0:
+            if m.get_channel() == 0:
+                try:
+                    self.outfile.close()
+                except AttributeError:
+                    pass
+                sys.exit(0)
+            elif m.get_rss() != 0:
                 output_line = '\t'.join((str(int(x)) for x in (m.get_senderNodeId(), m.get_receiverNodeId(), m.get_channel(), m.get_rss(), 31, time.time(), m.get_measurementNum()))) + '\n'
                 try:
                     self.outfile.write(output_line)
                 except AttributeError:
                     sys.stdout.write(output_line)
                     sys.stdout.flush()
-        elif msg.get_amType()==142:
-            try:
-                self.outfile.close()
-            except AttributeError:
-                pass
-            sys.exit(0)
+        # how it should be
+        # elif msg.get_amType()==142:
+        #     try:
+        #         self.outfile.close()
+        #     except AttributeError:
+        #         pass
+        #     sys.exit(0)
 
 
     def send(self, args):
-
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
         # 0 means, don't change the value
@@ -68,7 +75,6 @@ def main():
     parser.add_argument('--nodepath', default='serial@/dev/ttyUSB0:115200', type=str)
     args = parser.parse_args()
 
-    print args.nodepath
     # TODO: print usage if -h in arguments
 
     dl = HostController(args.nodepath, args.outfile)
