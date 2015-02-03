@@ -221,6 +221,7 @@ implementation {
         debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
         controlMsg.dissValue = numMeasurements;
+        controlMsg.dissValue2 = channelWaitTime ;
         call Update.change((ControlData*)(&controlMsg));
         printfflush();
         state = WAITING_STATE;
@@ -397,6 +398,7 @@ implementation {
         // reset state here! // TODO: all resetting here
         justStarted = FALSE;
         numMeasurements = newVal.dissValue;
+        channelWaitTime = newVal.dissValue2;
         debugMessage("ID Request from Sink node\n");
         sendCTPNodeId();
         break;
