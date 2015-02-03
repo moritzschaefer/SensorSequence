@@ -1,23 +1,21 @@
 
-R version 3.0.2 (2013-09-25) -- "Frisbee Sailing"
-Copyright (C) 2013 The R Foundation for Statistical Computing
+R version 3.1.1 (2014-07-10) -- "Sock it to Me"
+Copyright (C) 2014 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
+R ist freie Software und kommt OHNE JEGLICHE GARANTIE.
+Sie sind eingeladen, es unter bestimmten Bedingungen weiter zu verbreiten.
+Tippen Sie 'license()' or 'licence()' für Details dazu.
 
-  Natural language support but running in an English locale
+R ist ein Gemeinschaftsprojekt mit vielen Beitragenden.
+Tippen Sie 'contributors()' für mehr Information und 'citation()',
+um zu erfahren, wie R oder R packages in Publikationen zitiert werden können.
 
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
+Tippen Sie 'demo()' für einige Demos, 'help()' für on-line Hilfe, oder
+'help.start()' für eine HTML Browserschnittstelle zur Hilfe.
+Tippen Sie 'q()', um R zu verlassen.
 
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[Previously saved workspace restored]
+[Vorher gesicherter Workspace wiederhergestellt]
 
 > ## probabilisticSeq.R - O.Ergin - 17.06.2013
 > # v2 - 14.08.2013
@@ -58,154 +56,6 @@ Type 'q()' to quit R.
 [1] "Loading configuration.R"
 > 
 > source("probSeqFunctions.R")
-> 
-> run.verbose <- FALSE
-> 
-> totalSuccess <- 0
->  
-> #experimentSet <- 15
-> #probsOutputDirectory <- outputDirectory
-> #outputDirectory <- "verify/"
-> 
-> testName <- paste(exp.set.name,definition,direction,sep="-")
-> outputDirectory <- paste(testName,"/",sep="");
-> 
-> if (!file.exists(outputDirectory))
-+   dir.create(outputDirectory,showWarnings=TRUE,recursive=TRUE)
-> 
-> outputFileName <- paste(outputDirectory,testName,"-verify",experimentSet[1],"-",experimentSet[length(experimentSet)],".txt",sep="")
-> settingsFileName <- paste(outputDirectory,testName,"-Settings.txt",sep="")
-> write.table(exp.set.name,settingsFileName,append=TRUE, row.names=FALSE, col.names=FALSE)
-> write.table(paste(experimentSet[1],tail(experimentSet,1),sep="-"),settingsFileName,append=TRUE, row.names=FALSE,col.names=FALSE)
-> write.table(outputFileName,settingsFileName,append=TRUE, row.names=FALSE, col.names=FALSE)
-> write.table(paste(Truth,collapse=" "),settingsFileName,append=TRUE, row.names=FALSE, col.names=FALSE)
-> 
-> outputDirectory <- paste(outputDirectory,"probs/", sep="")
-> 
-> for(expNo in experimentSet)
-+ {   
-+ 	startTime <- proc.time()
-+ 	
-+ 	TRACE_FILE <- paste(directory,inFilePrefix,expNo,inFileSuffix, sep="")
-+ 	
-+ 	if ("packets" %in% ls() && debugging) {
-+ 		; # do not reload packets
-+ 	}
-+ 	else # not debugging
-+ 	{
-+ 		cat("Loading:",TRACE_FILE, "\n")	
-+ 		packets <- read.table(TRACE_FILE, sep="\t", na.strings="", col.names=c("receiver", "sender", "channel", "rssi", "power", "time", "packetnum"), colClasses=c(rep("factor",3), "numeric", "factor", "character", "numeric"), header=FALSE)
-+ 	}
-+ 	packets <- subset(packets, sender %in% Truth & receiver %in% Truth)
-+   packets <- droplevels(packets)
-+   
-+ 	## DEBUG SET
-+ 	if (debugging) {
-+ 		print("Debug set.")
-+ 		packets <- subset(packets,receiver %in% debugSet & sender %in% debugSet)
-+ 	}
-+ 	
-+ # 	analyse <- matrix(data = NA, nrow = 4, ncol = 11, byrow = TRUE, dimnames = list(NULL,c("expNo", "Rank", "isCorrect", "prob", 
-+ #                                                                                          "verifyRank", "verifyIsCorrect", "verifyProb", 
-+ #                                                                                          "match", "JointProb", "ComputedSeq", "verifySeq")))
-+ 
-+     analyse <- data.frame(expNo=integer(), Rank=integer(), isCorrect=logical(), prob=double(),
-+                           verifyRank=integer(), verifyIsCorrect=logical(), verifyProb=double(), 
-+                           match=logical(), jointProb=double(), computedSeq=character(), verifySeq=character(),
-+                           stringsAsFactors=FALSE)
-+ 
-+   print("Finding Sequence")
-+ 	probabilitySeqDF <- findProbSequences(packets,refnode, produceOutput=produceOutput, verbose=run.verbose);
-+     probOrder <- with(probabilitySeqDF,order(-prob))
-+     probabilitySeqDF <- probabilitySeqDF[probOrder,]
-+   
-+ 	## RESULT
-+ 	print(probabilitySeqDF[1,])
-+ 	winnerSeq <- probabilitySeqDF[1,1:numnodes] 
-+ 	verdict <- all(winnerSeq == Truth)
-+ 	cat("Verdict is:", verdict,"\n"); 
-+ 	cat("Result Sequence is:\n");
-+ 	print(winnerSeq) 
-+   
-+ 	## Print Elapsed Time
-+ 	endTime <- proc.time()
-+ 	print(endTime-startTime)
-+ 	
-+ 	if(verdict == TRUE)
-+ 	{
-+ 		totalSuccess <- totalSuccess +1
-+ 	}
-+ 	cat("TotalSUCCESS=",totalSuccess,"\n");
-+ 	
-+ 	
-+ 	if (TRUE)
-+   {
-+   	rm(packets)
-+ 	}
-+ } # for expNo
-Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_1.txt 
-[1] "Finding Sequence"
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%  |                                                                              |                                                                      |   0%
-   N1 N2  N3 N4  N5 N6         P      prob
-1 146 15 148 11 154 NA 0.4411765 0.4411765
-Verdict is: FALSE 
-Result Sequence is:
-   N1 N2  N3 N4  N5 N6
-1 146 15 148 11 154 NA
-   user  system elapsed 
-  1.014   0.000   1.015 
-TotalSUCCESS= 0 
-Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_2.txt 
-[1] "Finding Sequence"
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%  |                                                                              |                                                                      |   0%
-   N1 N2  N3 N4  N5 N6         P      prob
-1 146 15 148 11 154 NA 0.4381127 0.4381127
-Verdict is: FALSE 
-Result Sequence is:
-   N1 N2  N3 N4  N5 N6
-1 146 15 148 11 154 NA
-   user  system elapsed 
-  0.910   0.000   0.913 
-TotalSUCCESS= 0 
-Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_3.txt 
-[1] "Finding Sequence"
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%  |                                                                              |                                                                      |   0%
-   N1 N2  N3 N4  N5 N6         P      prob
-1 146 15 148 11 154 NA 0.4673203 0.4673203
-Verdict is: FALSE 
-Result Sequence is:
-   N1 N2  N3 N4  N5 N6
-1 146 15 148 11 154 NA
-   user  system elapsed 
-  0.865   0.000   0.866 
-TotalSUCCESS= 0 
-Loading: /home/maximilian/Documents/SensorSequence/node_algorithm/seq16ch_4.txt 
-[1] "Finding Sequence"
-  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |                                                                      |   0%  |                                                                              |============                                                          |  17%  |                                                                              |=======================                                               |  33%  |                                                                              |===================================                                   |  50%  |                                                                              |===============================================                       |  67%  |                                                                              |==========================================================            |  83%  |                                                                              |======================================================================| 100%  |                                                                              |                                                                      |   0%
-   N1 N2  N3 N4  N5 N6         P      prob
-1 146 15 148 11 154 NA 0.3676471 0.3676471
-Verdict is: FALSE 
-Result Sequence is:
-   N1 N2  N3 N4  N5 N6
-1 146 15 148 11 154 NA
-   user  system elapsed 
-  1.115   0.000   1.117 
-TotalSUCCESS= 0 
-> 
-> # Run: Rank Verdict prob RankCheck VerdictCheck ProbCheck
-> # n     1    T/F     p1    1         T/F          pc1
-> # n     1    T/F     p1    2         T/F          pc2
-> # n     2    T/F     p1    1         T/F          pc1
-> # n     2    T/F     p1    2         T/F          pc2
-> # 
-> # expNo: Rank Verdict prob RankCheck VerdictCheck ProbCheck Same JointProb ComputedSeq CheckSeq
-> #   n     1    F       p1    1         T          pc1         F   
-> #   n     1    F       p1    2         F          pc2         ?
-> #   n     2    T       p1    1         T          pc1         T
-> #   n     2    T       p1    2         F          pc2         F
-> 
-> write(as.numeric(winnerSeq),"finalresult.txt")
-> 
-> proc.time()
-   user  system elapsed 
-  4.324   0.058   4.366 
+Fehler in library(plyr) : es gibt kein Paket namens ‘plyr’
+Calls: source -> withVisible -> eval -> eval -> library
+Ausführung angehalten

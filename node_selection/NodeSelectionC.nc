@@ -576,7 +576,7 @@ implementation {
       //printf("measurement packet recived. sender node: %d, RSS:  %d\n", rss_msg->nodeId, (int)getRssi(msg));
       // Save RSSI to packet now
       if(measurementCount >= MAX_MEASUREMENTS) {
-        printf("measurementCount=%d, channels*numMeasu=%d, max_measurements=%d\n", measurementCount, NUM_CHANNELS*numMeasurements, MAX_MEASUREMENTS);
+        printf("measurementCount=%d, channels*numMeasu=%d, max_measurements=%d\n", measurementCount, numChannels*numMeasurements, MAX_MEASUREMENTS);
         debugMessage("too many measurements for our array. decrementing measurementCount");
         measurementCount--;
       }
