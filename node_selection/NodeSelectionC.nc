@@ -192,6 +192,9 @@ implementation {
   }
   event void ResetTimer.fired() {
     // go back to channel eleven
+
+    debugMessage("Reset Timer called");
+
     nextChannel = startChannel;
     acquireSpiResource();
   }
@@ -386,7 +389,7 @@ implementation {
 
   event void Value.changed() {
     const ControlData newVal = *(call Value.get());
-    call ResetTimer.startOneShot(5000);
+    call ResetTimer.startOneShot(20000);
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;

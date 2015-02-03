@@ -68,8 +68,8 @@ def main():
     parser = argparse.ArgumentParser()
     # 0 is using values from nesc code
     parser.add_argument('--measurements', default=20, type=int, help='How many measurements per node and channel')
-    parser.add_argument('--channelWait', default=0, type=int, help='How much time to wait after a channel switch')
-    parser.add_argument('--senderChannelWait', default=0, type=int, help='How much time to wait after a channel switch (sink node)')
+    parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
+    parser.add_argument('--senderChannelWait', default=200, type=int, help='How much time to wait after a channel switch (sink node)')
     parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
     #parser.add_argument('--collectionChannel', default=0, type=int, help='') # not supported yet
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
