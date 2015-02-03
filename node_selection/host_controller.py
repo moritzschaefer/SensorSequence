@@ -73,13 +73,13 @@ def main():
     parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
     #parser.add_argument('--collectionChannel', default=0, type=int, help='') # not supported yet
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
-    parser.add_argument('--nodepath', default='serial@/dev/ttyUSB0:115200', type=str)
+    parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str)
     args = parser.parse_args()
 
     # TODO: print usage if -h in arguments
 
     wait_event = threading.Event()
-    dl = HostController(args.nodepath, args.outfile, wait_event)
+    dl = HostController(args.nodePath, args.outfile, wait_event)
     dl.send(args)
     wait_event.wait()
 
