@@ -10,6 +10,8 @@ typedef nx_struct serial_control {
     nx_uint16_t channel_wait_time;
     nx_uint16_t sender_channel_wait_time;
     nx_uint16_t id_request_wait_time;
+    nx_uint8_t num_channels;
+    nx_uint8_t channels[16];
 } serial_control_t;
 
 enum {

@@ -7,14 +7,14 @@
 import tinyos.message.Message
 
 # The default size of this message type in bytes.
-DEFAULT_MESSAGE_SIZE = 11
+DEFAULT_MESSAGE_SIZE = 28
 
 # The Active Message type associated with this message.
 AM_TYPE = 144
 
 class SerialControl(tinyos.message.Message.Message):
-    # Create a new SerialControl of size 11.
-    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=11):
+    # Create a new SerialControl of size 28.
+    def __init__(self, data="", addr=None, gid=None, base_offset=0, data_length=28):
         tinyos.message.Message.Message.__init__(self, data, addr, gid, base_offset, data_length)
         self.amTypeSet(AM_TYPE)
     
@@ -56,6 +56,17 @@ class SerialControl(tinyos.message.Message.Message):
             pass
         try:
             s += "  [id_request_wait_time=0x%x]\n" % (self.get_id_request_wait_time())
+        except:
+            pass
+        try:
+            s += "  [num_channels=0x%x]\n" % (self.get_num_channels())
+        except:
+            pass
+        try:
+            s += "  [channels=";
+            for i in range(0, 16):
+                s += "0x%x " % (self.getElement_channels(i) & 0xff)
+            s += "]\n";
         except:
             pass
         return s
@@ -446,4 +457,194 @@ class SerialControl(tinyos.message.Message.Message):
     #
     def sizeBits_id_request_wait_time(self):
         return 16
+    
+    #
+    # Accessor methods for field: num_channels
+    #   Field type: short
+    #   Offset (bits): 88
+    #   Size (bits): 8
+    #
+
+    #
+    # Return whether the field 'num_channels' is signed (False).
+    #
+    def isSigned_num_channels(self):
+        return False
+    
+    #
+    # Return whether the field 'num_channels' is an array (False).
+    #
+    def isArray_num_channels(self):
+        return False
+    
+    #
+    # Return the offset (in bytes) of the field 'num_channels'
+    #
+    def offset_num_channels(self):
+        return (88 / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'num_channels'
+    #
+    def offsetBits_num_channels(self):
+        return 88
+    
+    #
+    # Return the value (as a short) of the field 'num_channels'
+    #
+    def get_num_channels(self):
+        return self.getUIntElement(self.offsetBits_num_channels(), 8, 1)
+    
+    #
+    # Set the value of the field 'num_channels'
+    #
+    def set_num_channels(self, value):
+        self.setUIntElement(self.offsetBits_num_channels(), 8, value, 1)
+    
+    #
+    # Return the size, in bytes, of the field 'num_channels'
+    #
+    def size_num_channels(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of the field 'num_channels'
+    #
+    def sizeBits_num_channels(self):
+        return 8
+    
+    #
+    # Accessor methods for field: channels
+    #   Field type: short[]
+    #   Offset (bits): 96
+    #   Size of each element (bits): 8
+    #
+
+    #
+    # Return whether the field 'channels' is signed (False).
+    #
+    def isSigned_channels(self):
+        return False
+    
+    #
+    # Return whether the field 'channels' is an array (True).
+    #
+    def isArray_channels(self):
+        return True
+    
+    #
+    # Return the offset (in bytes) of the field 'channels'
+    #
+    def offset_channels(self, index1):
+        offset = 96
+        if index1 < 0 or index1 >= 16:
+            raise IndexError
+        offset += 0 + index1 * 8
+        return (offset / 8)
+    
+    #
+    # Return the offset (in bits) of the field 'channels'
+    #
+    def offsetBits_channels(self, index1):
+        offset = 96
+        if index1 < 0 or index1 >= 16:
+            raise IndexError
+        offset += 0 + index1 * 8
+        return offset
+    
+    #
+    # Return the entire array 'channels' as a short[]
+    #
+    def get_channels(self):
+        tmp = [None]*16
+        for index0 in range (0, self.numElements_channels(0)):
+                tmp[index0] = self.getElement_channels(index0)
+        return tmp
+    
+    #
+    # Set the contents of the array 'channels' from the given short[]
+    #
+    def set_channels(self, value):
+        for index0 in range(0, len(value)):
+            self.setElement_channels(index0, value[index0])
+
+    #
+    # Return an element (as a short) of the array 'channels'
+    #
+    def getElement_channels(self, index1):
+        return self.getUIntElement(self.offsetBits_channels(index1), 8, 1)
+    
+    #
+    # Set an element of the array 'channels'
+    #
+    def setElement_channels(self, index1, value):
+        self.setUIntElement(self.offsetBits_channels(index1), 8, value, 1)
+    
+    #
+    # Return the total size, in bytes, of the array 'channels'
+    #
+    def totalSize_channels(self):
+        return (128 / 8)
+    
+    #
+    # Return the total size, in bits, of the array 'channels'
+    #
+    def totalSizeBits_channels(self):
+        return 128
+    
+    #
+    # Return the size, in bytes, of each element of the array 'channels'
+    #
+    def elementSize_channels(self):
+        return (8 / 8)
+    
+    #
+    # Return the size, in bits, of each element of the array 'channels'
+    #
+    def elementSizeBits_channels(self):
+        return 8
+    
+    #
+    # Return the number of dimensions in the array 'channels'
+    #
+    def numDimensions_channels(self):
+        return 1
+    
+    #
+    # Return the number of elements in the array 'channels'
+    #
+    def numElements_channels():
+        return 16
+    
+    #
+    # Return the number of elements in the array 'channels'
+    # for the given dimension.
+    #
+    def numElements_channels(self, dimension):
+        array_dims = [ 16,  ]
+        if dimension < 0 or dimension >= 1:
+            raise IndexException
+        if array_dims[dimension] == 0:
+            raise IndexError
+        return array_dims[dimension]
+    
+    #
+    # Fill in the array 'channels' with a String
+    #
+    def setString_channels(self, s):
+         l = len(s)
+         for i in range(0, l):
+             self.setElement_channels(i, ord(s[i]));
+         self.setElement_channels(l, 0) #null terminate
+    
+    #
+    # Read the array 'channels' as a String
+    #
+    def getString_channels(self):
+        carr = "";
+        for i in range(0, 4000):
+            if self.getElement_channels(i) == chr(0):
+                break
+            carr += self.getElement_channels(i)
+        return carr
     
