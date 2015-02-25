@@ -28,6 +28,7 @@ module NodeSelectionC {
   uses interface Timer<TMilli>;
   uses interface Timer<TMilli> as ChannelTimer;
   uses interface Timer<TMilli> as ResetTimer;
+  uses interface Timer<TMilli> as ReassignTimer; // we need to reassign sometimes because some channels sometimes don't receive their assignment #dissemination-bug
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send as CTPSend;
@@ -86,11 +87,17 @@ implementation {
     FINISHED_MEASUREMENTS
   };
 
+
+
+  uint16_t assignRetries = 0;
+  uint16_t maxAssignRetries = 2;
   uint16_t numMeasurements = 5;
   uint16_t channelWaitTime = 50;
   uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
   uint16_t startUpWaitTime = 5000;
+  uint16_t resetTime = 20000;
+  uint16_t reassignTime = 10000; // time to resend sender assign
   uint8_t dataCollectionChannel  = 11;
 
   // init Array
@@ -199,6 +206,14 @@ implementation {
     acquireSpiResource();
   }
 
+  event void ReassignTimer.fired() {
+    if(assignRetries < maxAssignRetries) {
+      senderIterator -= 1;
+      assignRetries++;
+    }
+    post statemachine();
+  }
+
   event void ChannelTimer.fired() {
 
     acquireSpiResource();
@@ -250,6 +265,8 @@ implementation {
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         controlMsg.dissValue2 = currentChannel;
+
+        call ReassignTimer.startOneShot(reassignTime);
         call Update.change((ControlData*)(&controlMsg));
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
@@ -389,7 +406,7 @@ implementation {
 
   event void Value.changed() {
     const ControlData newVal = *(call Value.get());
-    call ResetTimer.startOneShot(20000);
+    call ResetTimer.startOneShot(resetTime);
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
@@ -422,6 +439,8 @@ implementation {
       case FINISHED_MEASUREMENTS:
         // select next sender. if all selected go over
         if(isSink) {
+          call ReassignTimer.stop();
+          assignRetries = 0;
           post statemachine();
         }
         break;
