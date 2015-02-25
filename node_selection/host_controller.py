@@ -77,8 +77,7 @@ def main():
                 raise ValueError("nargs not allowed")
             super(ChannelListAction, self).__init__(option_strings, dest, **kwargs)
         def __call__(self, parser, namespace, values, option_string=None):
-            print('%r %r %r' % (namespace, values, option_string))
-            setattr(namespace, self.dest, values.split(',')[:16])
+            setattr(namespace, self.dest, [int(x) for x in values.split(',')][:16])
 
     parser.add_argument('--channels', default=list(range(11,27)), type=str, help='The channel to measure on. coma separated (e.g. 11,12,13,14). Limited to 16 values', action=ChannelListAction)
     parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
@@ -88,6 +87,7 @@ def main():
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
     parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str)
     args = parser.parse_args()
+    print args.channels
 
     # TODO: print usage if -h in arguments
 
