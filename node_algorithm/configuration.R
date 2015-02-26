@@ -17,32 +17,32 @@ reverseDirection <- FALSE
 if (exp.set.name == "SetA"){
   experimentSet <- 1:2000
   Truth  	<- c(16,138,96,141,92,145,88,147,10,153);
-  
+
   directory <- switch (workstation,
                        MacBookPro = "/Users/ergin/phd/R/measurements/4thFloor/FourthFloor_chLoop2000withPktID/",
                        MacMini = "/Volumes/MacOSX-1/phd/FourthFloor_chLoop2000withPktID/",
                        Anna = "/lhome/ergin/measurements/4thFloor/FourthFloor_chLoop2000withPktID/",
                        maximusLux = "/home/maximilian/Documents/SensorSequence/node_algorithm"
                       )
-} else 
+} else
 if (exp.set.name == "SetB") {
   experimentSet <- 1:693
   Truth    <- c(140,94,143,90,150,13,152);
-  
+
   directory <- switch (workstation,
                        MacBookPro = "/Users/ergin/phd/R/measurements/4thFl-NorthWindow/",
                        MacMini = "" # fill in
                       )
-} else 
+} else
 if (exp.set.name == "SetC") {
-  experimentSet <- 1:4
-  Truth    <- rev(c(154, 11, 15, 148, 15, 146));
-  
+  experimentSet <- 1:1
+  Truth    <- rev(c(0,10, 11));
+
   directory <- switch (workstation,
                        MacBookPro = "/TestTest/",
                        MacMini = "", # fill in
                        Anna = "/lhome/ergin/measurements/4thFloor/chOuterLoop4thFl-2ndRow10Nodes/",
-		       maximusLux = "/home/maximilian/Documents/SensorSequence/node_algorithm/"
+		       maximusLux = "/home/moritz/SensorSequence/node_algorithm/"
                       )
 }
 numnodes   <- length(Truth)

@@ -54,6 +54,8 @@ class HostController:
     def send(self, args):
         smsg = SerialControl.SerialControl()
         smsg.set_cmd(0)
+        smsg.set_channels(args.channels)
+        smsg.set_num_channels(len(args.channels))
         # 0 means, don't change the value
         smsg.set_num_measurements(args.measurements)
         smsg.set_channel_wait_time(args.channelWait)
@@ -68,6 +70,16 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # 0 is using values from nesc code
     parser.add_argument('--measurements', default=20, type=int, help='How many measurements per node and channel')
+
+    class ChannelListAction(argparse.Action):
+        def __init__(self, option_strings, dest, nargs=None, **kwargs):
+            if nargs is not None:
+                raise ValueError("nargs not allowed")
+            super(ChannelListAction, self).__init__(option_strings, dest, **kwargs)
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, [int(x) for x in values.split(',')][:16])
+
+    parser.add_argument('--channels', default=list(range(11,27)), type=str, help='The channel to measure on. coma separated (e.g. 11,12,13,14). Limited to 16 values. has to start with 11', action=ChannelListAction)
     parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
     parser.add_argument('--senderChannelWait', default=200, type=int, help='How much time to wait after a channel switch (sink node)')
     parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
@@ -75,6 +87,7 @@ def main():
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
     parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str)
     args = parser.parse_args()
+    print args.channels
 
     # TODO: print usage if -h in arguments
 

@@ -41,6 +41,10 @@ implementation {
   components new TimerMilliC() as ResetTimer;
   NodeSelectionC.ResetTimer -> ResetTimer;
 
+  // Timer to resend Sender Assign #disseminationbug
+  components new TimerMilliC() as ReassignTimer;
+  NodeSelectionC.ReassignTimer -> ReassignTimer;
+
 
   // CTP Part
   components CollectionC as Collector;

@@ -22,11 +22,6 @@ typedef nx_struct CollectionDataMsg {
     nx_uint8_t measurementNum;
 } CollectionDataMsg;
 
-typedef nx_struct FullCollectionDataMsg {
-    nx_uint16_t numData;
-    CollectionDataMsg data[NUM_MEASUREMENTS_PER_NODE];
-} FullCollectionDataMsg;
-
 typedef nx_struct RSSMeasurementMsg {
   nx_uint16_t nodeId;
   nx_uint16_t measurementNum;

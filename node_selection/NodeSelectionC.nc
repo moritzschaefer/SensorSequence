@@ -28,6 +28,7 @@ module NodeSelectionC {
   uses interface Timer<TMilli>;
   uses interface Timer<TMilli> as ChannelTimer;
   uses interface Timer<TMilli> as ResetTimer;
+  uses interface Timer<TMilli> as ReassignTimer; // we need to reassign sometimes because some channels sometimes don't receive their assignment #dissemination-bug
   // CTP
   uses interface StdControl as RoutingControl;
   uses interface Send as CTPSend;
@@ -86,11 +87,20 @@ implementation {
     FINISHED_MEASUREMENTS
   };
 
+
+  // Non sense setting it here as it will be set on initialization always
+  uint8_t numChannels = 16;
+  uint8_t channels[] = {11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26}; // TODO: right now first channel must be 11
+
+  uint16_t assignRetries = 0;
+  uint16_t maxAssignRetries = 2;
   uint16_t numMeasurements = 5;
   uint16_t channelWaitTime = 50;
   uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
   uint16_t startUpWaitTime = 5000;
+  uint16_t resetTime = 20000;
+  uint16_t reassignTime = 10000; // time to resend sender assign
   uint8_t dataCollectionChannel  = 11;
 
   // init Array
@@ -106,7 +116,6 @@ implementation {
   void printMeasurementArray();
   task void sendMeasurementPacket();
   task void sendCTPMeasurementData();
-  task void sendCTPFullMeasurementData();
   task void statemachine();
 
   // counter/array counter
@@ -199,6 +208,14 @@ implementation {
     acquireSpiResource();
   }
 
+  event void ReassignTimer.fired() {
+    if(assignRetries < maxAssignRetries) {
+      senderIterator -= 1;
+      assignRetries++;
+    }
+    post statemachine();
+  }
+
   event void ChannelTimer.fired() {
 
     acquireSpiResource();
@@ -250,6 +267,8 @@ implementation {
         controlMsg.dissCommand = SENDER_ASSIGN;
         controlMsg.dissValue = nodeIds[senderIterator];
         controlMsg.dissValue2 = currentChannel;
+
+        call ReassignTimer.startOneShot(reassignTime);
         call Update.change((ControlData*)(&controlMsg));
         printf("Send SENDER_ASSIGN to %u\n", nodeIds[senderIterator]);
         printfflush();
@@ -317,30 +336,6 @@ implementation {
 
   event void RadioControl.stopDone(error_t err) {}
 
-  task void sendCTPFullMeasurementData() {
-    FullCollectionDataMsg *msg;
-    int i;
-
-    if(sendBusy) {
-      debugMessage("Call to sendCTPFullMeasurementData while sendBusy is true\n");
-      return;
-    }
-    msg =
-      (FullCollectionDataMsg*)call CTPSend.getPayload(&ctp_collection_packet, sizeof(FullCollectionDataMsg));
-    msg->numData = measurementCount;
-
-    for(i=0; i<measurementCount; i++) {
-      msg->data[i] = measurements[i];
-    }
-
-
-    if (call CTPSend.send(&ctp_collection_packet, sizeof(FullCollectionDataMsg)) != SUCCESS) {
-      debugMessage("Error sending FullCollectionData via CTP\n");
-    } else {
-      sendBusy = TRUE;
-    }
-
-  }
   task void sendCTPMeasurementData() {
     CollectionDataMsg *msg;
     if(sendBusy) {
@@ -389,7 +384,7 @@ implementation {
 
   event void Value.changed() {
     const ControlData newVal = *(call Value.get());
-    call ResetTimer.startOneShot(20000);
+    call ResetTimer.startOneShot(resetTime);
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
@@ -422,6 +417,8 @@ implementation {
       case FINISHED_MEASUREMENTS:
         // select next sender. if all selected go over
         if(isSink) {
+          call ReassignTimer.stop();
+          assignRetries = 0;
           post statemachine();
         }
         break;
@@ -439,15 +436,11 @@ implementation {
       case DATA_COLLECTION_REQUEST:
         debugMessage("received request for data collection\n"); // TODO delete
         if(newVal.dissValue == TOS_NODE_ID) { // if i am selected, do data collection
-          if(SEND_SINGLE_MEASUREMENT_DATA) {
-            debugMessage("received request for data collection for me\n");
-            // start by sending first measurement and go on in sendDone
-            measurementsTransmitted = 0;
-            isTransmittingMeasurements = TRUE;
-            post sendCTPMeasurementData();
-          } else {
-            post sendCTPFullMeasurementData();
-          }
+          debugMessage("received request for data collection for me\n");
+          // start by sending first measurement and go on in sendDone
+          measurementsTransmitted = 0;
+          isTransmittingMeasurements = TRUE;
+          post sendCTPMeasurementData();
         }
         break;
       case DO_NOTHING:
@@ -493,7 +486,6 @@ implementation {
     // do action dependent on packet type (= size)
     NodeIDMsg *receivedNodeId;
     CollectionDataMsg *receivedCollectionData;
-    FullCollectionDataMsg *receivedFullCollectionData;
     switch(len) {
       case sizeof(NodeIDMsg):
         receivedNodeId = (NodeIDMsg*)payload;
@@ -510,10 +502,6 @@ implementation {
           // fallback timer. if we don't receive a next data packet in X seconds, just go on
           call Timer.startOneShot(3000);
         }
-        break;
-      case sizeof(FullCollectionDataMsg):
-        receivedFullCollectionData = (FullCollectionDataMsg*)payload;
-        printf("received %d measurements from node %d. sender was node %d.\n", receivedFullCollectionData->numData, receivedFullCollectionData->data[0].receiverNodeId, receivedFullCollectionData->data[0].senderNodeId);
         break;
       default:
         debugMessage("Received CTP length doesn't match expected one.\n");
@@ -737,6 +725,10 @@ implementation {
     isSink = TRUE;
     if(control_msg->cmd == 0) {
       resetState();
+
+      // set channels
+      numChannels = control_msg->num_channels;
+      memcpy(channels, control_msg->channels, sizeof(uint8_t)*numChannels);
 
       // set all data from packet
       if(control_msg->num_measurements > 0) {
