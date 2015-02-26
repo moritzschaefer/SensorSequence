@@ -65,7 +65,7 @@ class HostController:
 def main():
 
     #argparse
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # 0 is using values from nesc code
     parser.add_argument('--measurements', default=20, type=int, help='How many measurements per node and channel')
     parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
