@@ -85,9 +85,8 @@ def main():
     parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
     #parser.add_argument('--collectionChannel', default=0, type=int, help='') # not supported yet
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
-    parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str)
+    parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str, help='the path of the sink node')
     args = parser.parse_args()
-    print args.channels
 
     # TODO: print usage if -h in arguments
 
