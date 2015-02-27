@@ -26,7 +26,7 @@ CFLAGS += -I$(TINYOS_OS_DIR)/lib/net -I$(TINYOS_OS_DIR)/lib/net/drip
 #CFLAGS += -I$(TINYOS_OS_DIR)/lib/net -I%T/lib/net/dhv -I%T/lib/net/dhv/interfaces
 
 # Transmission power max
-CFLAGS += -DCC2420_DEF_RFPOWER=11
+CFLAGS += -DCC2420_DEF_RFPOWER=31
 
 
 include $(TINYOS_ROOT_DIR)/Makefile.include

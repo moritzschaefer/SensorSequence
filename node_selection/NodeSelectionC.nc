@@ -10,7 +10,6 @@
 // TODO: find better name to for CollectionDataMsg
 // Green: I'm on START_CHANNEL
 // Blue: I am sender
-// Red: I am the boss (sink)
 
 // Disable printfs
 #if DEBUG
@@ -245,6 +244,7 @@ implementation {
       //Node detection State
       case(NODE_DETECTION_STATE):
         // RESET everything
+        call Leds.set(1);
         resetNodeIds();
         debugMessage("\n\n\nSend DISCOVER to all nodes\n");
         controlMsg.dissCommand = ID_REQUEST;
@@ -264,6 +264,7 @@ implementation {
         call Timer.startOneShot(500);
         break;
       case SENDER_SELECTION_STATE:
+        call Leds.set(2);
         // change controlMsg
         if (senderIterator >= nodeCount) {
           senderIterator = 0;
@@ -284,6 +285,7 @@ implementation {
         break;
 
       case SERIAL_SINK_DATA_STATE:
+        call Leds.set(3);
         if(serialMeasurementsTransmitted >= receivedDataPackets) {
           receivedDataPackets = 0;
           debugMessage("\nserial-transmitted all measurements\n");
@@ -300,6 +302,7 @@ implementation {
         break;
 
       case DATA_COLLECTION_STATE:
+        call Leds.set(4);
         if (dataSenderIterator >= nodeCount) {
           dataSenderIterator = 0;
           state = CHANGE_CHANNEL_STATE;
@@ -321,6 +324,7 @@ implementation {
         dataSenderIterator++;
         break;
       case CHANGE_CHANNEL_STATE:
+        call Leds.set(5);
         controlMsg.dissCommand = CHANGE_CHANNEL;
         // set next channel. TODO: first channel is always 11. change this with ID_REQUEST
         channelIterator++;
@@ -335,6 +339,7 @@ implementation {
 
         break;
       case IDLE_STATE:
+        call Leds.set(0);
         controlMsg.dissCommand = DO_NOTHING;
         controlMsg.dissValue = 0;
         call Update.change((ControlData*)(&controlMsg)); //canged "nodeIds+senderIterator" to "ctrMsg.DissValue"
@@ -444,11 +449,14 @@ implementation {
       case DATA_COLLECTION_REQUEST:
         debugMessage("received request for data collection\n"); // TODO delete
         if(newVal.dissValue == TOS_NODE_ID) { // if i am selected, do data collection
+          call Leds.led0On();
           debugMessage("received request for data collection for me\n");
           // start by sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
           isTransmittingMeasurements = TRUE;
           post sendCTPMeasurementData();
+        } else {
+          call Leds.led0Off();
         }
         break;
       case DO_NOTHING:
@@ -494,6 +502,7 @@ implementation {
     // do action dependent on packet type (= size)
     NodeIDMsg *receivedNodeId;
     CollectionDataMsg *receivedCollectionData;
+    call Leds.set(6);
     switch(len) {
       case sizeof(NodeIDMsg):
         receivedNodeId = (NodeIDMsg*)payload;
@@ -729,7 +738,6 @@ implementation {
     serial_control_t* control_msg = (serial_control_t*)(call Packet.getPayload(bufPtr, (int) NULL));
     if(!isSink)
       call RootControl.setRoot();
-    call Leds.led0On();
     isSink = TRUE;
     if(control_msg->cmd == 0) {
       resetState();

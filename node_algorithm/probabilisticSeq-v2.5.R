@@ -6,7 +6,7 @@
 
 # In addition, it doesn't only select the first winning node, but also other nodes with up to 2dbm difference for selecting Winning receivers.
 #
-# Version History: 
+# Version History:
 #
 # v2.1 - 30.10.2013
 #	Tree will be clustered with the paths whose P's are equal or greater than maximum P
@@ -24,13 +24,13 @@
 # For best maxRankToCompare sequences, compute the reverse maxRankToCompare Sequences
 # Check for consistency
 #
-# DONE ToDo: Convert the sequence building algorithm into a function, with parameters (packets, refnode) 
+# DONE ToDo: Convert the sequence building algorithm into a function, with parameters (packets, refnode)
 #
 
 #library(tcltk)
 
 ## Load configuration file
-## global/common variables are written 
+## global/common variables are written
 ## in a configuration file now.
 
 source("configuration.R")
@@ -40,7 +40,7 @@ source("probSeqFunctions.R")
 run.verbose <- FALSE
 
 totalSuccess <- 0
- 
+
 #experimentSet <- 15
 #probsOutputDirectory <- outputDirectory
 #outputDirectory <- "verify/"
@@ -60,35 +60,38 @@ write.table(paste(Truth,collapse=" "),settingsFileName,append=TRUE, row.names=FA
 
 outputDirectory <- paste(outputDirectory,"probs/", sep="")
 
+experimentSet <- 1
+refnode <- 100
 for(expNo in experimentSet)
-{   
+{
 	startTime <- proc.time()
-	
+
 	TRACE_FILE <- paste(directory,inFilePrefix,expNo,inFileSuffix, sep="")
-	
+  TRACE_FILE <- "../node_selection/measurementtoday3.txt"
+
 	if ("packets" %in% ls() && debugging) {
 		; # do not reload packets
 	}
 	else # not debugging
 	{
-		cat("Loading:",TRACE_FILE, "\n")	
+		cat("Loading:",TRACE_FILE, "\n")
 		packets <- read.table(TRACE_FILE, sep="\t", na.strings="", col.names=c("receiver", "sender", "channel", "rssi", "power", "time", "packetnum"), colClasses=c(rep("factor",3), "numeric", "factor", "character", "numeric"), header=FALSE)
 	}
 	packets <- subset(packets, sender %in% Truth & receiver %in% Truth)
   packets <- droplevels(packets)
-  
+
 	## DEBUG SET
 	if (debugging) {
 		print("Debug set.")
 		packets <- subset(packets,receiver %in% debugSet & sender %in% debugSet)
 	}
-	
-# 	analyse <- matrix(data = NA, nrow = 4, ncol = 11, byrow = TRUE, dimnames = list(NULL,c("expNo", "Rank", "isCorrect", "prob", 
-#                                                                                          "verifyRank", "verifyIsCorrect", "verifyProb", 
+
+# 	analyse <- matrix(data = NA, nrow = 4, ncol = 11, byrow = TRUE, dimnames = list(NULL,c("expNo", "Rank", "isCorrect", "prob",
+#                                                                                          "verifyRank", "verifyIsCorrect", "verifyProb",
 #                                                                                          "match", "JointProb", "ComputedSeq", "verifySeq")))
 
     analyse <- data.frame(expNo=integer(), Rank=integer(), isCorrect=logical(), prob=double(),
-                          verifyRank=integer(), verifyIsCorrect=logical(), verifyProb=double(), 
+                          verifyRank=integer(), verifyIsCorrect=logical(), verifyProb=double(),
                           match=logical(), jointProb=double(), computedSeq=character(), verifySeq=character(),
                           stringsAsFactors=FALSE)
 
@@ -96,26 +99,26 @@ for(expNo in experimentSet)
 	probabilitySeqDF <- findProbSequences(packets,refnode, produceOutput=produceOutput, verbose=run.verbose);
     probOrder <- with(probabilitySeqDF,order(-prob))
     probabilitySeqDF <- probabilitySeqDF[probOrder,]
-  
+
 	## RESULT
 	print(probabilitySeqDF[1,])
-	winnerSeq <- probabilitySeqDF[1,1:numnodes] 
+	winnerSeq <- probabilitySeqDF[1,1:numnodes]
 	verdict <- all(winnerSeq == Truth)
-	cat("Verdict is:", verdict,"\n"); 
+	cat("Verdict is:", verdict,"\n");
 	cat("Result Sequence is:\n");
-	print(winnerSeq) 
-  
+	print(winnerSeq)
+
 	## Print Elapsed Time
 	endTime <- proc.time()
 	print(endTime-startTime)
-	
+
 	if(verdict == TRUE)
 	{
 		totalSuccess <- totalSuccess +1
 	}
 	cat("TotalSUCCESS=",totalSuccess,"\n");
-	
-	
+
+
 	if (TRUE)
   {
   	rm(packets)
@@ -127,9 +130,9 @@ for(expNo in experimentSet)
 # n     1    T/F     p1    2         T/F          pc2
 # n     2    T/F     p1    1         T/F          pc1
 # n     2    T/F     p1    2         T/F          pc2
-# 
+#
 # expNo: Rank Verdict prob RankCheck VerdictCheck ProbCheck Same JointProb ComputedSeq CheckSeq
-#   n     1    F       p1    1         T          pc1         F   
+#   n     1    F       p1    1         T          pc1         F
 #   n     1    F       p1    2         F          pc2         ?
 #   n     2    T       p1    1         T          pc1         T
 #   n     2    T       p1    2         F          pc2         F
