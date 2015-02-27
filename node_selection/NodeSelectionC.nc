@@ -418,12 +418,14 @@ implementation {
         debugMessage("sender assign\n");
         if(newVal.dissValue == TOS_NODE_ID) {
           debugMessage("im sender now\n");
-          call Leds.led2On();
+          if(!isSink)
+            call Leds.led2On();
           measurementSendCount = 0;
           // TODO WAIT before sending!
           post sendMeasurementPacket();
         } else {
-          call Leds.led2Off();
+          if(!isSink)
+            call Leds.led2Off();
         }
         break;
 
@@ -449,14 +451,16 @@ implementation {
       case DATA_COLLECTION_REQUEST:
         debugMessage("received request for data collection\n"); // TODO delete
         if(newVal.dissValue == TOS_NODE_ID) { // if i am selected, do data collection
-          call Leds.led0On();
+          if(!isSink)
+            call Leds.led0On();
           debugMessage("received request for data collection for me\n");
           // start by sending first measurement and go on in sendDone
           measurementsTransmitted = 0;
           isTransmittingMeasurements = TRUE;
           post sendCTPMeasurementData();
         } else {
-          call Leds.led0Off();
+          if(!isSink)
+            call Leds.led0Off();
         }
         break;
       case DO_NOTHING:
@@ -825,9 +829,11 @@ implementation {
       releaseSpiResource();
     }
     if(currentChannel == startChannel) {
-      call Leds.led1On();
+      if(!isSink)
+        call Leds.led1On();
     } else {
-      call Leds.led1Off();
+      if(!isSink)
+        call Leds.led1Off();
     }
     return error;
   }
@@ -932,7 +938,8 @@ implementation {
 
     if (rd_channel != wr_channel) {
       printf("Problem: rd_channel=%d(0x%X) != wr_channel=%d(0x%X) && status = 0x%X SPI.owner=%d\n",rd_channel, rd_channel, wr_channel, wr_channel, status, call SpiResource.isOwner());
-      call Leds.led0On();
+      if(!isSink)
+        call Leds.led0On();
     }
     else {
       currentChannel = channel;
