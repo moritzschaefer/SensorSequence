@@ -79,7 +79,7 @@ def main():
         def __call__(self, parser, namespace, values, option_string=None):
             setattr(namespace, self.dest, [int(x) for x in values.split(',')][:16])
 
-    parser.add_argument('--channels', default=list(range(11,27)), type=str, help='The channel to measure on. coma separated (e.g. 11,12,13,14). Limited to 16 values. has to start with 11', action=ChannelListAction)
+    parser.add_argument('--channels', default=list(range(11,27)), type=str, help='The channel to measure on. comma separated (e.g. 11,12,13,14). Limited to 16 values. has to start with 11', action=ChannelListAction)
     parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
     parser.add_argument('--senderChannelWait', default=200, type=int, help='How much time to wait after a channel switch (sink node)')
     parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')

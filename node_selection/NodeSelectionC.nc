@@ -84,7 +84,8 @@ implementation {
     DATA_COLLECTION_REQUEST,
     DO_NOTHING,
     FINISHED,
-    FINISHED_MEASUREMENTS
+    FINISHED_MEASUREMENTS,
+    PLACEHOLDER_COMMAND
   };
 
 
@@ -209,6 +210,13 @@ implementation {
   }
 
   event void ReassignTimer.fired() {
+    //Reset disseminate
+    controlMsg.dissCommand = PLACEHOLDER_COMMAND;
+    controlMsg.dissValue = 0;
+    controlMsg.dissValue2 = 0;
+
+    call Update.change((ControlData*)(&controlMsg));
+
     if(assignRetries < maxAssignRetries) {
       senderIterator -= 1;
       assignRetries++;
