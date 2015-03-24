@@ -82,7 +82,7 @@ def main():
     parser.add_argument('--channels', default=list(range(11,27)), type=str, help='The channel to measure on. comma separated (e.g. 11,12,13,14). Limited to 16 values. has to start with 11', action=ChannelListAction)
     parser.add_argument('--channelWait', default=100, type=int, help='How much time to wait after a channel switch')
     parser.add_argument('--senderChannelWait', default=200, type=int, help='How much time to wait after a channel switch (sink node)')
-    parser.add_argument('--idWait', default=0, type=int, help='How much time to wait for node ids?')
+    parser.add_argument('--idWait', default=2000, type=int, help='How much time to wait for node ids?')
     #parser.add_argument('--collectionChannel', default=0, type=int, help='') # not supported yet
     parser.add_argument('--outfile', type=str, help='Write to stdout or to a filename')
     parser.add_argument('--nodePath', default='serial@/dev/ttyUSB0:115200', type=str, help='the path of the sink node')

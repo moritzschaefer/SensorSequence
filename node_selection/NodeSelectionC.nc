@@ -98,6 +98,7 @@ implementation {
   uint16_t channelWaitTime = 50;
   uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
+  uint16_t dataCollectionWaitTime = 2000;
   uint16_t startUpWaitTime = 5000;
   uint16_t resetTime = 20000;
   uint16_t reassignTime = 10000; // time to resend sender assign
@@ -322,6 +323,9 @@ implementation {
         printfflush();
         state = SERIAL_SINK_DATA_STATE;
         dataSenderIterator++;
+
+        // go on if no data arriving
+        call Timer.startOneShot(dataCollectionWaitTime);
         break;
       case CHANGE_CHANNEL_STATE:
         call Leds.set(5);
@@ -397,7 +401,7 @@ implementation {
 
   event void Value.changed() {
     const ControlData newVal = *(call Value.get());
-    call ResetTimer.startOneShot(resetTime);
+    //call ResetTimer.startOneShot(resetTime); // TODO  turn on
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
@@ -521,7 +525,7 @@ implementation {
           post statemachine(); // go to serial transmission
         } else {
           // fallback timer. if we don't receive a next data packet in X seconds, just go on
-          call Timer.startOneShot(3000);
+          call Timer.startOneShot(dataCollectionWaitTime);
         }
         break;
       default:
