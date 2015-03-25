@@ -445,8 +445,10 @@ implementation {
         break;
       case CHANGE_CHANNEL:
         measurementCount = 0;
-        printf("received channel change to %u\n", newVal.dissValue);
-        printfflush();
+        if(isSink) {
+          printf("received channel change to %u\n", newVal.dissValue);
+          printfflush();
+        }
         nextChannel = newVal.dissValue;
         if(isSink) {
           call ChannelTimer.startOneShot(senderChannelWaitTime); // if i am sink, wait longer!
@@ -470,10 +472,10 @@ implementation {
         }
         break;
       case DO_NOTHING:
-        if(isSink) {
-          while(!serialSendFinish());
-        }
         debugMessage("end of the story\n");
+        /*if(isSink) { // TODO enable!!!
+          while(!serialSendFinish());
+        }*/
         call ResetTimer.stop();
         break;
       default:
@@ -548,8 +550,6 @@ implementation {
       rss_msg->nodeId = TOS_NODE_ID;
       rss_msg->measurementNum = measurementSendCount;
       if (call AMSend.send(AM_BROADCAST_ADDR, &am_packet, sizeof(RSSMeasurementMsg)) == SUCCESS) {
-        //printf("message fired\n");
-        //printfflush();
         sendBusy = TRUE;
         return;
       }
@@ -733,6 +733,9 @@ implementation {
     if (&serial_packet == bufPtr) {
       serialSendBusy = FALSE;
       debugMessage("successfully sent\n");
+    } else {
+      serialSendBusy = FALSE;
+      debugMessage("unsuccessfully sent serial\n");
     }
     if(state == SERIAL_SINK_DATA_STATE)
       post statemachine();
@@ -780,19 +783,17 @@ implementation {
     return bufPtr;
   }
   void debugMessage(const char *msg) {
-#if DEBUG
-    if(serialSendBusy) {
+    if(serialSendBusy || !isSink || DEBUG == 0 ) {
       return;
     } else {
       printf(msg);
       printfflush();
     }
-#endif
   }
   // Channel switching
   event void SpiResource.granted() {
 
-    printf("Request Granted\n"); printfflush();
+    debugMessage("Request Granted\n");
 
     if (txpchanged) {
       setTxPower(nextTxPower);
@@ -816,7 +817,7 @@ implementation {
     //printf("AquireSpiResource()\n"); printfflush();
 
     if ( error != SUCCESS ) {
-      printf("immediate not possible, requesting()\n"); printfflush();
+      debugMessage("immediate not possible, requesting()\n");
       call SpiResource.request();
     }
     else {
@@ -845,7 +846,7 @@ implementation {
   }
 
   error_t releaseSpiResource() {
-    printf("Spi resource releasing()\n"); printfflush();
+    debugMessage("Spi resource releasing()\n");
     call SpiResource.release();
     return SUCCESS;
   }

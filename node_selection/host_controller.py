@@ -68,7 +68,7 @@ class HostController:
 def main():
 
     #argparse
-    import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # 0 is using values from nesc code
     parser.add_argument('--measurements', default=20, type=int, help='How many measurements per node and channel')
