@@ -94,6 +94,7 @@ implementation {
   uint8_t numChannels = 16;
   uint8_t channels[] = {11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26}; // TODO: right now first channel must be 11
 
+  // TODO do timings dependent on node count
   uint16_t assignRetries = 0;
   uint16_t maxAssignRetries = 2;
   uint16_t numMeasurements = 5;
@@ -101,9 +102,9 @@ implementation {
   uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
   uint16_t dataCollectionWaitTime = 2000;
-  uint16_t startUpWaitTime = 5000;
-  uint16_t resetTime = 20000;
-  uint16_t reassignTime = 10000; // time to resend sender assign
+  //uint16_t resetTime = 20000;
+  uint16_t resetTime = 0; // TODO now disabled
+  uint16_t reassignTime = 3000; // time to resend sender assign
   uint8_t dataCollectionChannel  = 11;
 
   // init Array
@@ -189,12 +190,6 @@ implementation {
       call RoutingControl.start();
 
 
-      if (isSink) {
-        //call RootControl.setRoot();
-        //call Leds.led0On();
-        // Wait before starting to receive "dead" disseminate
-        //call Timer.startOneShot(startUpWaitTime);
-      }
     }
   }
 
@@ -222,6 +217,14 @@ implementation {
     if(assignRetries < maxAssignRetries) {
       senderIterator -= 1;
       assignRetries++;
+    } else {
+      int i;
+      printf("too many reassigns. deleting node %d from list\n", nodeIds[senderIterator-1]); printfflush();
+      for(i=senderIterator-1; i<nodeCount-1;i++) {
+        nodeIds[i] = nodeIds[i+1];
+      }
+      nodeCount--;
+      senderIterator -= 1;
     }
     post statemachine();
   }
@@ -403,7 +406,10 @@ implementation {
 
   event void Value.changed() {
     const ControlData newVal = *(call Value.get());
-    //call ResetTimer.startOneShot(resetTime); // TODO  turn on
+    if(resetTime != 0) {
+      call ResetTimer.startOneShot(resetTime);
+    }
+
     // ignore first disseminate command if we just started and command is not id_request
     if(justStarted && newVal.dissCommand != ID_REQUEST) {
       return;
@@ -477,6 +483,8 @@ implementation {
           while(!serialSendFinish());
         }*/
         call ResetTimer.stop();
+        break;
+      case PLACEHOLDER_COMMAND:
         break;
       default:
         printf("received unknown diss command: %u, value: %u", newVal.dissCommand, newVal.dissValue);
