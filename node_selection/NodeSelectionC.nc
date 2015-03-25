@@ -12,7 +12,7 @@
 
 // Disable printfs
 
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG
 #else
@@ -97,15 +97,20 @@ implementation {
   // TODO do timings dependent on node count
   uint16_t assignRetries = 0;
   uint16_t maxAssignRetries = 2;
+
+
+
+  uint8_t dataCollectionChannel  = 11; // TODO not used
   uint16_t numMeasurements = 5;
   uint16_t channelWaitTime = 50;
   uint16_t senderChannelWaitTime = 150;
   uint16_t idRequestWaitTime = 2000;
+
+  // TODO configure these here
   uint16_t dataCollectionWaitTime = 2000;
   //uint16_t resetTime = 20000;
-  uint16_t resetTime = 0; // TODO now disabled
+  uint16_t resetTime = 0; // TODO now disabled, change to 20000
   uint16_t reassignTime = 3000; // time to resend sender assign
-  uint8_t dataCollectionChannel  = 11;
 
   // init Array
   uint16_t *nodeIds=NULL;
@@ -140,7 +145,6 @@ implementation {
   // Statemachine
   int state = NODE_DETECTION_STATE;
 
-  // TODO: should we use only one sendBusy field for CTP/Serial/...? maybe they intefere..
   // Used for CTP
   message_t ctp_discover_packet, ctp_collection_packet, am_packet;
   bool sendBusy = FALSE;
@@ -418,7 +422,6 @@ implementation {
     //debugMessage("received diss value: ");
     switch(newVal.dissCommand) {
       case ID_REQUEST:
-        // reset state here! // TODO: all resetting here
         justStarted = FALSE;
         numMeasurements = newVal.dissValue;
         channelWaitTime = newVal.dissValue2;
@@ -433,7 +436,7 @@ implementation {
           if(!isSink)
             call Leds.led2On();
           measurementSendCount = 0;
-          // TODO WAIT before sending!
+          // TODO WAIT before sending?
           post sendMeasurementPacket();
         } else {
           if(!isSink)
@@ -463,7 +466,6 @@ implementation {
         }
         break;
       case DATA_COLLECTION_REQUEST:
-        debugMessage("received request for data collection\n"); // TODO delete
         if(newVal.dissValue == TOS_NODE_ID) { // if i am selected, do data collection
           if(!isSink)
             call Leds.led0On();
@@ -479,9 +481,9 @@ implementation {
         break;
       case DO_NOTHING:
         debugMessage("end of the story\n");
-        /*if(isSink) { // TODO enable!!!
+        if(isSink) {
           while(!serialSendFinish());
-        }*/
+        }
         call ResetTimer.stop();
         break;
       case PLACEHOLDER_COMMAND:
