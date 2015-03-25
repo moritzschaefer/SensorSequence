@@ -1,0 +1,1000 @@
+ 1120  vim SetC-Q50-Normal-verify1-2000.txt 
+ 1121  l
+ 1122  cd ..
+ 1123  l
+ 1124  cd measurements/
+ 1125  l
+ 1126  cd ..
+ 1127  l
+ 1128  cat run.sh 
+ 1129  sh run.sh 
+ 1130  vim run.sh 
+ 1131  cd ../node_selection/
+ 1132  l
+ 1133  ls
+ 1134  make tmote install,927
+ 1135  make tmote install,917
+ 1136  ./host_controller.py | tee measurement.txt 
+ 1137  ./host_controller.py  serial@/dev/ttyUSB1 | tee measurement.txt 
+ 1138  ./host_controller.py  serial@/dev/ttyUSB1:115200 | tee measurement.txt 
+ 1139  motelist
+ 1140  ./host_controller.py  serial@/dev/ttyUSB1:115200 | tee measurement.txt
+ 1141  motelist
+ 1142  ./host_controller.py  | tee measurement.txt
+ 1143  git log
+ 1144  make tmote install,11
+ 1145  ./host_controller.py | tee measurement.txt 
+ 1146  make tmote install,0
+ 1147  ./host_controller.py | tee measurement.txt 
+ 1148  l
+ 1149  git pull
+ 1150  l
+ 1151  cd ../node_algorithm/
+ 1152  l
+ 1153  vim run.sh 
+ 1154  cp run.sh ../node_selection/
+ 1155  cd $_
+ 1156  l
+ 1157  cat sequence.sh 
+ 1158  vim run.sh 
+ 1159  l
+ 1160  git status
+ 1161  git add .
+ 1162  git status
+ 1163  cd ..
+ 1164  git status
+ 1165  git add .
+ 1166  git status
+ 1167  git commit -m "R is running fine"
+ 1168  l
+ 1169  cd ..
+ 1170  l
+ 1171  cd SensorSequence/node_algorithm/
+ 1172  vim configuration.R 
+ 1173  cd ..
+ 1174  cd node_selection/
+ 1175  l
+ 1176  sh run.sh 
+ 1177  vim ../node_algorithm/configuration.R 
+ 1178  cd ..
+ 1179  git pull
+ 1180  l
+ 1181  git status
+ 1182  git pull
+ 1183  l
+ 1184  cd node_selection/
+ 1185  l
+ 1186  cat measurement2
+ 1187  cat measurement2.txt 
+ 1188  cd ..
+ 1189  l
+ 1190  cd node_algorithm/
+ 1191  vim configuration.R 
+ 1192  l
+ 1193  cd ..
+ 1194  l
+ 1195  cd node_algorithm/
+ 1196  l
+ 1197  cd ../node_selection/
+ 1198  l
+ 1199  mv measurement2.txt measurement.txt 
+ 1200  l
+ 1201  sh run.sh 
+ 1202  mv measurement3.txt measurement.txt 
+ 1203  sh run.sh 
+ 1204  vim ../node_algorithm/configuration.R 
+ 1205  sh run.sh 
+ 1206  vim measurement.txt 
+ 1207  l
+ 1208  cat run.sh 
+ 1209  vim run.sh 
+ 1210  ll
+ 1211  l
+ 1212  vim measurement
+ 1213  vim measurement.txt 
+ 1214  cat run.sh measurement.txt
+ 1215  sh run.sh measurement.txt
+ 1216  cat measurement
+ 1217  sh run.sh measurement.txt
+ 1218  sh run.sh measurement
+ 1219  vim run.sh 
+ 1220  sh run.sh measurement
+ 1221  cat measurement
+ 1222  l
+ 1223  vim measurement
+ 1224  l
+ 1225  vim run.sh 
+ 1226  l
+ 1227  ll
+ 1228  vim measurement
+ 1229  l
+ 1230  vim measurement.txt 
+ 1231  vim measurement2.txt 
+ 1232  cd Documents/SensorSequence/node_selection/
+ 1233  ö
+ 1234  l
+ 1235  gedit measurement2.txt
+ 1236  cat measurement2.txt 
+ 1237  sh run.sh measurement2.txt
+ 1238  vim run.sh 
+ 1239  sh run.sh measurement2.txt
+ 1240  vim run.sh 
+ 1241  cd Documents/SensorSequence/node_selection/
+ 1242  l
+ 1243  sh run.sh 
+ 1244  sh run.sh measurement.txt
+ 1245  sh run.sh measurement2.txt
+ 1246  l
+ 1247  cat measurement
+ 1248  vim ../node_algorithm/configuration.R 
+ 1249  l
+ 1250  cd ../node_algorithm/
+ 1251  l
+ 1252  vim seq16ch_1.txt
+ 1253  sh run.sh measurement.txt
+ 1254  cat seq16ch_1.txt
+ 1255  l
+ 1256  cat seq16ch_1.txt
+ 1257  sh run.sh measurement.txt
+ 1258  cd Documents/SensorSequence/
+ 1259  l
+ 1260  cd node_selection/
+ 1261  l
+ 1262  sh run.sh 
+ 1263  sh run.sh 2
+ 1264  sh run.sh measurement.txt
+ 1265  sh run.sh measurement.t
+ 1266  sh run.sh measurement
+ 1267  sh run.sh measurement.txt
+ 1268  l
+ 1269  cd ../node_algorithm/
+ 1270  vim configuration.R 
+ 1271  ssh twistextern@www.twist.tu-berlin.de
+ 1272  exit
+ 1273  vim Documents/SensorSequence/node_algorithm/makeMeasurementsInTheUni.sh
+ 1274  l
+ 1275  cd Documents/SensorSequence/node_selection/
+ 1276  l
+ 1277  cd ..
+ 1278  cd
+ 1279  mv Documents/SensorSequence/node_algorithm/makeMeasurementsInTheUni.sh ~/UniMake.sh
+ 1280  l
+ 1281  mv UniMake.sh Documents/SensorSequence/node_selection/
+ 1282  ls -l -t -r
+ 1283  ls -t
+ 1284  exit
+ 1285  l
+ 1286  cd Documents/SensorSequence/node_s
+ 1287  cd Documents/SensorSequence/node_selection/
+ 1288  ./host_controller.py 
+ 1289  mke tmote install
+ 1290  l
+ 1291  make tmote install,4
+ 1292  ipython
+ 1293  killall ipython
+ 1294  jobs
+ 1295  l
+ 1296  ipython
+ 1297  ./host_controller.py 
+ 1298  ipython
+ 1299  cd Documents/SensorSequence/node_selection/
+ 1300  ./host_controller.py 
+ 1301  cd Documents/SensorSequence/node_selection/
+ 1302  l
+ 1303  vim host_controller.py 
+ 1304  git stauts
+ 1305  l
+ 1306  git status
+ 1307  cd ..
+ 1308  l
+ 1309  git status
+ 1310  git add .
+ 1311  git status
+ 1312  git commit -m "python"
+ 1313  git push
+ 1314  git pull
+ 1315  git diff
+ 1316  git status
+ 1317  l
+ 1318  git pull
+ 1319  l
+ 1320  git node_selection/
+ 1321  l
+ 1322  cd node_selection/
+ 1323  l
+ 1324  git status
+ 1325  git push
+ 1326  l
+ 1327  history 
+ 1328  vim | history
+ 1329  l
+ 1330  git status
+ 1331  l
+ 1332  git pull
+ 1333  ll
+ 1334  vim host_controller.py 
+ 1335  make tmote install,418
+ 1336  make tmote install,5
+ 1337  ./host_controller.py | tee measurement.txt 
+ 1338  vim ./ho
+ 1339  vim ./host_controller.py 
+ 1340  l
+ 1341  ipython
+ 1342  l
+ 1343  cd Documents/
+ 1344  l
+ 1345  cat FeliTxt.pdf 
+ 1346  l
+ 1347  vim pythonWindow.py
+ 1348  gedit pythonWindowTest.py
+ 1349  gedit pythonWindowTest.py &
+ 1350  l
+ 1351  chmod +x pythonWindowTest.py
+ 1352  python pythonWindowTest.py 
+ 1353  ipython
+ 1354  l
+ 1355  cd Documents/
+ 1356  l
+ 1357  python pythonWindowTest.py 
+ 1358  ipython
+ 1359  def main():
+ 1360  python pythonWindowTest.py 
+ 1361  time
+ 1362  date
+ 1363  ll
+ 1364  cat measurement_1_1 
+ 1365  at now+4hours
+ 1366  sudo apt-get install at
+ 1367  at now+4hours
+ 1368  at now+3hours
+ 1369  ls
+ 1370  ll
+ 1371  vim nodes.txt 
+ 1372  mkdir measurements5Nodes
+ 1373  mkdir measurements13Nodes/
+ 1374  vim testbed_measurements.sh 
+ 1375  ls
+ 1376  ll
+ 1377  tail -f measurement_2_1 
+ 1378  python pythonWindowTest.py 
+ 1379  cd Documents/
+ 1380  python pythonWindowTest.py 
+ 1381  killall
+ 1382  killall python
+ 1383  python pythonWindowTest.py 
+ 1384  sudo apt-get install python-imaging-tk
+ 1385  python pythonWindowTest.py 
+ 1386  python pythonWindowNibbles.py.py 
+ 1387  python pythonWindowNibbles.py
+ 1388  python pythonWindowTest.py 
+ 1389   
+ 1390  l
+ 1391  vim pythonWindowTest.py
+ 1392  python pythonWindowTest.py 
+ 1393  vim pythonWindowTest.py
+ 1394  python pythonWindowTest.py 
+ 1395  vim pythonWindowTest.py
+ 1396  python pythonWindowTest.py 
+ 1397  vim pythonWindowTest.py
+ 1398  l
+ 1399  cd SensorSequence/
+ 1400  l
+ 1401  git status
+ 1402  git diff
+ 1403  git checkout  HEAD node_selection/host_controller.py 
+ 1404  git pull
+ 1405  l
+ 1406  cd node_selection/
+ 1407  l
+ 1408  vim NodeSelectionC.nc 
+ 1409  ./host_controller.py -h
+ 1410  make tmote
+ 1411  vim nodes.txt 
+ 1412  ls
+ 1413  ls |grep sh
+ 1414  cat run.sh 
+ 1415  cat testbed_measurements.sh 
+ 1416  cat host_controller.py 
+ 1417  ls -l
+ 1418  ls
+ 1419  ls -l
+ 1420  ls
+ 1421  vim testbed_measurements.sh 
+ 1422  ls
+ 1423  ./host_controller.py -h
+ 1424  vim testbed_measurements.sh 
+ 1425  ./connect.sh 
+ 1426  cat testbed_measurements.sh 
+ 1427  ./host_controller.py --nodePath "sf@localhost:9148"
+ 1428  vim host_controller.py 
+ 1429  ./host_controller.py --nodePath "sf@localhost:9148"
+ 1430  ./test
+ 1431  sh testbed_measurements.sh 
+ 1432  ls
+ 1433  l
+ 1434  mv measurement_* measurements5Nodes/
+ 1435  cd measurements5Nodes/
+ 1436  ll
+ 1437  cd ..
+ 1438  l
+ 1439  sh testbed_measurements.sh 
+ 1440  ./host_controller.py --measurements 1
+ 1441  ./host_controller.py -h
+ 1442  ./host_controller.py --measurements 1
+ 1443  ./host_controller.py
+ 1444  sh testbed_measurements.sh 
+ 1445  ./host_controller.py --nodePath "sf@localhost:9148"
+ 1446  killall ssh
+ 1447  ./connect.sh 
+ 1448  klöä#
+ 1449  ./connect.sh 
+ 1450  klöä#
+ 1451  ./host_controller.py 
+ 1452  sh testbed_measurements.sh 
+ 1453  tail -f measurement_2_1 
+ 1454  l
+ 1455  cat measurement_1_1 
+ 1456  cat nodes.txt 
+ 1457  k
+ 1458  l
+ 1459  sudo apt-get --only-upgrade install google-chrome-stable
+ 1460  sudo pkill -15 google-chrome
+ 1461  sudo pkill -15 chrome
+ 1462  deb http://dl.google.com/linux/deb/ stable main
+ 1463  google-chrome
+ 1464  google-chrome-stable 
+ 1465  pt-get install chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg 
+ 1466  sudo apt-get install chromium-browser chromium-browser-l10n chromium-codecs-ffmpeg 
+ 1467  cd Documents/
+ 1468  l
+ 1469  cd SensorSequence/node_selection/
+ 1470  l
+ 1471  cat run.sh 
+ 1472  cp measurements5Nodes/measurement_1_20 ../node_algorithm/seq16ch_1.txt
+ 1473  cd $_
+ 1474  cd ../node_algorithm/
+ 1475  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1476  cat finalresult.txt 
+ 1477  l
+ 1478  cd Documents/SensorSequence/node_selection/
+ 1479  l
+ 1480  cd measurements
+ 1481  l
+ 1482  cp measurements5Nodes/measurement_1_10 ../node_algorithm/seq16ch_1.txt
+ 1483  cp measurements5Nodes/measurement_1_10 ../node_algorithm/seq16ch_2.txt
+ 1484  cp measurements5Nodes/measurement_1_20 ../node_algorithm/seq16ch_2.txt
+ 1485  cp measurements5Nodes/measurement_1_20 ../node_algorithm/seq16ch_1.txt
+ 1486  cp measurements5Nodes/measurement_1_10 ../node_algorithm/seq16ch_1.txt
+ 1487  cp measurements5Nodes/measurement_1_10 ../node_algorithm/seq16ch_2.txt
+ 1488  cp measurements5Nodes/measurement_1_20 ../node_algorithm/seq16ch_1.txt
+ 1489  cp measurements5Nodes/measurement_1_5 ../node_algorithm/seq16ch_3.txt
+ 1490  cp measurements5Nodes/measurement_1_1 ../node_algorithm/seq16ch_4.txt
+ 1491  l
+ 1492  cd Documents/SensorSequence/node_algorithm/
+ 1493  l
+ 1494  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1495  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1496  ll
+ 1497  rm seq16ch_1.txt~
+ 1498  l
+ 1499  vim configuration.R 
+ 1500  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1501  R
+ 1502  vim seq16ch_1.txt 
+ 1503  vim seq16ch_2.txt 
+ 1504  vim seq16ch_3.txt 
+ 1505  vim seq16ch_4.txt 
+ 1506  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1507  R
+ 1508  l
+ 1509  ll
+ 1510  l
+ 1511  cat finalresult.txt 
+ 1512  rm finalresult.txt 
+ 1513  touch finalresult.txt
+ 1514  l
+ 1515  cat finalresult.txt 
+ 1516  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1517  cat finalresult.txt 
+ 1518  cat Makefile 
+ 1519  cd Documents/SensorSequence/node_algorithm/
+ 1520  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1521  cat configuration.R 
+ 1522  cat seq16ch_1.txt 
+ 1523  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1524  l
+ 1525  cat seq16ch_1.txt 
+ 1526  l
+ 1527  cat seq16ch_1.txt 
+ 1528  ll
+ 1529  cat seq16ch_2.txt 
+ 1530  vim seq16ch_2.txt 
+ 1531  vim configuration.R 
+ 1532  git pull
+ 1533  l
+ 1534  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1535  cat seq16ch_1.txt 
+ 1536  vim configuration.R 
+ 1537  l
+ 1538  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1539  l
+ 1540  ll
+ 1541  vim configuration.R 
+ 1542  l
+ 1543  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1544  cat finalresult.txt 
+ 1545  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1546  cat finalresult.txt 
+ 1547  l
+ 1548  cd Documents/SensorSequence/node_selection/
+ 1549  l
+ 1550  cat host_controller.py 
+ 1551  ./host_controller.py -h
+ 1552  cat testbed_measurements.sh 
+ 1553  BUG:what has to be passed to the nodes? wait time..cat testbed_measurements.sh cat testbed_measurements.sh 
+ 1554  ls
+ 1555  vim NodeSelectionC.nc 
+ 1556  l
+ 1557  make tmote install 8
+ 1558  l
+ 1559  ll
+ 1560  ls
+ 1561  ./host_controller.py 
+ 1562  git status
+ 1563  cd ..
+ 1564  git add .
+ 1565  git status
+ 1566  git commit -m "measurings and controller changes"
+ 1567  git push
+ 1568  git pull
+ 1569  motelist
+ 1570  make tmote install, 29
+ 1571  cd node_selection/
+ 1572  make tmote install, 29
+ 1573  motelist
+ 1574  ./host_controller.py 
+ 1575  sh testbed_measurements.sh 
+ 1576  vim host_controller.py 
+ 1577  l
+ 1578  ./host_controller.py 
+ 1579  l
+ 1580  git log
+ 1581  l
+ 1582  git checkout  a9215b51b7b9b4b1d1b2c0252272c80f89a1c71f host_controller.py 
+ 1583  ./host_controller.py 
+ 1584  git checkout HEAD .
+ 1585  l
+ 1586  ./host_controller.py
+ 1587  cat host_controller.py 
+ 1588  git pull
+ 1589  l
+ 1590  git pull
+ 1591  l
+ 1592  vim Makefile 
+ 1593  l
+ 1594  make tmote install,8
+ 1595  git pul
+ 1596  git pull
+ 1597  l
+ 1598  vim Makefile 
+ 1599  l
+ 1600  vim Makefile 
+ 1601  make tmote install,8
+ 1602  make tmote reinstall,8
+ 1603  make tmote reinstall,18
+ 1604  make tmote reinstall,4
+ 1605  make tmote reinstall,29
+ 1606  make tmote install,29
+ 1607  ./host_controller.py 
+ 1608  make tmote reinstall,29
+ 1609  l
+ 1610  vim run.sh 
+ 1611  l
+ 1612  ./host_controller.py | tee measurement.txt 
+ 1613  motelist
+ 1614  ./host_controller.py | tee measurement.txt 
+ 1615  vim Makefile 
+ 1616  make tmote install, 18
+ 1617  make tmote reinstall, 8
+ 1618  motelist
+ 1619  ./host_controller.py | tee measurement.txt 
+ 1620  ./host_controller.py 
+ 1621  l
+ 1622  ./host_controller.py 
+ 1623  l
+ 1624  motelist
+ 1625  make tmote install,29
+ 1626  ./host_controller.py 
+ 1627  vim Makefile 
+ 1628  make tmote install,18
+ 1629  make tmote install,8
+ 1630  make tmote reinstall,4
+ 1631  l
+ 1632  ./host_controller.py 
+ 1633  make tmote reinstall,29
+ 1634  ./host_controller.py 
+ 1635  motelist
+ 1636  ./host_controller.py 
+ 1637  make tmote install,18
+ 1638  ./host_controller.py 
+ 1639  motelist
+ 1640  ./host_controller.py 
+ 1641  motelist
+ 1642  ./host_controller.py 
+ 1643  motelist
+ 1644  ./host_controller.py 
+ 1645  ./host_controller.py | tee measurement.txt 
+ 1646  vim measurement.txt 
+ 1647  l
+ 1648  sh run.sh measurement.txt
+ 1649  cd ..
+ 1650  l
+ 1651  cd node_algorithm/
+ 1652  l
+ 1653  cat seq16ch_1.txt 
+ 1654  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1655  R
+ 1656  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1657  l
+ 1658  vim seq16ch_1.txt 
+ 1659  vim configuration.R 
+ 1660  l
+ 1661  cd ..
+ 1662  cd node_algorithm/
+ 1663  l
+ 1664  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1665  cd ..
+ 1666  l
+ 1667  cd node_algorithm/
+ 1668  l
+ 1669  cd ../node_selection/
+ 1670  l
+ 1671  sh run.sh measurement.txt
+ 1672  cd measurements5Nodes/measurement_1_1
+ 1673  sh run.sh measurements5Nodes/measurement_1_1
+ 1674  cd ../node_algorithm/
+ 1675  l
+ 1676  vim configuration.R 
+ 1677  l
+ 1678  vim seq16ch_1.txt 
+ 1679  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1680  R CMD BATCH probabilisticSeq-v2.5.R
+ 1681  cat finalresult.txt 
+ 1682  l
+ 1683  vim seq16ch_1.txt 
+ 1684  vim configuration.R 
+ 1685  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1686  cat configuration.R 
+ 1687  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1688  i
+ 1689  l
+ 1690  vim configuration.R 
+ 1691  R CMD BATCH probabilisticSeq-v2.5.R ; cat finalresult.txt 
+ 1692  cd ../node_selection/
+ 1693  l
+ 1694  sh run.sh measurement.txt
+ 1695  l
+ 1696  vim ../node_algorithm/configuration.R 
+ 1697  l
+ 1698  ll
+ 1699  ./host_controller.py | tee measurement.txt 
+ 1700  vim measurement.txt 
+ 1701  l
+ 1702  cp measurement.txt ../node_algorithm/seq16ch_1.txt 
+ 1703  ./host_controller.py | tee ../node_algorithm/seq16ch_1.txt 
+ 1704  ./host_controller.py | tee measurement.txt 
+ 1705  cp measurement.txt ../node_algorithm/seq16ch_1.txt 
+ 1706  ./host_controller.py | tee ../node_algorithm/seq16ch_1.txt 
+ 1707  make tmote install,18
+ 1708  ./host_controller.py | tee ../node_algorithm/seq16ch_1.txt 
+ 1709  motelist
+ 1710  ./host_controller.py | tee ../node_algorithm/seq16ch_1.txt 
+ 1711  git pull
+ 1712  make tmote install,8
+ 1713  git pull
+ 1714  make tmote install,4
+ 1715  make tmote install,29
+ 1716  cat Makefile 
+ 1717  vim NodeSelectionC.nc 
+ 1718  vim constants.h 
+ 1719  l
+ 1720  make tmote install,13
+ 1721  make tmote install,14
+ 1722  make tmote install,15
+ 1723  cat constants.h 
+ 1724  ..
+ 1725  l
+ 1726  cd ..
+ 1727  git pull
+ 1728  l
+ 1729  git status
+ 1730  git checkout  HEAD .
+ 1731  cd Documents/SensorSequence/
+ 1732  git status
+ 1733  git pull
+ 1734  l
+ 1735  cd node_algorithm/
+ 1736  l
+ 1737  vim seq16ch_1.txt 
+ 1738  l
+ 1739  R CMD BATCH probabilisticSeq-v2.5.R 
+ 1740  cat probabilisticSeq-v2.5.Rout 
+ 1741  cat
+ 1742  l
+ 1743  vim seq16ch_1.txt 
+ 1744  l
+ 1745  cat run.sh 
+ 1746  sh run.sh 
+ 1747  l
+ 1748  cd ..
+ 1749  l
+ 1750  cd node_algorithm/
+ 1751  l
+ 1752  vim configuration.R 
+ 1753  sh run.sh 
+ 1754  ls
+ 1755  mv seq16ch_1.txt seq16ch_6.txt 
+ 1756  cp seq16ch_5.txt seq16ch_1.txt 
+ 1757  ll
+ 1758  l
+ 1759  sh run.sh 
+ 1760  cat
+ 1761  l
+ 1762  cat seq16ch_1.txt 
+ 1763  sh run.sh 
+ 1764  cat seq16ch_1.txt 
+ 1765  vim configuration.R 
+ 1766  l
+ 1767  ls
+ 1768  cd ../node_selection/
+ 1769  l
+ 1770  vim constants.h 
+ 1771  l
+ 1772  vim Makefile 
+ 1773  make tmote install,10
+ 1774  make tmote install,11
+ 1775  make tmote reinstall,11
+ 1776  vim Makefile 
+ 1777  make tmote install,10
+ 1778  lsusb
+ 1779  n8
+ 1780  n
+ 1781  n8
+ 1782  perl
+ 1783  l
+ 1784  n8
+ 1785  cd Downloads/
+ 1786  l
+ 1787  ls 
+ 1788  l
+ 1789  ll
+ 1790  ll | grep gdata
+ 1791  tar -xf gdata-2.0.18.tar.gz 
+ 1792  ö
+ 1793  lll
+ 1794  ll
+ 1795  cd gdata-2.0.18/
+ 1796  l
+ 1797  cd ..
+ 1798  mv gdata-2.0.18 ~/Documents/
+ 1799  cd ../Documents/
+ 1800  l
+ 1801  mv gdata-2.0.18/ /opt/
+ 1802  sudo mv gdata-2.0.18/ /opt/
+ 1803  cd $_
+ 1804  l
+ 1805  cd gdata-2.0.18/
+ 1806  l
+ 1807  cat INSTALL.txt 
+ 1808  sudo setup.py install
+ 1809  python setup.py install
+ 1810  sudo mkdir /usr/local/lib/python2.7/dist-packages/gdata
+ 1811  python setup.py install
+ 1812  sudo python setup.py install
+ 1813  cat INSTALL.txt 
+ 1814  cat INSTALL.txt | grep ubuntu
+ 1815  cat INSTALL.txt | grep linux
+ 1816  cat INSTALL.txt | grep windows
+ 1817  cat INSTALL.txt | grep window
+ 1818  cat INSTALL.txt | grep Window
+ 1819  cat INSTALL.txt | grep Linux
+ 1820  cat -l INSTALL.txt | grep Linux
+ 1821  cat -n INSTALL.txt | grep Linux
+ 1822  cat -n INSTALL.txt 
+ 1823  l
+ 1824  ll
+ 1825  cat README.txt 
+ 1826  cat 
+ 1827  cat RELEASE_NOTES.txt 
+ 1828  n8
+ 1829  n8
+ 1830  cd Documents/
+ 1831  gedit 
+ 1832  gedit googleIP.py &
+ 1833  chmod +x googleIP.py
+ 1834  l
+ 1835  ./googleIP.py 
+ 1836  python googleIP.py
+ 1837  n8
+ 1838  l
+ 1839  vim driveWriter.py
+ 1840  :q
+ 1841  l
+ 1842  cd Documents/
+ 1843  vim driveWriter
+ 1844  vim driveWriter.py
+ 1845  gedit driveWriter.py 
+ 1846  vim driveWriter.py
+ 1847  python driveWriter.py 
+ 1848  vim driveWriter.py
+ 1849  python driveWriter.py 
+ 1850  vim driveWriter.py
+ 1851  python driveWriter.py 
+ 1852  vim driveWriter.py
+ 1853  cd /opt/
+ 1854  l
+ 1855  cd gdata-2.0.18/
+ 1856  l
+ 1857  cd samples/
+ 1858  l
+ 1859  cd apps/
+ 1860  l
+ 1861  cd ..
+ 1862  cd docs/
+ 1863  l
+ 1864  ./docs_example.py 
+ 1865  cd ..
+ 1866  l
+ 1867  cd ..
+ 1868  l
+ 1869  cd tests/
+ 1870  ll
+ 1871  l
+ 1872  ./run_data_tests.py 
+ 1873  l
+ 1874  ./run_all_tests.py 
+ 1875  chmod +x googleIP.py
+ 1876  ./run_all_tests.py 
+ 1877  l
+ 1878  n8
+ 1879  ls
+ 1880  ssh pi@192.168.178.23
+ 1881  n8
+ 1882  klöä#
+ 1883  n8
+ 1884  klöä#
+ 1885  n8
+ 1886  alias
+ 1887  sudo pm-hibernate 
+ 1888  sudo pm-hibernate now -h
+ 1889  n8
+ 1890  ls
+ 1891  rm Star\ Trek\ 2009\ Trailer\ HD\ 1080p-SyJszxnJydA.mp4 
+ 1892  cd Downloads/
+ 1893  l
+ 1894  ls
+ 1895  sudo apt-get install ca-certificates
+ 1896  sudo cp Downloads/picacert.pem usr/share/ca-certificates/picacert.crt
+ 1897  cd usr/share/ca-certificates/cacert.crt
+ 1898  cd /usr/share/ca-certificates/cacert.crt
+ 1899  cd /usr/share/
+ 1900  ls
+ 1901  l
+ 1902  cd ca-certificates
+ 1903  ls
+ 1904  pwd
+ 1905  cd
+ 1906  ls
+ 1907  sudo cp Downloads/picacert.pem usr/share/ca-certificates/seafile.crt
+ 1908  sudo mv Downloads/picacert.pem usr/share/ca-certificates/seafile.crt
+ 1909  sudo cp Downloads/picacert.pem usr/share/ca-certificates/seafile.crt
+ 1910  cd Downloads/
+ 1911  ls
+ 1912  sudo mv picacert.pem /usr/share/ca-certificates/seafile.crt
+ 1913  sudo dpkg-reconfigure ca-certificates 
+ 1914  cd /etc/ssl/certs/ca-certificates.crt
+ 1915  vim /etc/ssl/certs/ca-certificates.crt
+ 1916  sudo dpkg-reconfigure ca-certificates 
+ 1917  ls
+ 1918  sudo dpkg-reconfigure ca-certificates 
+ 1919  sudo apt-get install libnss3-tools
+ 1920  sudo mv cacert.pem /usr/share/ca-certificates/seafile.crt; sudo dpkg-reconfigure ca-certificates
+ 1921  sudo mv cacert.pem /usr/share/ca-certificates/seafile2.crt; sudo dpkg-reconfigure ca-certificates
+ 1922  sudo mv cacert  /usr/share/ca-certificates/seafile2.crt
+ 1923  ls
+ 1924  rm cacert*
+ 1925  ls | grep cacer
+ 1926  ls | grep Vorl
+ 1927  ls
+ 1928  cdccacert.pem /usr/share/ca-certificates/seafile.crt; sudo dpkg-reconfigure ca-certificatesd
+ 1929  sudo mv Downloads/cacert.pem /usr/share/ca-certificates/seafile2.crt; sudo dpkg-reconfigure ca-certificates
+ 1930  man youtube-dl 
+ 1931  youtube-dl https://www.youtube.com/watch?v=SyJszxnJydA
+ 1932  ls
+ 1933  vlc Star\ Trek\ 2009\ Trailer\ HD\ 1080p-SyJszxnJydA.mp4 
+ 1934  n8
+ 1935  cd /
+ 1936  ls
+ 1937  cd etc/
+ 1938  ll
+ 1939  vim ts.conf 
+ 1940  cd ..
+ 1941  cd
+ 1942  ls
+ 1943  cd Documents/
+ 1944  l
+ 1945  tail 10 FeliTxt.pdf 
+ 1946  cat FeliTxt.pdf 
+ 1947  awk '&2 == localhost {print $1}'
+ 1948  awk '$2 == localhost {print $1}'
+ 1949  cat FeliTxt.pdf | awk '{print $2}'
+ 1950  cat FeliTxt.pdf 
+ 1951  ls
+ 1952  man sed
+ 1953  man cat
+ 1954  ls
+ 1955  cd SensorSequence/
+ 1956  ls
+ 1957  cd node_algorithm/
+ 1958  l
+ 1959  cd ..
+ 1960  cd
+ 1961  ls
+ 1962  cd Documents/
+ 1963  l
+ 1964  cd Bewerbung/
+ 1965  l
+ 1966  cat Bewerbung2.odt 
+ 1967  ls
+ 1968  cd
+ 1969  dmesg
+ 1970  n8
+ 1971  ls
+ 1972  alias
+ 1973  cd Downloads/
+ 1974  sl
+ 1975  ls
+ 1976  sudo apt-get install virtualbox virtualbox-qt virtualbox-dkms virtualbox-guest-dkms 
+ 1977  jobs
+ 1978  killall
+ 1979  jobs
+ 1980  kill
+ 1981  kill 1
+ 1982  kill $1
+ 1983  ls
+ 1984  jobs
+ 1985  killall
+ 1986  sudo apt-get remove virtualbox-4.1
+ 1987  sudo apt-get install virtualbox virtualbox-qt virtualbox-dkms virtualbox-guest-dkms 
+ 1988  sudo apt-get removevirtualbox virtualbox-qt virtualbox-dkms virtualbox-guest-dkms 
+ 1989  sudo apt-get remove virtualbox virtualbox-qt virtualbox-dkms virtualbox-guest-dkms 
+ 1990  certutil 
+ 1991  history | grep certu
+ 1992  cd Documents/SensorSequence/
+ 1993  ls
+ 1994  cd node_algorithm/
+ 1995  l
+ 1996  cd ..
+ 1997  ls
+ 1998  cd node_selection/
+ 1999  l
+ 2000  ls
+ 2001  git status
+ 2002  git add ../
+ 2003  git status
+ 2004  git pull
+ 2005  ls
+ 2006  git status
+ 2007  make tmote
+ 2008  ls
+ 2009  cd ..
+ 2010  ls
+ 2011  cd node_selection/
+ 2012  cat Makefile 
+ 2013  echo $(TINYOS_ROOT_DIR)
+ 2014  echo $PATH 
+ 2015  echo $TINYOS_ROOT_DIR 
+ 2016  ls $TINYOS_ROOT_DIR 
+ 2017  ls
+ 2018  cd
+ 2019  ls
+ 2020  cd Documents/
+ 2021  ls
+ 2022  cd tinyos-main/
+ 2023  l
+ 2024  git status
+ 2025  git log
+ 2026  +ls
+ 2027  ls
+ 2028  git status
+ 2029  cd ../SensorSequence/node_selection/
+ 2030  l
+ 2031  make tmote install
+ 2032  make tmote
+ 2033  git status
+ 2034  git rm ../node_algorithm/seq16ch_6.txt 
+ 2035  git rm -f ../node_algorithm/seq16ch_6.txt 
+ 2036  git lo
+ 2037  git log
+ 2038  vim host_controller.py 
+ 2039  make tmote reinstall, 368
+ 2040  make tmote reinstall, 363
+ 2041  make tmote reinstall, 333
+ 2042  make tmote reinstall, 357
+ 2043  make tmote reinstall, 334
+ 2044  make tmote reinstall, 367
+ 2045  ./host_controller.py 
+ 2046  ./host_controller.py --help
+ 2047  vim host_controller.py 
+ 2048  ./host_controller.py --help
+ 2049  ./host_controller.py
+ 2050  make tmote install,333
+ 2051  make tmote install,357
+ 2052  ./host_controller.py
+ 2053  make tmote install,357
+ 2054  make tmote install,333
+ 2055  make tmote install,386
+ 2056  make tmote install,368
+ 2057  make tmote install,363
+ 2058  ./host_controller.py
+ 2059  make tmote install,334
+ 2060  make tmote install,367
+ 2061  make tmote install,369
+ 2062  ./hod
+ 2063  ./host_controller.py --help
+ 2064  ./host_controller.py --measurement 5 | tee measurementnow.txt
+ 2065  pkill -f host_co
+ 2066  ./host_controller.py --measurement 5 | tee measurementnow.txt
+ 2067  pkill -f host_co
+ 2068  ./host_controller.py --measurement 5 | tee measurementnow.txt
+ 2069  ./host_controller.py --measurement 5 | tee measurementnow.txT
+ 2070  ls
+ 2071  vim NodeSelectionC.nc 
+ 2072  cd ..
+ 2073  cd node_algorithm/
+ 2074  ö
+ 2075  l
+ 2076  gedit probabilisticSeq-v2.5.R
+ 2077  ls
+ 2078  cd ../node_selection/
+ 2079  cat Makefile 
+ 2080  vim Makefile 
+ 2081  make tmote install,363
+ 2082  make tmote reinstall,334
+ 2083  ls
+ 2084  git log
+ 2085  git checkout  HEAD 
+ 2086  git checkout  HEAD  .
+ 2087  cd ..
+ 2088  git checkout  HEAD .
+ 2089  git log
+ 2090  git checkout  HEAD 2885cbacac8508c99b44f8e674cd472760194d89
+ 2091  git checkout 2885cbacac8508c99b44f8e674cd472760194d89
+ 2092  git 
+ 2093  ls
+ 2094  git checkout  HEAD
+ 2095  git checkout  master
+ 2096  git status
+ 2097  git checkout  HEAD node_selection/
+ 2098  ls
+ 2099  git pull
+ 2100  cd ..
+ 2101  l
+ 2102  cd SensorSequence/
+ 2103  git pull
+ 2104  make tmote install
+ 2105  cd node_selection/
+ 2106  ls
+ 2107  make tmote install
+ 2108  make tmote install,333
+ 2109  make tmote reinstall,357
+ 2110  make tmote reinstall,334
+ 2111  history |grep connect.sh
+ 2112  history
+ 2113  history |grep connect.sh | tee temp.txt
+ 2114  vim temp.txt 
+ 2115  history | tee temp.txt
+ 2116  history | grep 1400
+ 2117  history | grep 100
+ 2118  history | grep 1000
+ 2119  history > temp.txt 
