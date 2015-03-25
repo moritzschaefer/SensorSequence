@@ -2,7 +2,6 @@
 //#include "utils.h"
 #include <Timer.h>
 #include "dataTypes.h"
-#include "constants.h"
 #include "MeasurementData.h"
 #include "SerialControl.h"
 
@@ -12,6 +11,9 @@
 // Blue: I am sender
 
 // Disable printfs
+
+#define DEBUG 1
+
 #if DEBUG
 #else
 #define printf (void)sizeof

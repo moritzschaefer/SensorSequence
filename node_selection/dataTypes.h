@@ -1,7 +1,6 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-#include "constants.h"
 typedef struct ControlData {
     uint8_t dissCommand;
     uint16_t dissValue;
