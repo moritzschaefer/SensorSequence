@@ -11,8 +11,9 @@
 // Blue: I am sender
 
 // Disable printfs
-
+#ifndef DEBUG
 #define DEBUG 0
+#endif
 
 #if DEBUG
 #else
@@ -108,8 +109,8 @@ implementation {
 
   // TODO configure these here
   uint16_t dataCollectionWaitTime = 2000;
-  //uint16_t resetTime = 20000;
-  uint16_t resetTime = 0; // TODO now disabled, change to 20000
+  uint16_t resetTime = 60000;
+  //uint16_t resetTime = 0; // TODO now disabled, change to 20000
   uint16_t reassignTime = 3000; // time to resend sender assign
 
   // init Array
@@ -682,6 +683,12 @@ implementation {
 
       // This is like the "command for finish " #hacky #TODO
       rcm->channel = 0;
+      rcm->senderNodeId = 0;
+      rcm->receiverNodeId = 0;
+      rcm->rss = 0;
+      rcm->channel = 0;
+      rcm->measurementNum = 0;
+
 
       if (call SerialAMPacket.maxPayloadLength() < sizeof(measurement_data_t)) {
         debugMessage("failed serial: wrong packet size\n");
