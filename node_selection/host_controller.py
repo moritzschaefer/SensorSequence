@@ -29,7 +29,7 @@ class HostController:
     def receive(self, src, msg):
         m = MeasurementData.MeasurementData(msg.dataGet())
         if msg.get_amType()==137:
-            if m.get_channel() == 0 and m.get_rss() == 0:
+            if m.get_channel() == 0 and m.get_rss() == 0 and m.get_receiverNodeId() == 0 and m.get_senderNodeId() == 0:
                 try:
                     self.outfile.close()
                 except AttributeError:
