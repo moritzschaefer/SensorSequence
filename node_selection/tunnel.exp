@@ -1,9 +1,0 @@
-#!/usr/bin/expect -f
-
-set Port [lindex $argv 0];
-
-spawn ssh -nNxTL $Port:localhost:$Port twistextern@www.twist.tu-berlin.de
-expect "password:";
-send "neniadgosp\r";
-set timeout -1
-expect eof;

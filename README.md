@@ -24,4 +24,20 @@ This file includes the main code for python serial communictation. If you want t
 
 # Structure
 
+## Node Selection
 
+The directory node_selection contains all the necessary code to generate measurements:
+
+It contains the code for the nodes(based on tinyOS) along with the Makefile to compile and flash it.
+
+And it contains the python code (host_controller.py) to control the sink node (see documentation).
+
+## Node Algorithm
+
+This directory contains the code to calculate the sequence from generated measurements. This is not part of the project (besides doing evaluation) and is not further discussed.
+
+# Documentation
+
+The documentation website is located at https://www.tkn.tu-berlin.de/menue/tknteaching/student_projects/project_summaries/a_reliable_multi-channel_rss_measurement_tool_for_wireless_sensor_networks/
+
+The same content is provided in the file documentation.pdf
