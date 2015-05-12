@@ -43,4 +43,4 @@ Mainly refactoring for new steps
 
 ## 15th december 2014
 
-Max. was hast du gemacht in der woche in der ich in stockholm war?
+
